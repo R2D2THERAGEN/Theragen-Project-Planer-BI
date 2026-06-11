@@ -508,7 +508,8 @@ def main():
         "themeCollection": {
             "baseTheme": {"name": "CY24SU10", "reportVersionAtImport": "5.55",
                           "type": "SharedResources"},
-            "customTheme": {"name": "Theragen.json", "type": "RegisteredResources"},
+            "customTheme": {"name": "Theragen.json", "reportVersionAtImport": "5.55",
+                            "type": "RegisteredResources"},
         },
         "layoutOptimization": "None",
         "resourcePackages": [

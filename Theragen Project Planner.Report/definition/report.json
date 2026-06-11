@@ -8,6 +8,7 @@
     },
     "customTheme": {
       "name": "Theragen.json",
+      "reportVersionAtImport": "5.55",
       "type": "RegisteredResources"
     }
   },

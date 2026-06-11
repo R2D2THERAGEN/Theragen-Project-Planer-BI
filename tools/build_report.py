@@ -397,8 +397,10 @@ PAGE_DEFS.append((pg, "Lessons & Closure", vis))
 
 # ---------------------------------------------------------------------------
 def main():
+    # Best-effort clean: OneDrive/Desktop can hold transient locks. Generation is
+    # deterministic (same file set every run), so overwriting in place is safe.
     if os.path.isdir(PAGES):
-        shutil.rmtree(PAGES)
+        shutil.rmtree(PAGES, ignore_errors=True)
 
     w(os.path.join(RPT, ".platform"), {
         "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
@@ -409,6 +411,11 @@ def main():
         "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definitionProperties/1.0.0/schema.json",
         "version": "4.0",
         "datasetReference": {"byPath": {"path": f"../{NAME}.SemanticModel"}},
+    })
+    # Required by Desktop's PBIR reader ("Cannot find file 'version.json'" otherwise).
+    w(os.path.join(RPT, "definition", "version.json"), {
+        "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/versionMetadata/1.0.0/schema.json",
+        "version": "2.0.0",
     })
     w(os.path.join(RPT, "definition", "report.json"), {
         "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/report/1.0.0/schema.json",

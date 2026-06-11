@@ -869,9 +869,9 @@ def main():
         '  "settings": {}\n'
         '}\n'))
 
-    w(os.path.join(SM, ".pbi", "editorSettings.json"), (
-        '{\n  "autodetectRelationships": false\n}\n'))
-
+    # NOTE: do not emit .pbi/editorSettings.json - Desktop requires a versioned
+    # $schema format for it and creates its own on first save (June 2026 builds
+    # reject files without $schema/version).
     w(os.path.join(DEF, "database.tmdl"), "database\n\tcompatibilityLevel: 1601\n")
     w(os.path.join(DEF, "model.tmdl"), emit_model())
     w(os.path.join(DEF, "expressions.tmdl"), emit_expressions())

@@ -1,5 +1,7 @@
-"""Validate every PBIR JSON file in the Report folder against its declared
-$schema (fetched from developer.microsoft.com, cached locally)."""
+"""Validate every PBIP JSON file (Report + SemanticModel + .pbip) against its
+declared $schema (fetched from developer.microsoft.com, cached locally).
+Files without a Microsoft $schema are flagged: Desktop's project loader rejects
+sidecar JSONs in unversioned formats (e.g. .pbi/editorSettings.json)."""
 import json
 import os
 import sys
@@ -8,7 +10,9 @@ import urllib.request
 import jsonschema
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-RPT = os.path.join(ROOT, "Theragen Project Planner.Report")
+SCAN = [os.path.join(ROOT, "Theragen Project Planner.Report"),
+        os.path.join(ROOT, "Theragen Project Planner.SemanticModel"),
+        os.path.join(ROOT, "Theragen Project Planner.pbip")]
 CACHE = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".schema_cache")
 os.makedirs(CACHE, exist_ok=True)
 
@@ -31,32 +35,43 @@ def get_schema(url):
     return schemas[url]
 
 
+def iter_targets():
+    for target in SCAN:
+        if os.path.isfile(target):
+            yield target
+            continue
+        for dirpath, _, filenames in os.walk(target):
+            for fn in filenames:
+                if fn.endswith((".json", ".pbir", ".pbism", ".pbip", ".platform")):
+                    yield os.path.join(dirpath, fn)
+
+
 errors = 0
 files = 0
-for dirpath, _, filenames in os.walk(RPT):
-    for fn in filenames:
-        if not fn.endswith((".json", ".pbir", ".platform")):
-            continue
-        path = os.path.join(dirpath, fn)
-        with open(path, encoding="utf-8") as f:
-            doc = json.load(f)
-        url = doc.get("$schema")
-        if not url or "developer.microsoft.com" not in url:
-            continue
-        files += 1
-        try:
-            schema = get_schema(url)
-        except Exception as e:
-            print(f"SKIP (schema fetch failed): {os.path.relpath(path, ROOT)} -> {e}")
-            continue
-        v = jsonschema.validators.validator_for(schema)(schema)
-        errs = list(v.iter_errors(doc))
-        if errs:
-            errors += len(errs)
-            print(f"FAIL {os.path.relpath(path, ROOT)}")
-            for e in errs[:5]:
-                loc = "/".join(str(p) for p in e.absolute_path)
-                print(f"  at {loc}: {e.message[:200]}")
+for path in iter_targets():
+    rel = os.path.relpath(path, ROOT)
+    with open(path, encoding="utf-8") as f:
+        doc = json.load(f)
+    url = doc.get("$schema")
+    if not url or "developer.microsoft.com" not in url:
+        errors += 1
+        print(f"FAIL {rel}: no Microsoft $schema declared - Desktop rejects unversioned sidecar JSONs")
+        continue
+    files += 1
+    try:
+        schema = get_schema(url)
+    except Exception as e:
+        errors += 1
+        print(f"FAIL (schema fetch failed): {rel} -> {e}")
+        continue
+    v = jsonschema.validators.validator_for(schema)(schema)
+    errs = list(v.iter_errors(doc))
+    if errs:
+        errors += len(errs)
+        print(f"FAIL {rel}")
+        for e in errs[:5]:
+            loc = "/".join(str(p) for p in e.absolute_path)
+            print(f"  at {loc}: {e.message[:200]}")
 
-print(f"\n{files} files checked, {errors} schema violations")
+print(f"\n{files} files checked, {errors} problems")
 sys.exit(1 if errors else 0)

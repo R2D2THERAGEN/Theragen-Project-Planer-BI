@@ -3,10 +3,10 @@
   "name": "4f82bcfbdb545e20aa8e",
   "position": {
     "x": 864,
-    "y": 408,
+    "y": 404,
     "z": 1000,
     "width": 408,
-    "height": 300
+    "height": 304
   },
   "visual": {
     "visualType": "clusteredBarChart",

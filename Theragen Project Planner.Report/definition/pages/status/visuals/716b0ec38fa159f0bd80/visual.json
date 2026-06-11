@@ -1,12 +1,12 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
-  "name": "41160f07671a51d69361",
+  "name": "716b0ec38fa159f0bd80",
   "position": {
-    "x": 520,
-    "y": 374,
+    "x": 8,
+    "y": 682,
     "z": 1000,
-    "width": 182,
-    "height": 100
+    "width": 840,
+    "height": 30
   },
   "visual": {
     "visualType": "card",
@@ -22,10 +22,10 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Open Risks"
+                  "Property": "Status Key"
                 }
               },
-              "queryRef": "_Measures.Open Risks"
+              "queryRef": "_Measures.Status Key"
             }
           ]
         }
@@ -39,29 +39,20 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "20D"
+                  "Value": "9D"
                 }
               }
             }
           }
         }
-      ]
-    },
-    "visualContainerObjects": {
-      "title": [
+      ],
+      "categoryLabels": [
         {
           "properties": {
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "true"
-                }
-              }
-            },
-            "text": {
-              "expr": {
-                "Literal": {
-                  "Value": "'Open Risks'"
+                  "Value": "false"
                 }
               }
             }

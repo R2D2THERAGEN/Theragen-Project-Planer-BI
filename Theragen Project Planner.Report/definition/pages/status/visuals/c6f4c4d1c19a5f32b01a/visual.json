@@ -1,12 +1,12 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
-  "name": "32a9deb01f125143b087",
+  "name": "c6f4c4d1c19a5f32b01a",
   "position": {
-    "x": 1090,
-    "y": 374,
+    "x": 8,
+    "y": 88,
     "z": 1000,
-    "width": 182,
-    "height": 100
+    "width": 170,
+    "height": 190
   },
   "visual": {
     "visualType": "card",
@@ -22,10 +22,10 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Closure Complete Pct"
+                  "Property": "Main Status"
                 }
               },
-              "queryRef": "_Measures.Closure Complete Pct"
+              "queryRef": "_Measures.Main Status"
             }
           ]
         }
@@ -39,7 +39,23 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "20D"
+                  "Value": "60D"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Measure": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "_Measures"
+                        }
+                      },
+                      "Property": "Status Color"
+                    }
+                  }
                 }
               }
             }
@@ -61,7 +77,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Closure complete'"
+                  "Value": "'MAIN STATUS'"
                 }
               }
             }

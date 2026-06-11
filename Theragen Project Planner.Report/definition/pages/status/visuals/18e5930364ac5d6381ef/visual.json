@@ -1,12 +1,12 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
-  "name": "9c519a9934db5d62957e",
+  "name": "18e5930364ac5d6381ef",
   "position": {
     "x": 8,
-    "y": 236,
+    "y": 590,
     "z": 1000,
-    "width": 504,
-    "height": 240
+    "width": 626,
+    "height": 88
   },
   "visual": {
     "visualType": "tableEx",
@@ -19,68 +19,60 @@
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "Knowledge Area"
+                      "Entity": "Recent Accomplishment"
                     }
                   },
-                  "Property": "Knowledge Area"
+                  "Property": "Accomplishment"
                 }
               },
-              "queryRef": "Knowledge Area.Knowledge Area"
+              "queryRef": "Recent Accomplishment.Accomplishment"
             },
             {
               "field": {
-                "Measure": {
+                "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "_Measures"
+                      "Entity": "Recent Accomplishment"
                     }
                   },
-                  "Property": "Green Areas"
+                  "Property": "Source"
                 }
               },
-              "queryRef": "_Measures.Green Areas"
+              "queryRef": "Recent Accomplishment.Source"
             },
             {
               "field": {
-                "Measure": {
+                "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "_Measures"
+                      "Entity": "Recent Accomplishment"
                     }
                   },
-                  "Property": "Yellow Areas"
+                  "Property": "Completed Date"
                 }
               },
-              "queryRef": "_Measures.Yellow Areas"
-            },
-            {
-              "field": {
-                "Measure": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "_Measures"
-                    }
-                  },
-                  "Property": "Red Areas"
-                }
-              },
-              "queryRef": "_Measures.Red Areas"
-            },
-            {
-              "field": {
-                "Measure": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "_Measures"
-                    }
-                  },
-                  "Property": "Health Score"
-                }
-              },
-              "queryRef": "_Measures.Health Score"
+              "queryRef": "Recent Accomplishment.Completed Date"
             }
           ]
         }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Recent Accomplishment"
+                  }
+                },
+                "Property": "Completed Date"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
       }
     },
     "drillFilterOtherVisuals": true,
@@ -98,7 +90,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Health by knowledge area'"
+                  "Value": "'Accomplishments'"
                 }
               }
             }

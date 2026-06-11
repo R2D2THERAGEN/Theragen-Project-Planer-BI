@@ -154,6 +154,14 @@ table 'Risk'
 
 		annotation SummarizationSetBy = User
 
+	/// RAID classification: a realized risk is reported as an Issue.
+	column 'RAID Type' = IF('Risk'[Risk Status] = "Realized", "Issue", "Risk")
+		dataType: string
+		lineageTag: 0eabe0b0-0d70-5da4-8452-92de61318179
+		summarizeBy: none
+
+		annotation SummarizationSetBy = User
+
 	partition 'Risk' = m
 		mode: import
 		source =

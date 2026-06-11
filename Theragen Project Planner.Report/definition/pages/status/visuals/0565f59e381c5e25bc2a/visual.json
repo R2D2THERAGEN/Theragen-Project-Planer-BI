@@ -1,19 +1,32 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
-  "name": "2d7ff342372454c08de2",
+  "name": "0565f59e381c5e25bc2a",
   "position": {
-    "x": 1026,
-    "y": 8,
+    "x": 962,
+    "y": 88,
     "z": 1000,
-    "width": 244,
-    "height": 100
+    "width": 310,
+    "height": 190
   },
   "visual": {
-    "visualType": "card",
+    "visualType": "tableEx",
     "query": {
       "queryState": {
         "Values": {
           "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Knowledge Area"
+                    }
+                  },
+                  "Property": "Knowledge Area"
+                }
+              },
+              "queryRef": "Knowledge Area.Knowledge Area"
+            },
             {
               "field": {
                 "Measure": {
@@ -22,31 +35,16 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Latest Report Date"
+                  "Property": "Latest Area Status"
                 }
               },
-              "queryRef": "_Measures.Latest Report Date"
+              "queryRef": "_Measures.Latest Area Status"
             }
           ]
         }
       }
     },
     "drillFilterOtherVisuals": true,
-    "objects": {
-      "labels": [
-        {
-          "properties": {
-            "fontSize": {
-              "expr": {
-                "Literal": {
-                  "Value": "20D"
-                }
-              }
-            }
-          }
-        }
-      ]
-    },
     "visualContainerObjects": {
       "title": [
         {
@@ -61,7 +59,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Latest report'"
+                  "Value": "'Health Check'"
                 }
               }
             }

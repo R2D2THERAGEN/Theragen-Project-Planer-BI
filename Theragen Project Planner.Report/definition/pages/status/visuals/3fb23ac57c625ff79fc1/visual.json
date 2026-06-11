@@ -1,12 +1,12 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
-  "name": "e5b0c635852755e4bd73",
+  "name": "3fb23ac57c625ff79fc1",
   "position": {
-    "x": 900,
-    "y": 374,
+    "x": 564,
+    "y": 8,
     "z": 1000,
-    "width": 182,
-    "height": 100
+    "width": 200,
+    "height": 72
   },
   "visual": {
     "visualType": "card",
@@ -22,10 +22,10 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Activities Overdue"
+                  "Property": "Project Manager (Selected)"
                 }
               },
-              "queryRef": "_Measures.Activities Overdue"
+              "queryRef": "_Measures.Project Manager (Selected)"
             }
           ]
         }
@@ -39,7 +39,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "20D"
+                  "Value": "14D"
                 }
               }
             }
@@ -61,7 +61,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Activities Overdue'"
+                  "Value": "'Project Manager'"
                 }
               }
             }

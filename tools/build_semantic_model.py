@@ -51,6 +51,7 @@ TABLES["Project"] = dict(
         ("Intake ID", "intake_id", "string", ""),
         ("Project Name", "name", "string", ""),
         ("Project Description", "description", "string", ""),
+        ("Business Value", "business_value", "string", ""),
         ("Sponsor", "sponsor_name", "string", ""),
         ("Project Manager", "project_manager_name", "string", ""),
         ("Primary Department", "primary_department", "string", ""),
@@ -218,6 +219,9 @@ TABLES["Risk"] = dict(
          "SWITCH(TRUE(), 'Risk'[Risk Score] >= 20, \"Critical\", 'Risk'[Risk Score] >= 12, \"High\", "
          "'Risk'[Risk Score] >= 6, \"Medium\", \"Low\")",
          "string", "Banding of Risk Score on the 5x5 matrix: >=20 Critical, >=12 High, >=6 Medium."),
+        ("RAID Type",
+         "IF('Risk'[Risk Status] = \"Realized\", \"Issue\", \"Risk\")",
+         "string", "RAID classification: a realized risk is reported as an Issue."),
     ],
 )
 
@@ -481,6 +485,89 @@ def emit_date():
     return "\n".join(out)
 
 
+# ---------------------------------------------------- calculated leadership tables
+# Pre-filtered DAX tables feeding the leadership status page (PPTX sections
+# "Accomplishments" and "Next Steps"). Evaluated at refresh; windows are
+# relative to TODAY(). Calculated-table columns require sourceColumn: [Name].
+CALC_TABLES = {
+    "Recent Accomplishment": dict(
+        desc="Leadership view - work completed in the last 35 days (done activities + achieved milestones).",
+        dax=(
+            "UNION("
+            "SELECTCOLUMNS(FILTER('Schedule Activity', 'Schedule Activity'[Activity Status] = \"Done\" "
+            "&& NOT ISBLANK('Schedule Activity'[Actual Finish]) "
+            "&& 'Schedule Activity'[Actual Finish] >= TODAY() - 35), "
+            "\"Project ID\", 'Schedule Activity'[Project ID], "
+            "\"Accomplishment\", 'Schedule Activity'[Activity Name], "
+            "\"Completed Date\", 'Schedule Activity'[Actual Finish], "
+            "\"Source\", \"Activity\"), "
+            "SELECTCOLUMNS(FILTER('Milestone', 'Milestone'[Milestone Status] = \"Achieved\" "
+            "&& NOT ISBLANK('Milestone'[Actual Date]) "
+            "&& 'Milestone'[Actual Date] >= TODAY() - 35), "
+            "\"Project ID\", 'Milestone'[Project ID], "
+            "\"Accomplishment\", 'Milestone'[Milestone], "
+            "\"Completed Date\", 'Milestone'[Actual Date], "
+            "\"Source\", \"Milestone\"))"
+        ),
+        cols=[("Project ID", "string", "h"), ("Accomplishment", "string", ""),
+              ("Completed Date", "dateTime", "date"), ("Source", "string", "")],
+    ),
+    "Upcoming Next Step": dict(
+        desc="Leadership view - open work targeted in the next 45 days (activities + milestones).",
+        dax=(
+            "UNION("
+            "SELECTCOLUMNS(FILTER('Schedule Activity', "
+            "NOT 'Schedule Activity'[Activity Status] IN {\"Done\", \"Cancelled\"} "
+            "&& 'Schedule Activity'[Planned Finish] >= TODAY() - 7 "
+            "&& 'Schedule Activity'[Planned Finish] <= TODAY() + 45), "
+            "\"Project ID\", 'Schedule Activity'[Project ID], "
+            "\"Next Step\", 'Schedule Activity'[Activity Name], "
+            "\"Target Date\", 'Schedule Activity'[Planned Finish], "
+            "\"Owner\", 'Schedule Activity'[Owner], "
+            "\"Source\", \"Activity\"), "
+            "SELECTCOLUMNS(FILTER('Milestone', "
+            "'Milestone'[Milestone Status] IN {\"On track\", \"At risk\", \"Slipped\"} "
+            "&& COALESCE('Milestone'[Forecast Date], 'Milestone'[Baseline Date]) >= TODAY() - 7 "
+            "&& COALESCE('Milestone'[Forecast Date], 'Milestone'[Baseline Date]) <= TODAY() + 45), "
+            "\"Project ID\", 'Milestone'[Project ID], "
+            "\"Next Step\", 'Milestone'[Milestone], "
+            "\"Target Date\", COALESCE('Milestone'[Forecast Date], 'Milestone'[Baseline Date]), "
+            "\"Owner\", 'Milestone'[Owner Role], "
+            "\"Source\", \"Milestone\"))"
+        ),
+        cols=[("Project ID", "string", "h"), ("Next Step", "string", ""),
+              ("Target Date", "dateTime", "date"), ("Owner", "string", ""),
+              ("Source", "string", "")],
+    ),
+}
+
+
+def emit_calc_table(name, t):
+    out = [f"/// {t['desc']}", f"table '{name}'", f"\tlineageTag: {tag('table', name)}", ""]
+    for cname, cdt, opt in t["cols"]:
+        out.append(f"\tcolumn '{cname}'")
+        out.append(f"\t\tdataType: {cdt}")
+        if cdt == "dateTime":
+            out.append(f"\t\tformatString: {FMT['date']}")
+        elif opt in FMT:
+            out.append(f"\t\tformatString: {FMT[opt]}")
+        if opt == "h":
+            out.append("\t\tisHidden")
+        out.append(f"\t\tlineageTag: {tag('col', name, cname)}")
+        out.append("\t\tsummarizeBy: none")
+        out.append(f"\t\tsourceColumn: [{cname}]")
+        out.append("")
+        out.append("\t\tannotation SummarizationSetBy = User")
+        out.append("")
+    out += [f"\tpartition '{name}' = calculated",
+            "\t\tmode: import",
+            f"\t\tsource = {t['dax']}",
+            "",
+            "\tannotation PBI_ResultType = Table",
+            ""]
+    return "\n".join(out)
+
+
 # ------------------------------------------------------------------ measures
 M = []  # (folder, name, expr, fmt, desc)
 
@@ -671,6 +758,64 @@ add("Health", "Green Areas",
     "CALCULATE(COUNTROWS('Status Report Area'), 'Status Report Area'[Area Status] = \"Green\")", C_WHOLE,
     "Knowledge-area entries reported Green.")
 
+# Status Page (leadership one-pager, mirrors the Theragen Status Report PPTX)
+add("Status Page", "Theragen Project Name",
+    "SELECTEDVALUE('Project'[Project Name], \"All projects - select one\")", "",
+    "Selected project name for the status report header.")
+add("Status Page", "Project Manager (Selected)",
+    "SELECTEDVALUE('Project'[Project Manager], \"-\")", "",
+    "Selected project's PM for the status report header.")
+add("Status Page", "Target Date Completion",
+    "VAR d = MAX('Project'[Planned Finish]) RETURN IF(ISBLANK(d), \"TBD\", FORMAT(d, \"M/D/YYYY\"))", "",
+    "Planned finish of the selected project; TBD when not set.")
+add("Status Page", "Current Phase",
+    "SELECTEDVALUE('Project'[Lifecycle Phase], \"Multiple\")", "",
+    "Current PMI process group of the selected project.")
+add("Status Page", "Main Status",
+    "SWITCH([Latest Overall Status], \"Green\", \"G\", \"Yellow\", \"Y\", \"Red\", \"R\", BLANK())", "",
+    "Traffic-light letter from the latest status report: G / Y / R.")
+add("Status Page", "Status Color",
+    "SWITCH([Latest Overall Status], \"Green\", \"#107C10\", \"Yellow\", \"#E8A800\", "
+    "\"Red\", \"#D64550\", \"#605E5C\")", "",
+    "Hex color for conditional formatting of the Main Status traffic light.")
+add("Status Page", "Project Description (Selected)",
+    "SELECTEDVALUE('Project'[Project Description], \"Select a single project\")", "",
+    "Project description text block.")
+add("Status Page", "Business Value (Selected)",
+    "SELECTEDVALUE('Project'[Business Value], \"Select a single project\")", "",
+    "Business value text block (charter business case).")
+add("Status Page", "Latest Area Status",
+    "VAR d0 = MAX('Status Report'[Period End]) RETURN "
+    "CALCULATE(MAX('Status Report Area'[Area Status]), 'Status Report'[Period End] = d0)", "",
+    "Health-check status of a knowledge area from the most recent report.")
+add("Status Page", "Report Date",
+    "VAR d = MAX('Status Report'[Period End]) RETURN IF(ISBLANK(d), \"-\", FORMAT(d, \"M/D/YYYY\"))", "",
+    "Date of the latest status report.")
+add("Status Page", "Decisions Needed (Latest)",
+    "VAR d0 = MAX('Status Report'[Period End]) RETURN "
+    "CALCULATE(MAX('Status Report'[Decisions Needed]), 'Status Report'[Period End] = d0)", "",
+    "Open decisions called out in the latest status report.")
+add("Status Page", "Workstream Start",
+    "MIN('Schedule Activity'[Planned Start])", "yyyy-mm-dd",
+    "Earliest planned start of activities in context (workstream start date).")
+add("Status Page", "Workstream Target",
+    "MAX('Schedule Activity'[Planned Finish])", "yyyy-mm-dd",
+    "Latest planned finish of activities in context (target implementation date).")
+add("Status Page", "Workstream Status",
+    "VAR tot = [Activities] VAR done = [Activities Done] "
+    "VAR atRisk = [Activities At Risk] + [Activities Overdue] "
+    "VAR started = [Activities In Progress] + done "
+    "RETURN SWITCH(TRUE(), ISBLANK(tot) || tot = 0, \"-\", done = tot, \"COMPLETED\", "
+    "atRisk > 0, \"AT RISK\", started = 0, \"NOT STARTED\", \"ON TRACK\")", "",
+    "Roll-up status per workstream: COMPLETED / AT RISK / NOT STARTED / ON TRACK.")
+add("Status Page", "Status Key",
+    "\"KEY:   G = Green   |   Y = Yellow   |   R = Off Track   |   C = Completed   |   "
+    "NS = Not Started   |   H = Hold   |   CN = Cancelled\"", "",
+    "Legend for status letters (matches the Theragen status report key).")
+add("Status Page", "Phase Key",
+    "\"PHASES:   Initiating - Planning - Executing - Monitoring - Closing\"", "",
+    "Legend for PMI lifecycle phases used on this report.")
+
 # Stakeholders
 add("Stakeholders", "Stakeholders", "COUNTROWS('Stakeholder')", C_WHOLE, "Stakeholder register entries.")
 add("Stakeholders", "High Influence Stakeholders",
@@ -778,6 +923,8 @@ RELS = [
     ("Change Request", "Requested By ID", "Person", "Person ID", True),
     ("Stakeholder", "Person ID", "Person", "Person ID", True),
     ("Team Member", "Person ID", "Person", "Person ID", True),
+    ("Recent Accomplishment", "Project ID", "Project", "Project ID", True),
+    ("Upcoming Next Step", "Project ID", "Project", "Project ID", True),
 ]
 
 
@@ -815,7 +962,7 @@ def emit_model():
            "",
            "annotation __PBI_TimeIntelligenceEnabled = 0",
            ""]
-    for t in TABLE_ORDER + ["Date", "_Measures"]:
+    for t in TABLE_ORDER + ["Date", "Recent Accomplishment", "Upcoming Next Step", "_Measures"]:
         out.append(f"ref table '{t}'" if (" " in t or t == "Date") else f"ref table {t}")
     out.append("")
     out.append("ref cultureInfo en-US")
@@ -887,8 +1034,11 @@ def main():
     for name in TABLE_ORDER:
         w(os.path.join(DEF, "tables", f"{name}.tmdl"), emit_table(name, TABLES[name]))
     w(os.path.join(DEF, "tables", "Date.tmdl"), emit_date())
+    for name, t in CALC_TABLES.items():
+        w(os.path.join(DEF, "tables", f"{name}.tmdl"), emit_calc_table(name, t))
     w(os.path.join(DEF, "tables", "_Measures.tmdl"), emit_measures())
-    print(f"\nSemantic model written: {len(TABLE_ORDER) + 2} tables, {len(M)} measures, {len(RELS)} relationships")
+    print(f"\nSemantic model written: {len(TABLE_ORDER) + len(CALC_TABLES) + 2} tables, "
+          f"{len(M)} measures, {len(RELS)} relationships")
 
 
 if __name__ == "__main__":

@@ -1,68 +1,78 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
-  "name": "32cf57b3ef375fbcba3b",
+  "name": "4c614f0abcbb51aba8e8",
   "position": {
-    "x": 270,
-    "y": 116,
+    "x": 642,
+    "y": 590,
     "z": 1000,
-    "width": 1002,
-    "height": 250
+    "width": 630,
+    "height": 88
   },
   "visual": {
-    "visualType": "stackedColumnChart",
+    "visualType": "tableEx",
     "query": {
       "queryState": {
-        "Category": {
+        "Values": {
           "projections": [
             {
               "field": {
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "Status Report"
+                      "Entity": "Upcoming Next Step"
                     }
                   },
-                  "Property": "Period End"
+                  "Property": "Next Step"
                 }
               },
-              "queryRef": "Status Report.Period End"
-            }
-          ]
-        },
-        "Y": {
-          "projections": [
-            {
-              "field": {
-                "Measure": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "_Measures"
-                    }
-                  },
-                  "Property": "Area Entries"
-                }
-              },
-              "queryRef": "_Measures.Area Entries"
-            }
-          ]
-        },
-        "Series": {
-          "projections": [
+              "queryRef": "Upcoming Next Step.Next Step"
+            },
             {
               "field": {
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "Status Report Area"
+                      "Entity": "Upcoming Next Step"
                     }
                   },
-                  "Property": "Area Status"
+                  "Property": "Owner"
                 }
               },
-              "queryRef": "Status Report Area.Area Status"
+              "queryRef": "Upcoming Next Step.Owner"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Upcoming Next Step"
+                    }
+                  },
+                  "Property": "Target Date"
+                }
+              },
+              "queryRef": "Upcoming Next Step.Target Date"
             }
           ]
         }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Upcoming Next Step"
+                  }
+                },
+                "Property": "Target Date"
+              }
+            },
+            "direction": "Ascending"
+          }
+        ],
+        "isDefaultSort": true
       }
     },
     "drillFilterOtherVisuals": true,
@@ -80,7 +90,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Knowledge-area health over reporting periods'"
+                  "Value": "'Next Steps'"
                 }
               }
             }

@@ -1,15 +1,15 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
-  "name": "55eab0c2d141520e885d",
+  "name": "832821d25d825746b8a0",
   "position": {
-    "x": 774,
-    "y": 8,
+    "x": 186,
+    "y": 88,
     "z": 1000,
-    "width": 244,
-    "height": 100
+    "width": 380,
+    "height": 190
   },
   "visual": {
-    "visualType": "card",
+    "visualType": "multiRowCard",
     "query": {
       "queryState": {
         "Values": {
@@ -22,31 +22,16 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Health Score"
+                  "Property": "Project Description (Selected)"
                 }
               },
-              "queryRef": "_Measures.Health Score"
+              "queryRef": "_Measures.Project Description (Selected)"
             }
           ]
         }
       }
     },
     "drillFilterOtherVisuals": true,
-    "objects": {
-      "labels": [
-        {
-          "properties": {
-            "fontSize": {
-              "expr": {
-                "Literal": {
-                  "Value": "20D"
-                }
-              }
-            }
-          }
-        }
-      ]
-    },
     "visualContainerObjects": {
       "title": [
         {
@@ -61,7 +46,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Health score (3=green)'"
+                  "Value": "'Project Description'"
                 }
               }
             }

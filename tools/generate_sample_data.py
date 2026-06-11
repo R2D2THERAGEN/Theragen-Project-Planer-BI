@@ -111,39 +111,52 @@ write("person", person_rows, ["person_id", "employee_number", "email", "display_
 P = {r["display_name"]: r["person_id"] for r in person_rows}
 
 # ------------------------------------------------------------------- projects
+# business_value mirrors project_charter.business_case (THG-ENT-DBS-001 P02).
 PROJECTS = [
     dict(code="THG-CLN-014", intake="INT-2026-0042", name="Cardio Device Feasibility Study",
          desc="Feasibility study for the next-generation cardio stimulation device across three trial sites.",
+         value="De-risk the next-generation cardio platform by validating clinical feasibility early, "
+               "protecting the FY27 launch window and strengthening the regulatory submission package.",
          sponsor="Maya Patel", pm="Grace Mwangi", dept="Clinical / Medical Affairs",
          approach="predictive", phase="Executing", status="Active",
          ps="2026-01-05", pf="2026-12-18", as_="2026-01-12", af="",
          budget=725000.00, obj="FY26-O2"),
     dict(code="THG-RND-007", intake="INT-2025-0117", name="Pulse Firmware v3 Platform",
          desc="Re-architecture of the ActaStim pulse firmware platform for modular therapy programs.",
+         value="Cut therapy-program release cycles from quarters to weeks with a modular firmware "
+               "platform, enabling faster clinical iteration and reduced verification cost per release.",
          sponsor="Ethan Brooks", pm="Lena Hoffmann", dept="R&D / Engineering",
          approach="agile", phase="Executing", status="Active",
          ps="2025-09-01", pf="2026-08-28", as_="2025-09-08", af="",
          budget=480000.00, obj="FY26-O1"),
     dict(code="THG-IT-003", intake="INT-2026-0011", name="HIPAA Data Lake Migration",
          desc="Migration of PHI-bearing analytics workloads to the HIPAA-controlled data lake.",
+         value="Consolidate PHI analytics into a HIPAA-controlled platform, eliminating audit findings "
+               "exposure, enabling self-service insights, and reducing legacy infrastructure spend.",
          sponsor="Nadia Hassan", pm="Sam Delgado", dept="IT / Data / Security",
          approach="hybrid", phase="Planning", status="Active",
          ps="2026-04-01", pf="2027-01-29", as_="2026-04-06", af="",
          budget=390000.00, obj="FY26-O4"),
     dict(code="THG-OPS-009", intake="INT-2026-0027", name="PMBOK Rollout & Training",
          desc="Deployment of the integrated PMBOK documentation system and training across all departments.",
+         value="Standardize project delivery and document control across all eight departments, giving "
+               "leadership a single trusted view of project health and audit-ready evidence on demand.",
          sponsor="Omar Sinclair", pm="Tom Becker", dept="Operations / PMO",
          approach="predictive", phase="Monitoring", status="Active",
          ps="2026-02-02", pf="2026-09-30", as_="2026-02-02", af="",
          budget=150000.00, obj="FY26-O3"),
     dict(code="THG-REG-005", intake="INT-2025-0089", name="ISO 13485 Recertification",
          desc="Recertification audit preparation and execution for ISO 13485:2016 quality management.",
+         value="Maintain ISO 13485 certification — a prerequisite for market access and key customer "
+               "contracts — while closing audit findings that carry regulatory and commercial risk.",
          sponsor="James Whitfield", pm="Priya Nair", dept="Regulatory / Quality",
          approach="predictive", phase="Closing", status="Active",
          ps="2025-07-07", pf="2026-06-30", as_="2025-07-07", af="",
          budget=210000.00, obj="FY26-O5"),
     dict(code="THG-COM-002", intake="INT-2026-0063", name="EU Market Expansion Launch",
          desc="Commercial launch readiness for EU expansion of the ActaStim product family.",
+         value="Open the EU market for the ActaStim family, diversifying revenue beyond North America "
+               "and establishing distributor relationships ahead of competitor entry.",
          sponsor="Olivia Marsh", pm="Isabel Fonseca", dept="Commercial / Marketing",
          approach="hybrid", phase="Initiating", status="Proposed",
          ps="2026-08-03", pf="2027-05-28", as_="", af="",
@@ -157,6 +170,7 @@ for p in PROJECTS:
         "intake_id": p["intake"],
         "name": p["name"],
         "description": p["desc"],
+        "business_value": p["value"],
         "sponsor_person_id": P[p["sponsor"]],
         "sponsor_name": p["sponsor"],
         "project_manager_id": P[p["pm"]],

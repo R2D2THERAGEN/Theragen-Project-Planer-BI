@@ -5,8 +5,8 @@
     "x": 8,
     "y": 8,
     "z": 1000,
-    "width": 250,
-    "height": 220
+    "width": 220,
+    "height": 72
   },
   "visual": {
     "visualType": "slicer",
@@ -46,7 +46,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Project'"
+                  "Value": "'Select project'"
                 }
               }
             }

@@ -1,12 +1,12 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
-  "name": "e1150ad1e0995855a84f",
+  "name": "77d62b20a00c5a55a7a5",
   "position": {
-    "x": 522,
+    "x": 940,
     "y": 8,
     "z": 1000,
-    "width": 244,
-    "height": 100
+    "width": 160,
+    "height": 72
   },
   "visual": {
     "visualType": "card",
@@ -22,10 +22,10 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Latest Trend"
+                  "Property": "Current Phase"
                 }
               },
-              "queryRef": "_Measures.Latest Trend"
+              "queryRef": "_Measures.Current Phase"
             }
           ]
         }
@@ -39,7 +39,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "20D"
+                  "Value": "14D"
                 }
               }
             }
@@ -61,7 +61,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Trend'"
+                  "Value": "'Current Phase'"
                 }
               }
             }

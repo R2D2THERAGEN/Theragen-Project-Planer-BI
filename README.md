@@ -19,8 +19,8 @@ table, measure, relationship and visual is plain text, diff-able, and reviewable
 
 ```
 Theragen Project Planner.pbip            Project pointer (open this)
-Theragen Project Planner.SemanticModel/  TMDL model: 19 tables, 78 measures, 34 relationships
-Theragen Project Planner.Report/         PBIR report: 8 pages, 81 visuals
+Theragen Project Planner.SemanticModel/  TMDL model: 21 tables, 94 measures, 36 relationships
+Theragen Project Planner.Report/         PBIR report: 8 pages, 85 visuals
 SampleData/                              Seeded 6-project portfolio (17 CSVs, schema-faithful)
 docs/MODEL_DESIGN.md                     Star-schema design decisions and source mapping
 _source_extracts/                        Schema spec sheets extracted to TSV (reference)
@@ -51,7 +51,7 @@ Full design rationale: [docs/MODEL_DESIGN.md](docs/MODEL_DESIGN.md)
 | Page | Mirrors PMBOK artifact |
 |---|---|
 | Portfolio Overview | Executive roll-up across all projects |
-| Project Status | Template 13 — Status Report (G/Y/R by knowledge area, trend, decisions) |
+| Project Status Report | The Theragen leadership one-pager (traffic light, health check, RAID, key project areas, accomplishments, next steps) + Template 13 |
 | Schedule & Milestones | Template 06 — Schedule (activities, % complete, slip) |
 | Cost & Budget | Template 07 — Cost Budget Estimate (+ EVM: PV/EV/SV/SPI) |
 | Risk Management | Template 09 — Risk Register (5×5 heat map, exposure, responses) |

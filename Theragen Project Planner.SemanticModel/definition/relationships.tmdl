@@ -138,3 +138,11 @@ relationship 23940bba-3560-59fb-8c5d-32dc200447de
 relationship 1e96e112-249c-50bc-9c79-d9ae58c5b542
 	fromColumn: 'Team Member'.'Person ID'
 	toColumn: 'Person'.'Person ID'
+
+relationship 379a8b80-8464-5e08-bc06-39bfdabf7468
+	fromColumn: 'Recent Accomplishment'.'Project ID'
+	toColumn: 'Project'.'Project ID'
+
+relationship b00f478c-87df-58dd-8d41-ff6165f66e6d
+	fromColumn: 'Upcoming Next Step'.'Project ID'
+	toColumn: 'Project'.'Project ID'

@@ -1,12 +1,12 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
-  "name": "75b6f27fed7a50ad9d12",
+  "name": "b5cf7bcfea6255aeb95e",
   "position": {
-    "x": 270,
+    "x": 772,
     "y": 8,
     "z": 1000,
-    "width": 244,
-    "height": 100
+    "width": 160,
+    "height": 72
   },
   "visual": {
     "visualType": "card",
@@ -22,10 +22,10 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Latest Overall Status"
+                  "Property": "Target Date Completion"
                 }
               },
-              "queryRef": "_Measures.Latest Overall Status"
+              "queryRef": "_Measures.Target Date Completion"
             }
           ]
         }
@@ -39,7 +39,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "20D"
+                  "Value": "14D"
                 }
               }
             }
@@ -61,7 +61,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Overall status'"
+                  "Value": "'Target Date Completion'"
                 }
               }
             }

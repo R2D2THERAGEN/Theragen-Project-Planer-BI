@@ -1,0 +1,51 @@
+/// Leadership view - open work targeted in the next 45 days (activities + milestones).
+table 'Upcoming Next Step'
+	lineageTag: c233b4ed-4951-5d33-b91f-49de66fd1f28
+
+	column 'Project ID'
+		dataType: string
+		isHidden
+		lineageTag: fa624fdf-96b6-5c54-b6ad-545665233ac6
+		summarizeBy: none
+		sourceColumn: [Project ID]
+
+		annotation SummarizationSetBy = User
+
+	column 'Next Step'
+		dataType: string
+		lineageTag: ba06df3d-7b13-5a41-9871-6ad32a35fec9
+		summarizeBy: none
+		sourceColumn: [Next Step]
+
+		annotation SummarizationSetBy = User
+
+	column 'Target Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 99d934ac-4329-5b27-8cde-fdf7f5f24ed0
+		summarizeBy: none
+		sourceColumn: [Target Date]
+
+		annotation SummarizationSetBy = User
+
+	column 'Owner'
+		dataType: string
+		lineageTag: b1c49688-8d6b-5e86-97da-a36e7fd85acc
+		summarizeBy: none
+		sourceColumn: [Owner]
+
+		annotation SummarizationSetBy = User
+
+	column 'Source'
+		dataType: string
+		lineageTag: 08daaed9-6ad9-5e7c-821f-d7dcd3a060c9
+		summarizeBy: none
+		sourceColumn: [Source]
+
+		annotation SummarizationSetBy = User
+
+	partition 'Upcoming Next Step' = calculated
+		mode: import
+		source = UNION(SELECTCOLUMNS(FILTER('Schedule Activity', NOT 'Schedule Activity'[Activity Status] IN {"Done", "Cancelled"} && 'Schedule Activity'[Planned Finish] >= TODAY() - 7 && 'Schedule Activity'[Planned Finish] <= TODAY() + 45), "Project ID", 'Schedule Activity'[Project ID], "Next Step", 'Schedule Activity'[Activity Name], "Target Date", 'Schedule Activity'[Planned Finish], "Owner", 'Schedule Activity'[Owner], "Source", "Activity"), SELECTCOLUMNS(FILTER('Milestone', 'Milestone'[Milestone Status] IN {"On track", "At risk", "Slipped"} && COALESCE('Milestone'[Forecast Date], 'Milestone'[Baseline Date]) >= TODAY() - 7 && COALESCE('Milestone'[Forecast Date], 'Milestone'[Baseline Date]) <= TODAY() + 45), "Project ID", 'Milestone'[Project ID], "Next Step", 'Milestone'[Milestone], "Target Date", COALESCE('Milestone'[Forecast Date], 'Milestone'[Baseline Date]), "Owner", 'Milestone'[Owner Role], "Source", "Milestone"))
+
+	annotation PBI_ResultType = Table

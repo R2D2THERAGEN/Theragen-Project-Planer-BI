@@ -1,12 +1,12 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
-  "name": "6178a62c52bc57e196bf",
+  "name": "94583e8490df56c59e7a",
   "position": {
     "x": 8,
-    "y": 484,
+    "y": 286,
     "z": 1000,
     "width": 1264,
-    "height": 224
+    "height": 160
   },
   "visual": {
     "visualType": "tableEx",
@@ -19,65 +19,91 @@
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "Status Report"
+                      "Entity": "Risk"
                     }
                   },
-                  "Property": "Period End"
+                  "Property": "RAID Type"
                 }
               },
-              "queryRef": "Status Report.Period End"
+              "queryRef": "Risk.RAID Type"
             },
             {
               "field": {
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "Status Report"
+                      "Entity": "Risk"
                     }
                   },
-                  "Property": "Overall Status"
+                  "Property": "Risk Description"
                 }
               },
-              "queryRef": "Status Report.Overall Status"
+              "queryRef": "Risk.Risk Description"
             },
             {
               "field": {
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "Status Report"
+                      "Entity": "Risk"
                     }
                   },
-                  "Property": "Trend"
+                  "Property": "Owner"
                 }
               },
-              "queryRef": "Status Report.Trend"
+              "queryRef": "Risk.Owner"
             },
             {
               "field": {
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "Status Report"
+                      "Entity": "Risk"
                     }
                   },
-                  "Property": "Executive Summary"
+                  "Property": "Due Date"
                 }
               },
-              "queryRef": "Status Report.Executive Summary"
+              "queryRef": "Risk.Due Date"
             },
             {
               "field": {
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "Status Report"
+                      "Entity": "Risk"
                     }
                   },
-                  "Property": "Decisions Needed"
+                  "Property": "Risk Score"
                 }
               },
-              "queryRef": "Status Report.Decisions Needed"
+              "queryRef": "Risk.Risk Score"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Risk"
+                    }
+                  },
+                  "Property": "Severity"
+                }
+              },
+              "queryRef": "Risk.Severity"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Risk"
+                    }
+                  },
+                  "Property": "Risk Status"
+                }
+              },
+              "queryRef": "Risk.Risk Status"
             }
           ]
         }
@@ -89,10 +115,10 @@
               "Column": {
                 "Expression": {
                   "SourceRef": {
-                    "Entity": "Status Report"
+                    "Entity": "Risk"
                   }
                 },
-                "Property": "Period End"
+                "Property": "Risk Score"
               }
             },
             "direction": "Descending"
@@ -116,7 +142,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Status reports - executive summary and decisions needed'"
+                  "Value": "'Updates / Key Issues / Risks / Decisions / Dependencies'"
                 }
               }
             }

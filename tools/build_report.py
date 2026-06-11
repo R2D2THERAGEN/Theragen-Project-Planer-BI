@@ -75,11 +75,23 @@ def pos(x, y, wd, ht, z=1000):
     return {"x": x, "y": y, "z": z, "width": wd, "height": ht}
 
 
-def card(page, key, measure, x, y, wd=200, ht=100, label=None):
+def card(page, key, measure, x, y, wd=204, ht=100, label=None, size=20,
+         color_measure=None, hide_category=False, no_title=False):
     qs = {"Values": {"projections": [proj(mea(measure), f"{MEAS}.{measure}")]}}
-    objects = {"labels": [{"properties": {"fontSize": lit(20)}}]}
+    label_props = {"fontSize": lit(size)}
+    if color_measure:
+        label_props["color"] = {"solid": {"color": {"expr": {"Measure": {
+            "Expression": {"SourceRef": {"Entity": MEAS}}, "Property": color_measure}}}}}
+    objects = {"labels": [{"properties": label_props}]}
+    if hide_category:
+        objects["categoryLabels"] = [{"properties": {"show": lit(False)}}]
     return visual(vid(page, key), "card", pos(x, y, wd, ht), qs,
-                  vtitle=label or measure, objects=objects)
+                  vtitle=None if no_title else (label or measure), objects=objects)
+
+
+def mrcard(page, key, measure, x, y, wd, ht, vtitle):
+    qs = {"Values": {"projections": [proj(mea(measure), f"{MEAS}.{measure}")]}}
+    return visual(vid(page, key), "multiRowCard", pos(x, y, wd, ht), qs, vtitle=vtitle)
 
 
 def chart(page, key, vtype, cat_field, cat_ref, y_measures, x, y, wd, ht,
@@ -135,57 +147,96 @@ vis.append(table_vis(pg, "health", [
     (mea("SPI"), f"{MEAS}.SPI"),
     (mea("Budget Total"), f"{MEAS}.Budget Total"),
     (mea("Open Risks"), f"{MEAS}.Open Risks"),
-], 8, 120, 700, 280, vtitle="Project portfolio health"))
+], 8, 116, 700, 280, vtitle="Project portfolio health"))
 vis.append(chart(pg, "bud_dept", "clusteredBarChart",
                  col("Project", "Primary Department"), "Project.Primary Department",
-                 ["Budget Total"], 716, 120, 556, 280,
+                 ["Budget Total"], 716, 116, 556, 280,
                  vtitle="Funded budget by department", sort_desc_by="Budget Total"))
 vis.append(chart(pg, "phase", "clusteredColumnChart",
                  col("Project", "Lifecycle Phase"), "Project.Lifecycle Phase",
-                 ["Projects"], 8, 408, 420, 300, vtitle="Projects by lifecycle phase"))
+                 ["Projects"], 8, 404, 420, 304, vtitle="Projects by lifecycle phase"))
 vis.append(chart(pg, "bud_cat", "donutChart",
                  col("Budget Line", "Cost Category"), "Budget Line.Cost Category",
-                 ["Budget Total"], 436, 408, 420, 300, vtitle="Budget mix by cost category"))
+                 ["Budget Total"], 436, 404, 420, 304, vtitle="Budget mix by cost category"))
 vis.append(chart(pg, "risk_cat", "clusteredBarChart",
                  col("Risk", "Risk Category"), "Risk.Risk Category",
-                 ["Open Risks"], 864, 408, 408, 300,
+                 ["Open Risks"], 864, 404, 408, 304,
                  vtitle="Open risks by category", sort_desc_by="Open Risks"))
 PAGE_DEFS.append((pg, "Portfolio Overview", vis))
 
-# ---- Page 2: Project Status ------------------------------------------------
+# ---- Page 2: Project Status Report (mirrors Theragen leadership PPTX) -------
+# Sections, top to bottom, matching the Sync 3.0 status report deck:
+# header (verify project) > main status + description + business value +
+# health check > RAID > key project areas > accomplishments + next steps > keys
 pg = "status"
-vis = [slicer(pg, "slc", col("Project", "Project Name"), "Project.Project Name",
-              8, 8, 250, 220, vtitle="Project")]
-for i, (m, lbl) in enumerate([("Latest Overall Status", "Overall status"),
-                              ("Latest Trend", "Trend"),
-                              ("Health Score", "Health score (3=green)"),
-                              ("Latest Report Date", "Latest report")]):
-    vis.append(card(pg, f"c{i}", m, 270 + i * 252, 8, wd=244, ht=100, label=lbl))
-vis.append(chart(pg, "trend", "stackedColumnChart",
-                 col("Status Report", "Period End"), "Status Report.Period End",
-                 ["Area Entries"], 270, 116, 1002, 250,
-                 series=(col("Status Report Area", "Area Status"), "Status Report Area.Area Status"),
-                 vtitle="Knowledge-area health over reporting periods"))
-vis.append(table_vis(pg, "ka", [
+vis = []
+# Row A - verify the project (y8 h72)
+vis.append(slicer(pg, "slc", col("Project", "Project Name"), "Project.Project Name",
+                  8, 8, 220, 72, vtitle="Select project"))
+vis.append(card(pg, "hdr_name", "Theragen Project Name", 236, 8, wd=320, ht=72,
+                label="Theragen Project Name", size=14))
+vis.append(card(pg, "hdr_pm", "Project Manager (Selected)", 564, 8, wd=200, ht=72,
+                label="Project Manager", size=14))
+vis.append(card(pg, "hdr_target", "Target Date Completion", 772, 8, wd=160, ht=72,
+                label="Target Date Completion", size=14))
+vis.append(card(pg, "hdr_phase", "Current Phase", 940, 8, wd=160, ht=72,
+                label="Current Phase", size=14))
+vis.append(card(pg, "hdr_date", "Report Date", 1108, 8, wd=164, ht=72,
+                label="Date of Report", size=14))
+# Row B - main status / description / business value / health check (y88 h190)
+vis.append(card(pg, "main_status", "Main Status", 8, 88, wd=170, ht=190,
+                label="MAIN STATUS", size=60, color_measure="Status Color"))
+vis.append(mrcard(pg, "descr", "Project Description (Selected)", 186, 88, 380, 190,
+                  "Project Description"))
+vis.append(mrcard(pg, "value", "Business Value (Selected)", 574, 88, 380, 190,
+                  "Business Value"))
+vis.append(table_vis(pg, "health", [
     (col("Knowledge Area", "Knowledge Area"), "Knowledge Area.Knowledge Area"),
-    (mea("Green Areas"), f"{MEAS}.Green Areas"),
-    (mea("Yellow Areas"), f"{MEAS}.Yellow Areas"),
-    (mea("Red Areas"), f"{MEAS}.Red Areas"),
-    (mea("Health Score"), f"{MEAS}.Health Score"),
-], 8, 236, 504, 240, vtitle="Health by knowledge area"))
-vis.append(table_vis(pg, "reports", [
-    (col("Status Report", "Period End"), "Status Report.Period End"),
-    (col("Status Report", "Overall Status"), "Status Report.Overall Status"),
-    (col("Status Report", "Trend"), "Status Report.Trend"),
-    (col("Status Report", "Executive Summary"), "Status Report.Executive Summary"),
-    (col("Status Report", "Decisions Needed"), "Status Report.Decisions Needed"),
-], 8, 484, 1264, 224, vtitle="Status reports - executive summary and decisions needed",
-    sort={"sort": [{"field": col("Status Report", "Period End"),
+    (mea("Latest Area Status"), f"{MEAS}.Latest Area Status"),
+], 962, 88, 310, 190, vtitle="Health Check"))
+# Row C - RAID: updates / key issues / risks / decisions / dependencies (y286 h160)
+vis.append(table_vis(pg, "raid", [
+    (col("Risk", "RAID Type"), "Risk.RAID Type"),
+    (col("Risk", "Risk Description"), "Risk.Risk Description"),
+    (col("Risk", "Owner"), "Risk.Owner"),
+    (col("Risk", "Due Date"), "Risk.Due Date"),
+    (col("Risk", "Risk Score"), "Risk.Risk Score"),
+    (col("Risk", "Severity"), "Risk.Severity"),
+    (col("Risk", "Risk Status"), "Risk.Risk Status"),
+], 8, 286, 1264, 160, vtitle="Updates / Key Issues / Risks / Decisions / Dependencies",
+    sort={"sort": [{"field": col("Risk", "Risk Score"),
                     "direction": "Descending"}], "isDefaultSort": True}))
-for i, (m, lbl) in enumerate([("Open Risks", None), ("Open CRs", None),
-                              ("Activities Overdue", None), ("Closure Complete Pct", "Closure complete")]):
-    vis.append(card(pg, f"k{i}", m, 520 + i * 190, 374, wd=182, ht=100, label=lbl))
-PAGE_DEFS.append((pg, "Project Status", vis))
+# Row D - key project areas / workstreams (y454 h128)
+vis.append(table_vis(pg, "areas", [
+    (col("WBS Element", "Deliverable"), "WBS Element.Deliverable"),
+    (mea("Workstream Start"), f"{MEAS}.Workstream Start"),
+    (mea("Workstream Target"), f"{MEAS}.Workstream Target"),
+    (mea("Pct Complete (Duration Weighted)"), f"{MEAS}.Pct Complete (Duration Weighted)"),
+    (mea("Workstream Status"), f"{MEAS}.Workstream Status"),
+], 8, 454, 1264, 128, vtitle="Key Project Areas",
+    sort={"sort": [{"field": mea("Workstream Start"),
+                    "direction": "Ascending"}], "isDefaultSort": True}))
+# Row E - accomplishments + next steps (y590 h88)
+vis.append(table_vis(pg, "accomp", [
+    (col("Recent Accomplishment", "Accomplishment"), "Recent Accomplishment.Accomplishment"),
+    (col("Recent Accomplishment", "Source"), "Recent Accomplishment.Source"),
+    (col("Recent Accomplishment", "Completed Date"), "Recent Accomplishment.Completed Date"),
+], 8, 590, 626, 88, vtitle="Accomplishments",
+    sort={"sort": [{"field": col("Recent Accomplishment", "Completed Date"),
+                    "direction": "Descending"}], "isDefaultSort": True}))
+vis.append(table_vis(pg, "nexts", [
+    (col("Upcoming Next Step", "Next Step"), "Upcoming Next Step.Next Step"),
+    (col("Upcoming Next Step", "Owner"), "Upcoming Next Step.Owner"),
+    (col("Upcoming Next Step", "Target Date"), "Upcoming Next Step.Target Date"),
+], 642, 590, 630, 88, vtitle="Next Steps",
+    sort={"sort": [{"field": col("Upcoming Next Step", "Target Date"),
+                    "direction": "Ascending"}], "isDefaultSort": True}))
+# Row F - keys / legends (y682 h30)
+vis.append(card(pg, "key_status", "Status Key", 8, 682, wd=840, ht=30, size=9,
+                hide_category=True, no_title=True))
+vis.append(card(pg, "key_phase", "Phase Key", 856, 682, wd=416, ht=30, size=9,
+                hide_category=True, no_title=True))
+PAGE_DEFS.append((pg, "Project Status Report", vis))
 
 # ---- Page 3: Schedule & Milestones -----------------------------------------
 pg = "schedule"
@@ -199,7 +250,7 @@ vis.append(chart(pg, "wbs", "clusteredBarChart",
                  col("WBS Element", "Deliverable"), "WBS Element.Deliverable",
                  ["Pct Complete (Duration Weighted)"], 270, 116, 500, 280,
                  vtitle="% complete by deliverable"))
-vis.append(chart(pg, "dept", "stackedBarChart",
+vis.append(chart(pg, "dept", "barChart",
                  col("Department", "Department"), "Department.Department",
                  ["Activities"], 778, 116, 494, 280,
                  series=(col("Schedule Activity", "Activity Status"), "Schedule Activity.Activity Status"),
@@ -278,7 +329,7 @@ vis.append(matrix(pg, "heat",
                   [(col("Risk", "Impact"), "Risk.Impact")],
                   [(mea("Risks"), f"{MEAS}.Risks")],
                   8, 116, 420, 280, vtitle="5x5 heat map - likelihood x impact"))
-vis.append(chart(pg, "cat", "stackedBarChart",
+vis.append(chart(pg, "cat", "barChart",
                  col("Risk", "Risk Category"), "Risk.Risk Category",
                  ["Open Risks"], 436, 116, 420, 280,
                  series=(col("Risk", "Severity"), "Risk.Severity"),
@@ -312,7 +363,7 @@ for i, (m, lbl) in enumerate([("Change Requests", None), ("Open CRs", None),
 vis.append(chart(pg, "pipe", "clusteredColumnChart",
                  col("Change Request", "CR Status"), "Change Request.CR Status",
                  ["Change Requests"], 8, 116, 420, 280, vtitle="CR pipeline by status"))
-vis.append(chart(pg, "class", "stackedColumnChart",
+vis.append(chart(pg, "class", "columnChart",
                  col("Change Request", "CR Class"), "Change Request.CR Class",
                  ["Change Requests"], 436, 116, 420, 280,
                  series=(col("Change Request", "Decision"), "Change Request.Decision"),
@@ -347,7 +398,7 @@ vis.append(matrix(pg, "grid",
                   [(col("Stakeholder", "Influence"), "Stakeholder.Influence")],
                   [(mea("Stakeholders"), f"{MEAS}.Stakeholders")],
                   270, 116, 380, 240, vtitle="Interest x influence grid"))
-vis.append(chart(pg, "raci", "stackedBarChart",
+vis.append(chart(pg, "raci", "barChart",
                  col("Department", "Department"), "Department.Department",
                  ["Stakeholders"], 658, 116, 614, 240,
                  series=(col("Stakeholder", "Engagement"), "Stakeholder.Engagement"),
@@ -372,7 +423,7 @@ vis = []
 for i, (m, lbl) in enumerate([("Lessons", None), ("Open Lessons", None),
                               ("Adopted Lessons", None), ("Closure Items Done", None),
                               ("Closure Complete Pct", "Closure complete")]):
-    vis.append(card(pg, f"c{i}", m, 8 + i * 212, 8, label=lbl))
+    vis.append(card(pg, f"c{i}", m, 8 + i * 254, 8, wd=246, label=lbl))
 vis.append(chart(pg, "cat", "clusteredBarChart",
                  col("Lesson Learned", "Lesson Category"), "Lesson Learned.Lesson Category",
                  ["Lessons"], 8, 116, 420, 260,
@@ -380,7 +431,7 @@ vis.append(chart(pg, "cat", "clusteredBarChart",
 vis.append(chart(pg, "st", "clusteredColumnChart",
                  col("Lesson Learned", "Lesson Status"), "Lesson Learned.Lesson Status",
                  ["Lessons"], 436, 116, 420, 260, vtitle="Lessons by status"))
-vis.append(chart(pg, "cls", "stackedBarChart",
+vis.append(chart(pg, "cls", "barChart",
                  col("Closure Item", "Project Code"), "Closure Item.Project Code",
                  ["Closure Items"], 864, 116, 408, 260,
                  series=(col("Closure Item", "Done"), "Closure Item.Done"),

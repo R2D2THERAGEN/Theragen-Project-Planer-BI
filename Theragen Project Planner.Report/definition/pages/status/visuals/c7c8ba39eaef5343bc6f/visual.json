@@ -1,12 +1,12 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
-  "name": "6e22dad515d25df4b744",
+  "name": "c7c8ba39eaef5343bc6f",
   "position": {
-    "x": 710,
-    "y": 374,
+    "x": 856,
+    "y": 682,
     "z": 1000,
-    "width": 182,
-    "height": 100
+    "width": 416,
+    "height": 30
   },
   "visual": {
     "visualType": "card",
@@ -22,10 +22,10 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Open CRs"
+                  "Property": "Phase Key"
                 }
               },
-              "queryRef": "_Measures.Open CRs"
+              "queryRef": "_Measures.Phase Key"
             }
           ]
         }
@@ -39,29 +39,20 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "20D"
+                  "Value": "9D"
                 }
               }
             }
           }
         }
-      ]
-    },
-    "visualContainerObjects": {
-      "title": [
+      ],
+      "categoryLabels": [
         {
           "properties": {
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "true"
-                }
-              }
-            },
-            "text": {
-              "expr": {
-                "Literal": {
-                  "Value": "'Open CRs'"
+                  "Value": "false"
                 }
               }
             }

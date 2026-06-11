@@ -28,6 +28,8 @@ ref table 'Team Member'
 ref table 'Lesson Learned'
 ref table 'Closure Item'
 ref table 'Date'
+ref table 'Recent Accomplishment'
+ref table 'Upcoming Next Step'
 ref table _Measures
 
 ref cultureInfo en-US

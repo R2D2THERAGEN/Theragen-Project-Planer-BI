@@ -384,6 +384,88 @@ table _Measures
 		displayFolder: Health
 		lineageTag: dd5709f6-80a0-5f04-8db8-e801cbdf4819
 
+	/// Selected project name for the status report header.
+	measure 'Theragen Project Name' = SELECTEDVALUE('Project'[Project Name], "All projects - select one")
+		displayFolder: Status Page
+		lineageTag: 98668fcf-da25-5a18-bdab-0655f35e9200
+
+	/// Selected project's PM for the status report header.
+	measure 'Project Manager (Selected)' = SELECTEDVALUE('Project'[Project Manager], "-")
+		displayFolder: Status Page
+		lineageTag: 221871aa-f5b4-58b2-b1ab-bc6d83c22d59
+
+	/// Planned finish of the selected project; TBD when not set.
+	measure 'Target Date Completion' = VAR d = MAX('Project'[Planned Finish]) RETURN IF(ISBLANK(d), "TBD", FORMAT(d, "M/D/YYYY"))
+		displayFolder: Status Page
+		lineageTag: 034860cc-b8cc-522f-83d5-7105dffc7f90
+
+	/// Current PMI process group of the selected project.
+	measure 'Current Phase' = SELECTEDVALUE('Project'[Lifecycle Phase], "Multiple")
+		displayFolder: Status Page
+		lineageTag: 2f7e7543-1dbe-54ac-97db-8a06b6147d84
+
+	/// Traffic-light letter from the latest status report: G / Y / R.
+	measure 'Main Status' = SWITCH([Latest Overall Status], "Green", "G", "Yellow", "Y", "Red", "R", BLANK())
+		displayFolder: Status Page
+		lineageTag: e8cb2cb1-0c75-5467-9a4b-105d6795f90d
+
+	/// Hex color for conditional formatting of the Main Status traffic light.
+	measure 'Status Color' = SWITCH([Latest Overall Status], "Green", "#107C10", "Yellow", "#E8A800", "Red", "#D64550", "#605E5C")
+		displayFolder: Status Page
+		lineageTag: 495d00ce-0523-5917-9d70-ec78cda231c7
+
+	/// Project description text block.
+	measure 'Project Description (Selected)' = SELECTEDVALUE('Project'[Project Description], "Select a single project")
+		displayFolder: Status Page
+		lineageTag: 0b899626-94d0-55db-91f0-8af7b2f95bd9
+
+	/// Business value text block (charter business case).
+	measure 'Business Value (Selected)' = SELECTEDVALUE('Project'[Business Value], "Select a single project")
+		displayFolder: Status Page
+		lineageTag: ebf46e41-7f7c-522f-87fd-a9bddf7c7247
+
+	/// Health-check status of a knowledge area from the most recent report.
+	measure 'Latest Area Status' = VAR d0 = MAX('Status Report'[Period End]) RETURN CALCULATE(MAX('Status Report Area'[Area Status]), 'Status Report'[Period End] = d0)
+		displayFolder: Status Page
+		lineageTag: 20ae75ec-02a7-54f8-bdf1-b0ccd4215a85
+
+	/// Date of the latest status report.
+	measure 'Report Date' = VAR d = MAX('Status Report'[Period End]) RETURN IF(ISBLANK(d), "-", FORMAT(d, "M/D/YYYY"))
+		displayFolder: Status Page
+		lineageTag: 998c5096-cc59-589f-bc41-707e6e749a31
+
+	/// Open decisions called out in the latest status report.
+	measure 'Decisions Needed (Latest)' = VAR d0 = MAX('Status Report'[Period End]) RETURN CALCULATE(MAX('Status Report'[Decisions Needed]), 'Status Report'[Period End] = d0)
+		displayFolder: Status Page
+		lineageTag: 037df3da-7708-5661-8d45-7f65ff2ffa17
+
+	/// Earliest planned start of activities in context (workstream start date).
+	measure 'Workstream Start' = MIN('Schedule Activity'[Planned Start])
+		formatString: yyyy-mm-dd
+		displayFolder: Status Page
+		lineageTag: 1d8e8ed3-aee2-5c1c-9656-c5d6ecb682d0
+
+	/// Latest planned finish of activities in context (target implementation date).
+	measure 'Workstream Target' = MAX('Schedule Activity'[Planned Finish])
+		formatString: yyyy-mm-dd
+		displayFolder: Status Page
+		lineageTag: e71d2bca-fbed-5bac-858f-a5a7ef47b314
+
+	/// Roll-up status per workstream: COMPLETED / AT RISK / NOT STARTED / ON TRACK.
+	measure 'Workstream Status' = VAR tot = [Activities] VAR done = [Activities Done] VAR atRisk = [Activities At Risk] + [Activities Overdue] VAR started = [Activities In Progress] + done RETURN SWITCH(TRUE(), ISBLANK(tot) || tot = 0, "-", done = tot, "COMPLETED", atRisk > 0, "AT RISK", started = 0, "NOT STARTED", "ON TRACK")
+		displayFolder: Status Page
+		lineageTag: 7cfeaba1-105b-5d12-828a-439297e3a942
+
+	/// Legend for status letters (matches the Theragen status report key).
+	measure 'Status Key' = "KEY:   G = Green   |   Y = Yellow   |   R = Off Track   |   C = Completed   |   NS = Not Started   |   H = Hold   |   CN = Cancelled"
+		displayFolder: Status Page
+		lineageTag: 2733fac0-5906-5cfe-baa5-1d4060cac0d6
+
+	/// Legend for PMI lifecycle phases used on this report.
+	measure 'Phase Key' = "PHASES:   Initiating - Planning - Executing - Monitoring - Closing"
+		displayFolder: Status Page
+		lineageTag: 9cd09a2c-54f0-5651-bb63-f0b03d66200a
+
 	/// Stakeholder register entries.
 	measure 'Stakeholders' = COUNTROWS('Stakeholder')
 		formatString: #,0

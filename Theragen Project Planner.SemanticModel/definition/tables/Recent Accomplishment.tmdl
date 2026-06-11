@@ -1,0 +1,43 @@
+/// Leadership view - work completed in the last 35 days (done activities + achieved milestones).
+table 'Recent Accomplishment'
+	lineageTag: aa85aea5-2274-5d74-8ebf-0ea8d744dfd1
+
+	column 'Project ID'
+		dataType: string
+		isHidden
+		lineageTag: afa58e95-b928-53f8-b2b3-768747386d8a
+		summarizeBy: none
+		sourceColumn: [Project ID]
+
+		annotation SummarizationSetBy = User
+
+	column 'Accomplishment'
+		dataType: string
+		lineageTag: 796453ad-110d-5c72-8c0c-95817cf9566c
+		summarizeBy: none
+		sourceColumn: [Accomplishment]
+
+		annotation SummarizationSetBy = User
+
+	column 'Completed Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: f8ff79db-6908-5d99-b2f8-a9a274c66676
+		summarizeBy: none
+		sourceColumn: [Completed Date]
+
+		annotation SummarizationSetBy = User
+
+	column 'Source'
+		dataType: string
+		lineageTag: d5c4f33c-a0d2-55bd-842e-30fffeb76a2c
+		summarizeBy: none
+		sourceColumn: [Source]
+
+		annotation SummarizationSetBy = User
+
+	partition 'Recent Accomplishment' = calculated
+		mode: import
+		source = UNION(SELECTCOLUMNS(FILTER('Schedule Activity', 'Schedule Activity'[Activity Status] = "Done" && NOT ISBLANK('Schedule Activity'[Actual Finish]) && 'Schedule Activity'[Actual Finish] >= TODAY() - 35), "Project ID", 'Schedule Activity'[Project ID], "Accomplishment", 'Schedule Activity'[Activity Name], "Completed Date", 'Schedule Activity'[Actual Finish], "Source", "Activity"), SELECTCOLUMNS(FILTER('Milestone', 'Milestone'[Milestone Status] = "Achieved" && NOT ISBLANK('Milestone'[Actual Date]) && 'Milestone'[Actual Date] >= TODAY() - 35), "Project ID", 'Milestone'[Project ID], "Accomplishment", 'Milestone'[Milestone], "Completed Date", 'Milestone'[Actual Date], "Source", "Milestone"))
+
+	annotation PBI_ResultType = Table

@@ -9,6 +9,7 @@ table 'Date'
 		formatString: yyyy-mm-dd
 		lineageTag: 23e13b44-717d-58e7-9ff6-cd7655f49ab3
 		summarizeBy: none
+		sourceColumn: [Date]
 
 		annotation SummarizationSetBy = User
 

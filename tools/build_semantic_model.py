@@ -450,6 +450,9 @@ def emit_date():
            f"\t\tformatString: {FMT['date']}",
            f"\t\tlineageTag: {tag('col', 'Date', 'Date')}",
            "\t\tsummarizeBy: none",
+           # Calculated-table columns must bind to the DAX-produced column or the
+           # AS engine fails with CALCTABLE_COLUMN_MISSING_SOURCECOLUMN.
+           "\t\tsourceColumn: [Date]",
            "",
            "\t\tannotation SummarizationSetBy = User",
            ""]

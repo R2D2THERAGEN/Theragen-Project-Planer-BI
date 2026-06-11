@@ -129,6 +129,40 @@ def slicer(page, key, field, ref, x, y, wd=250, ht=140, vtitle=""):
 
 
 # ---------------------------------------------------------------------------
+# Theragen report theme. Brand colors extracted from the Theragen Status
+# Report deck (dominant header fill #219A80 teal, slate #44546A, tint
+# #6EBDAC); good/neutral/bad match the Status Color measure exactly.
+THEME = {
+    "name": "Theragen",
+    "dataColors": ["#219A80", "#44546A", "#6EBDAC", "#E8A800",
+                   "#5B9BD5", "#A5A5A5", "#D64550", "#70AD47"],
+    "good": "#107C10",
+    "neutral": "#E8A800",
+    "bad": "#D64550",
+    "background": "#FFFFFF",
+    "foreground": "#252423",
+    "tableAccent": "#219A80",
+    "textClasses": {
+        "title": {"fontFace": "Segoe UI Semibold", "fontSize": 12, "color": "#252423"},
+        "label": {"fontFace": "Segoe UI", "fontSize": 10, "color": "#252423"},
+        "callout": {"fontFace": "Segoe UI", "fontSize": 28, "color": "#219A80"},
+    },
+    "visualStyles": {
+        "*": {"*": {
+            "title": [{"show": True, "fontSize": 10, "bold": True, "alignment": "left",
+                       "fontColor": {"solid": {"color": "#FFFFFF"}},
+                       "background": {"solid": {"color": "#219A80"}}}],
+            "background": [{"show": True, "color": {"solid": {"color": "#FFFFFF"}},
+                            "transparency": 0}],
+            "border": [{"show": True, "color": {"solid": {"color": "#DCE4E3"}}, "radius": 4}],
+        }},
+        "page": {"*": {
+            "background": [{"color": {"solid": {"color": "#F4F7F6"}}, "transparency": 0}],
+            "outspace": [{"color": {"solid": {"color": "#E9EFEE"}}, "transparency": 0}],
+        }},
+    },
+}
+
 PAGE_DEFS = []  # (name, displayName, [visuals])
 
 # ---- Page 1: Portfolio Overview -------------------------------------------
@@ -468,14 +502,23 @@ def main():
         "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/versionMetadata/1.0.0/schema.json",
         "version": "2.0.0",
     })
+    w(os.path.join(RPT, "StaticResources", "RegisteredResources", "Theragen.json"), THEME)
     w(os.path.join(RPT, "definition", "report.json"), {
         "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/report/1.0.0/schema.json",
-        "themeCollection": {"baseTheme": {"name": "CY24SU10", "reportVersionAtImport": "5.55",
-                                          "type": "SharedResources"}},
+        "themeCollection": {
+            "baseTheme": {"name": "CY24SU10", "reportVersionAtImport": "5.55",
+                          "type": "SharedResources"},
+            "customTheme": {"name": "Theragen.json", "type": "RegisteredResources"},
+        },
         "layoutOptimization": "None",
-        "resourcePackages": [{"name": "SharedResources", "type": "SharedResources",
-                              "items": [{"name": "CY24SU10", "path": "BaseThemes/CY24SU10.json",
-                                         "type": "BaseTheme"}]}],
+        "resourcePackages": [
+            {"name": "SharedResources", "type": "SharedResources",
+             "items": [{"name": "CY24SU10", "path": "BaseThemes/CY24SU10.json",
+                        "type": "BaseTheme"}]},
+            {"name": "RegisteredResources", "type": "RegisteredResources",
+             "items": [{"name": "Theragen.json", "path": "Theragen.json",
+                        "type": "CustomTheme"}]},
+        ],
         "settings": {"useStylableVisualContainerHeader": True},
     })
     w(os.path.join(PAGES, "pages.json"), {

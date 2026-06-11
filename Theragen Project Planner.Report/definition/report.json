@@ -5,6 +5,10 @@
       "name": "CY24SU10",
       "reportVersionAtImport": "5.55",
       "type": "SharedResources"
+    },
+    "customTheme": {
+      "name": "Theragen.json",
+      "type": "RegisteredResources"
     }
   },
   "layoutOptimization": "None",
@@ -17,6 +21,17 @@
           "name": "CY24SU10",
           "path": "BaseThemes/CY24SU10.json",
           "type": "BaseTheme"
+        }
+      ]
+    },
+    {
+      "name": "RegisteredResources",
+      "type": "RegisteredResources",
+      "items": [
+        {
+          "name": "Theragen.json",
+          "path": "Theragen.json",
+          "type": "CustomTheme"
         }
       ]
     }

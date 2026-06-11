@@ -54,6 +54,10 @@ for path in iter_targets():
         doc = json.load(f)
     url = doc.get("$schema")
     if not url or "developer.microsoft.com" not in url:
+        # StaticResources hold arbitrary registered files (themes, images) that
+        # Desktop reads by resource type, not by versioned definition schema.
+        if f"{os.sep}StaticResources{os.sep}" in path:
+            continue
         errors += 1
         print(f"FAIL {rel}: no Microsoft $schema declared - Desktop rejects unversioned sidecar JSONs")
         continue

@@ -1,0 +1,65 @@
+/// Marked date dimension covering 2025-2027.
+table 'Date'
+	lineageTag: ff1ab2bc-407d-5980-a07c-cd759edf42cd
+	dataCategory: Time
+
+	column 'Date'
+		dataType: dateTime
+		isKey
+		formatString: yyyy-mm-dd
+		lineageTag: 23e13b44-717d-58e7-9ff6-cd7655f49ab3
+		summarizeBy: none
+
+		annotation SummarizationSetBy = User
+
+	column 'Year' = YEAR('Date'[Date])
+		dataType: int64
+		formatString: #,0
+		lineageTag: 8b740e1b-d804-5b2d-afbc-c87199a547fc
+		summarizeBy: none
+
+		annotation SummarizationSetBy = User
+
+	column 'Quarter' = "Q" & QUARTER('Date'[Date])
+		dataType: string
+		lineageTag: 4f6fa0be-7216-51dd-9265-1d37cbfbf9ac
+		summarizeBy: none
+
+		annotation SummarizationSetBy = User
+
+	column 'Month Number' = MONTH('Date'[Date])
+		dataType: int64
+		isHidden
+		lineageTag: 0de7b6ec-2559-588f-81fa-5db4f88ca7ad
+		summarizeBy: none
+
+		annotation SummarizationSetBy = User
+
+	column 'Month' = FORMAT('Date'[Date], "MMM")
+		dataType: string
+		sortByColumn: 'Month Number'
+		lineageTag: 3021befd-1da3-538d-a01f-ac6ab5446883
+		summarizeBy: none
+
+		annotation SummarizationSetBy = User
+
+	column 'Year Month' = FORMAT('Date'[Date], "YYYY-MM")
+		dataType: string
+		lineageTag: 6a8079a5-1fe9-574d-a026-5d19c8bc76b7
+		summarizeBy: none
+
+		annotation SummarizationSetBy = User
+
+	column 'Week Of' = 'Date'[Date] - WEEKDAY('Date'[Date], 2) + 1
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: a6227263-be7c-556a-8b20-60eadd131c8f
+		summarizeBy: none
+
+		annotation SummarizationSetBy = User
+
+	partition 'Date' = calculated
+		mode: import
+		source = CALENDAR(DATE(2025, 1, 1), DATE(2027, 12, 31))
+
+	annotation PBI_ResultType = Table

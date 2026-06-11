@@ -1,0 +1,132 @@
+/// Fact - cost budget estimate lines (PMBOK P13), one per level-1 deliverable.
+table 'Budget Line'
+	lineageTag: ed93a9dc-e5fb-5d23-b822-7353fccf8a6d
+
+	column 'Budget Line ID'
+		dataType: string
+		isHidden
+		lineageTag: e757dfd6-20b8-57bb-ae24-272a2a06a5d0
+		summarizeBy: none
+		sourceColumn: Budget Line ID
+
+		annotation SummarizationSetBy = User
+
+	column 'WBS ID'
+		dataType: string
+		isHidden
+		lineageTag: 0d12f94d-6975-52b5-bf76-74be5ee0da1b
+		summarizeBy: none
+		sourceColumn: WBS ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project ID'
+		dataType: string
+		isHidden
+		lineageTag: e505aa5f-377f-5bd2-b80e-82a0aedc2f6e
+		summarizeBy: none
+		sourceColumn: Project ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project Code'
+		dataType: string
+		lineageTag: 8b33f817-f49f-524f-927e-2dc66a9bbc61
+		summarizeBy: none
+		sourceColumn: Project Code
+
+		annotation SummarizationSetBy = User
+
+	column 'Cost Category'
+		dataType: string
+		lineageTag: f66d5f9a-c6f3-54d3-bc8f-81dc675493c8
+		summarizeBy: none
+		sourceColumn: Cost Category
+
+		annotation SummarizationSetBy = User
+
+	column 'Labor Amount'
+		dataType: decimal
+		formatString: \$#,##0;(\$#,##0);\$0
+		lineageTag: 14eb2b43-fee3-5c06-9227-91fd2e3883f8
+		summarizeBy: none
+		sourceColumn: Labor Amount
+
+		annotation SummarizationSetBy = User
+
+	column 'Materials Amount'
+		dataType: decimal
+		formatString: \$#,##0;(\$#,##0);\$0
+		lineageTag: e6282609-7101-54db-942a-a88eb49c7e67
+		summarizeBy: none
+		sourceColumn: Materials Amount
+
+		annotation SummarizationSetBy = User
+
+	column 'Vendor Amount'
+		dataType: decimal
+		formatString: \$#,##0;(\$#,##0);\$0
+		lineageTag: 6e929270-66d7-5585-be02-9308ad07318e
+		summarizeBy: none
+		sourceColumn: Vendor Amount
+
+		annotation SummarizationSetBy = User
+
+	column 'Other Amount'
+		dataType: decimal
+		formatString: \$#,##0;(\$#,##0);\$0
+		lineageTag: e93f5b05-d50d-5460-96da-471ffe69c5bc
+		summarizeBy: none
+		sourceColumn: Other Amount
+
+		annotation SummarizationSetBy = User
+
+	column 'Subtotal'
+		dataType: decimal
+		formatString: \$#,##0;(\$#,##0);\$0
+		lineageTag: 95821974-1008-510b-bf2e-0eb9506ed464
+		summarizeBy: none
+		sourceColumn: Subtotal
+
+		annotation SummarizationSetBy = User
+
+	column 'Contingency Pct'
+		dataType: double
+		formatString: #,0.0
+		lineageTag: 72f75a48-710f-5778-b064-f57a37f8e8c0
+		summarizeBy: none
+		sourceColumn: Contingency Pct
+
+		annotation SummarizationSetBy = User
+
+	column 'Total'
+		dataType: decimal
+		formatString: \$#,##0;(\$#,##0);\$0
+		lineageTag: a6b48238-d0c1-5f0d-a0b0-b287ec4383d5
+		summarizeBy: none
+		sourceColumn: Total
+
+		annotation SummarizationSetBy = User
+
+	column 'Funding Source'
+		dataType: string
+		lineageTag: fad53fda-784f-5338-bdfc-39d4d4bccfbc
+		summarizeBy: none
+		sourceColumn: Funding Source
+
+		annotation SummarizationSetBy = User
+
+	partition 'Budget Line' = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "\budget_line_item.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Selected = Table.SelectColumns(Promoted, {"budget_line_id", "wbs_element_id", "project_id", "project_code", "category", "labor_amount", "materials_amount", "vendor_amount", "other_amount", "subtotal", "contingency_pct", "total", "funding_source"}),
+				    Nulled = Table.ReplaceValue(Selected, "", null, Replacer.ReplaceValue, Table.ColumnNames(Selected)),
+				    Typed = Table.TransformColumnTypes(Nulled, {{"budget_line_id", type text}, {"wbs_element_id", type text}, {"project_id", type text}, {"project_code", type text}, {"category", type text}, {"labor_amount", Currency.Type}, {"materials_amount", Currency.Type}, {"vendor_amount", Currency.Type}, {"other_amount", Currency.Type}, {"subtotal", Currency.Type}, {"contingency_pct", type number}, {"total", Currency.Type}, {"funding_source", type text}}),
+				    Renamed = Table.RenameColumns(Typed, {{"budget_line_id", "Budget Line ID"}, {"wbs_element_id", "WBS ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"category", "Cost Category"}, {"labor_amount", "Labor Amount"}, {"materials_amount", "Materials Amount"}, {"vendor_amount", "Vendor Amount"}, {"other_amount", "Other Amount"}, {"subtotal", "Subtotal"}, {"contingency_pct", "Contingency Pct"}, {"total", "Total"}, {"funding_source", "Funding Source"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table

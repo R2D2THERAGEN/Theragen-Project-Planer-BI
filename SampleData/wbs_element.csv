@@ -1,0 +1,77 @@
+﻿wbs_element_id,project_id,project_code,wbs_code,parent_wbs_element_id,level,name,owning_department,owner_role,estimated_effort_hrs,estimated_cost
+d23b628c-fa2a-5184-89fa-2edd86a4edb3,2ee385b2-99f4-5b3a-b6f1-a4fd637f6485,THG-CLN-014,1,,1,Study Design & Protocol,Clinical / Medical Affairs,Workstream Lead,,
+d99b21d6-cadd-525e-9298-d064d652db0d,2ee385b2-99f4-5b3a-b6f1-a4fd637f6485,THG-CLN-014,1.1,d23b628c-fa2a-5184-89fa-2edd86a4edb3,2,Protocol development,Clinical / Medical Affairs,Work Package Owner,80,12000.00
+43bf6774-fd93-558f-9d88-4d45e77f7675,2ee385b2-99f4-5b3a-b6f1-a4fd637f6485,THG-CLN-014,1.2,d23b628c-fa2a-5184-89fa-2edd86a4edb3,2,IRB submissions,Clinical / Medical Affairs,Work Package Owner,80,12000.00
+c131b690-bea3-5ac8-ae63-7f51a8eb3999,2ee385b2-99f4-5b3a-b6f1-a4fd637f6485,THG-CLN-014,2,,1,Site Activation,Clinical / Medical Affairs,Workstream Lead,,
+040df67a-9dad-5e59-88f4-64734c9d005c,2ee385b2-99f4-5b3a-b6f1-a4fd637f6485,THG-CLN-014,2.1,c131b690-bea3-5ac8-ae63-7f51a8eb3999,2,Site selection,Clinical / Medical Affairs,Work Package Owner,80,12000.00
+ec675497-9b6a-5efa-a2e6-963a843a36a3,2ee385b2-99f4-5b3a-b6f1-a4fd637f6485,THG-CLN-014,2.2,c131b690-bea3-5ac8-ae63-7f51a8eb3999,2,Site contracts,Clinical / Medical Affairs,Work Package Owner,320,56000.00
+7e340c75-ce1a-533d-aa27-2c2a89a3d943,2ee385b2-99f4-5b3a-b6f1-a4fd637f6485,THG-CLN-014,2.3,c131b690-bea3-5ac8-ae63-7f51a8eb3999,2,Site training,Clinical / Medical Affairs,Work Package Owner,160,32000.00
+004d4c3d-1d9d-532e-805c-50320e5b4451,2ee385b2-99f4-5b3a-b6f1-a4fd637f6485,THG-CLN-014,3,,1,Enrollment & Data Collection,Clinical / Medical Affairs,Workstream Lead,,
+f71985ff-d996-5d62-94ea-4c649e39a972,2ee385b2-99f4-5b3a-b6f1-a4fd637f6485,THG-CLN-014,3.1,004d4c3d-1d9d-532e-805c-50320e5b4451,2,Patient recruitment,Clinical / Medical Affairs,Work Package Owner,160,28000.00
+e9cce3f4-e293-54f7-9ef0-c1af47e7c2bd,2ee385b2-99f4-5b3a-b6f1-a4fd637f6485,THG-CLN-014,3.2,004d4c3d-1d9d-532e-805c-50320e5b4451,2,Device deployment,Clinical / Medical Affairs,Work Package Owner,120,21000.00
+63b24ea6-2286-5169-a863-d4ef6d32a273,2ee385b2-99f4-5b3a-b6f1-a4fd637f6485,THG-CLN-014,3.3,004d4c3d-1d9d-532e-805c-50320e5b4451,2,Data monitoring,Clinical / Medical Affairs,Work Package Owner,120,18000.00
+32085441-9dbb-56ac-ae19-60f114a3c7a5,2ee385b2-99f4-5b3a-b6f1-a4fd637f6485,THG-CLN-014,4,,1,Regulatory & Compliance,Regulatory / Quality,Workstream Lead,,
+f7cb8cb8-c246-5c74-9459-13b5c30fac52,2ee385b2-99f4-5b3a-b6f1-a4fd637f6485,THG-CLN-014,4.1,32085441-9dbb-56ac-ae19-60f114a3c7a5,2,Part 11 evidence,Regulatory / Quality,Work Package Owner,120,24000.00
+3f20e58d-8fce-5807-a4eb-2524303f6701,2ee385b2-99f4-5b3a-b6f1-a4fd637f6485,THG-CLN-014,4.2,32085441-9dbb-56ac-ae19-60f114a3c7a5,2,Safety reporting,Regulatory / Quality,Work Package Owner,240,36000.00
+18e7714a-0234-57f0-a657-c53b2834ac79,2ee385b2-99f4-5b3a-b6f1-a4fd637f6485,THG-CLN-014,5,,1,Analysis & Reporting,R&D / Engineering,Workstream Lead,,
+577ebac1-78c7-5ed5-8237-4f9dc637a943,2ee385b2-99f4-5b3a-b6f1-a4fd637f6485,THG-CLN-014,5.1,18e7714a-0234-57f0-a657-c53b2834ac79,2,Interim analysis,R&D / Engineering,Work Package Owner,320,64000.00
+e6331f3f-c221-5beb-a478-15db34640849,2ee385b2-99f4-5b3a-b6f1-a4fd637f6485,THG-CLN-014,5.2,18e7714a-0234-57f0-a657-c53b2834ac79,2,Final study report,R&D / Engineering,Work Package Owner,320,56000.00
+fdb4cdb0-7809-56bc-8573-d573ff29b52a,777ea2a7-20e0-5b0d-a53b-ba290af326fc,THG-RND-007,1,,1,Architecture & Design,R&D / Engineering,Workstream Lead,,
+77c4b8b7-3852-5ae4-8003-942be036e4eb,777ea2a7-20e0-5b0d-a53b-ba290af326fc,THG-RND-007,1.1,fdb4cdb0-7809-56bc-8573-d573ff29b52a,2,Platform architecture,R&D / Engineering,Work Package Owner,240,36000.00
+6de7ad87-25aa-581d-b15c-fa292363a0b4,777ea2a7-20e0-5b0d-a53b-ba290af326fc,THG-RND-007,1.2,fdb4cdb0-7809-56bc-8573-d573ff29b52a,2,Therapy module API,R&D / Engineering,Work Package Owner,320,56000.00
+808860cb-fc9f-562a-8547-3d7dbb04d6e9,777ea2a7-20e0-5b0d-a53b-ba290af326fc,THG-RND-007,2,,1,Core Firmware Build,R&D / Engineering,Workstream Lead,,
+ab866165-137b-5c53-9584-b42c2cd59913,777ea2a7-20e0-5b0d-a53b-ba290af326fc,THG-RND-007,2.1,808860cb-fc9f-562a-8547-3d7dbb04d6e9,2,Scheduler rewrite,R&D / Engineering,Work Package Owner,120,21000.00
+b5707940-e968-545c-8696-8e86c003d435,777ea2a7-20e0-5b0d-a53b-ba290af326fc,THG-RND-007,2.2,808860cb-fc9f-562a-8547-3d7dbb04d6e9,2,Driver layer,R&D / Engineering,Work Package Owner,320,64000.00
+250fa837-d63f-5616-9cf3-5f1dbeaa4759,777ea2a7-20e0-5b0d-a53b-ba290af326fc,THG-RND-007,2.3,808860cb-fc9f-562a-8547-3d7dbb04d6e9,2,Telemetry stack,R&D / Engineering,Work Package Owner,80,14000.00
+d0d27552-64fa-5c34-ba85-74bda964fa01,777ea2a7-20e0-5b0d-a53b-ba290af326fc,THG-RND-007,3,,1,Verification,R&D / Engineering,Workstream Lead,,
+ace6de69-601a-50d4-8cd8-2c98de86bed6,777ea2a7-20e0-5b0d-a53b-ba290af326fc,THG-RND-007,3.1,d0d27552-64fa-5c34-ba85-74bda964fa01,2,Unit test harness,R&D / Engineering,Work Package Owner,120,18000.00
+9be6d0c5-531d-598b-a5e2-745969fd76e9,777ea2a7-20e0-5b0d-a53b-ba290af326fc,THG-RND-007,3.2,d0d27552-64fa-5c34-ba85-74bda964fa01,2,HIL test rig,R&D / Engineering,Work Package Owner,120,24000.00
+57a02932-cfcd-5571-91e1-fd6ce7ae8e3e,777ea2a7-20e0-5b0d-a53b-ba290af326fc,THG-RND-007,4,,1,Design Controls,Regulatory / Quality,Workstream Lead,,
+aa42df01-44f9-523a-890d-ef156caa8447,777ea2a7-20e0-5b0d-a53b-ba290af326fc,THG-RND-007,4.1,57a02932-cfcd-5571-91e1-fd6ce7ae8e3e,2,Design history file,Regulatory / Quality,Work Package Owner,80,14000.00
+2622d082-7b31-5966-bfbd-0e9faf107131,777ea2a7-20e0-5b0d-a53b-ba290af326fc,THG-RND-007,4.2,57a02932-cfcd-5571-91e1-fd6ce7ae8e3e,2,Risk file (ISO 14971),Regulatory / Quality,Work Package Owner,80,12000.00
+1221ddc1-e78b-5d96-b811-1f102bf1c552,5e8efc63-4e18-5155-a82f-8e3539c74478,THG-IT-003,1,,1,Landing Zone,IT / Data / Security,Workstream Lead,,
+c40c9674-5a86-50bd-857c-1c5e45a19edc,5e8efc63-4e18-5155-a82f-8e3539c74478,THG-IT-003,1.1,1221ddc1-e78b-5d96-b811-1f102bf1c552,2,Network & security baseline,IT / Data / Security,Work Package Owner,320,48000.00
+614994c4-dca5-5e23-b7f1-45d51a302448,5e8efc63-4e18-5155-a82f-8e3539c74478,THG-IT-003,1.2,1221ddc1-e78b-5d96-b811-1f102bf1c552,2,Encryption & key mgmt,IT / Data / Security,Work Package Owner,240,42000.00
+0957d494-8999-5a63-a27f-f203bf0977e6,5e8efc63-4e18-5155-a82f-8e3539c74478,THG-IT-003,2,,1,Data Migration,IT / Data / Security,Workstream Lead,,
+1bd2714d-fc33-5bb5-bcab-26c88e8abf20,5e8efc63-4e18-5155-a82f-8e3539c74478,THG-IT-003,2.1,0957d494-8999-5a63-a27f-f203bf0977e6,2,Source inventory,IT / Data / Security,Work Package Owner,120,18000.00
+63bcc769-6019-5a60-ac90-8a7ab96538ca,5e8efc63-4e18-5155-a82f-8e3539c74478,THG-IT-003,2.2,0957d494-8999-5a63-a27f-f203bf0977e6,2,Pipeline build,IT / Data / Security,Work Package Owner,80,14000.00
+3a2c702d-8ec0-5ae5-b207-cc887edb06d3,5e8efc63-4e18-5155-a82f-8e3539c74478,THG-IT-003,2.3,0957d494-8999-5a63-a27f-f203bf0977e6,2,PHI validation,IT / Data / Security,Work Package Owner,320,48000.00
+f429c614-72b5-5e8a-8040-4a890f983393,5e8efc63-4e18-5155-a82f-8e3539c74478,THG-IT-003,3,,1,Access & Audit,IT / Data / Security,Workstream Lead,,
+5aff32c0-7a83-5e66-9360-7dfba415d7bb,5e8efc63-4e18-5155-a82f-8e3539c74478,THG-IT-003,3.1,f429c614-72b5-5e8a-8040-4a890f983393,2,RBAC model,IT / Data / Security,Work Package Owner,240,42000.00
+d364d51a-9a36-56d3-ad65-784dcbc7ce42,5e8efc63-4e18-5155-a82f-8e3539c74478,THG-IT-003,3.2,f429c614-72b5-5e8a-8040-4a890f983393,2,Audit trail integration,IT / Data / Security,Work Package Owner,240,36000.00
+9ff1e014-b844-54a3-a48d-4e87f7cf353f,5e8efc63-4e18-5155-a82f-8e3539c74478,THG-IT-003,4,,1,Cutover & Training,Operations / PMO,Workstream Lead,,
+b0c26555-37fa-56b5-9d5a-f79f668e1189,5e8efc63-4e18-5155-a82f-8e3539c74478,THG-IT-003,4.1,9ff1e014-b844-54a3-a48d-4e87f7cf353f,2,Parallel run,Operations / PMO,Work Package Owner,240,48000.00
+42428816-6341-5bf9-98dd-4f0576244800,5e8efc63-4e18-5155-a82f-8e3539c74478,THG-IT-003,4.2,9ff1e014-b844-54a3-a48d-4e87f7cf353f,2,Analyst training,Operations / PMO,Work Package Owner,120,21000.00
+69906b18-4a8a-53d2-902a-d70aeef16c91,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,1,,1,System Configuration,Operations / PMO,Workstream Lead,,
+0eab27ed-128b-5fae-8ed1-9b9e94fe6142,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,1.1,69906b18-4a8a-53d2-902a-d70aeef16c91,2,Template library setup,Operations / PMO,Work Package Owner,320,48000.00
+e77ce923-5bcd-5351-8c8c-9fa8bf8b6543,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,1.2,69906b18-4a8a-53d2-902a-d70aeef16c91,2,Intake workflow,Operations / PMO,Work Package Owner,120,18000.00
+f1786f55-1e51-5e47-ba58-9a251e68e4c0,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,2,,1,Department Onboarding,Operations / PMO,Workstream Lead,,
+02c8b8a2-1cb8-553e-a17a-2618486eb4f4,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,2.1,f1786f55-1e51-5e47-ba58-9a251e68e4c0,2,Pilot departments,Operations / PMO,Work Package Owner,320,48000.00
+5273ebf2-53c3-52fe-9878-5419573dd5e1,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,2.2,f1786f55-1e51-5e47-ba58-9a251e68e4c0,2,Remaining departments,Operations / PMO,Work Package Owner,160,28000.00
+76308592-4b3b-55a0-a420-41f2655e22cc,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,3,,1,Training & Competency,HR / People,Workstream Lead,,
+2181c304-b601-5cb6-9650-a4ec7022f99a,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,3.1,76308592-4b3b-55a0-a420-41f2655e22cc,2,Curriculum build,HR / People,Work Package Owner,80,16000.00
+b69245db-7e4d-5dd0-896e-2e6952c4481c,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,3.2,76308592-4b3b-55a0-a420-41f2655e22cc,2,Attestation rollout,HR / People,Work Package Owner,160,32000.00
+f5b2807b-48ab-5cde-bd06-8a7931d51087,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,4,,1,Adoption & Audit,Regulatory / Quality,Workstream Lead,,
+31a22908-f249-5876-8418-234f50c89a65,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,4.1,f5b2807b-48ab-5cde-bd06-8a7931d51087,2,Usage audits,Regulatory / Quality,Work Package Owner,160,24000.00
+ebf1e676-0c35-51c9-bc21-8b05020b4a8d,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,4.2,f5b2807b-48ab-5cde-bd06-8a7931d51087,2,Compliance evidence,Regulatory / Quality,Work Package Owner,160,28000.00
+9a43939d-255c-5d3f-bcb6-8b677352ac9e,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,1,,1,Gap Assessment,Regulatory / Quality,Workstream Lead,,
+899c2c7d-c70c-58bd-81f5-46c2e53dc1af,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,1.1,9a43939d-255c-5d3f-bcb6-8b677352ac9e,2,Internal audit,Regulatory / Quality,Work Package Owner,160,32000.00
+6e7cbdce-7c03-53b8-9c61-17feb3c79b27,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,1.2,9a43939d-255c-5d3f-bcb6-8b677352ac9e,2,Gap remediation plan,Regulatory / Quality,Work Package Owner,160,24000.00
+1a4cb6fb-4d96-5cb8-9bda-3a31ee97a112,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,2,,1,Remediation,Regulatory / Quality,Workstream Lead,,
+0323073d-5b98-5dfb-8e52-34291918f061,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,2.1,1a4cb6fb-4d96-5cb8-9bda-3a31ee97a112,2,Document control fixes,Regulatory / Quality,Work Package Owner,320,48000.00
+20def72f-429d-5ed3-91c5-696f21235e7e,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,2.2,1a4cb6fb-4d96-5cb8-9bda-3a31ee97a112,2,Training records cleanup,Regulatory / Quality,Work Package Owner,120,24000.00
+5742d8f8-07d3-5ecf-b7b8-8282c3b76d35,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,3,,1,Certification Audit,Regulatory / Quality,Workstream Lead,,
+cdbdad63-2fc6-556c-a52c-4e2fc58293df,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,3.1,5742d8f8-07d3-5ecf-b7b8-8282c3b76d35,2,Stage 1 audit,Regulatory / Quality,Work Package Owner,120,21000.00
+86bb4b21-df09-5000-b15c-8aa514a32314,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,3.2,5742d8f8-07d3-5ecf-b7b8-8282c3b76d35,2,Stage 2 audit,Regulatory / Quality,Work Package Owner,240,36000.00
+bf3a7b0f-65ab-5044-918c-cd25f6a0c72a,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,4,,1,Closeout,Operations / PMO,Workstream Lead,,
+d9189784-3ce8-5076-a97f-3c7ca7237e2b,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,4.1,bf3a7b0f-65ab-5044-918c-cd25f6a0c72a,2,Findings closure,Operations / PMO,Work Package Owner,240,42000.00
+ed3ad0cc-58e7-5717-a741-4676ece87644,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,4.2,bf3a7b0f-65ab-5044-918c-cd25f6a0c72a,2,Lessons learned,Operations / PMO,Work Package Owner,80,12000.00
+3c8a7bd3-ceb9-5ff0-8907-c106d389f63d,c9fb69ea-3e4b-53c4-8707-6697185b54c3,THG-COM-002,1,,1,Market Analysis,Commercial / Marketing,Workstream Lead,,
+6ec78cd2-c5e8-5c90-a91f-7e789538ab5c,c9fb69ea-3e4b-53c4-8707-6697185b54c3,THG-COM-002,1.1,3c8a7bd3-ceb9-5ff0-8907-c106d389f63d,2,Country prioritization,Commercial / Marketing,Work Package Owner,240,48000.00
+2025eddb-a45f-5082-a68c-e227c05ec434,c9fb69ea-3e4b-53c4-8707-6697185b54c3,THG-COM-002,1.2,3c8a7bd3-ceb9-5ff0-8907-c106d389f63d,2,Pricing study,Commercial / Marketing,Work Package Owner,160,24000.00
+804315a5-7649-539d-b152-a9342dd882d5,c9fb69ea-3e4b-53c4-8707-6697185b54c3,THG-COM-002,2,,1,Regulatory Pathway,Regulatory / Quality,Workstream Lead,,
+82936c27-4f08-52b9-b59a-f71cb55d4d9d,c9fb69ea-3e4b-53c4-8707-6697185b54c3,THG-COM-002,2.1,804315a5-7649-539d-b152-a9342dd882d5,2,CE marking assessment,Regulatory / Quality,Work Package Owner,160,28000.00
+471bb08a-800b-5399-84fe-6c5fd1b0518a,c9fb69ea-3e4b-53c4-8707-6697185b54c3,THG-COM-002,2.2,804315a5-7649-539d-b152-a9342dd882d5,2,Distributor licensing,Regulatory / Quality,Work Package Owner,160,32000.00
+cf9b7388-c30c-540e-b80b-b4169015e2af,c9fb69ea-3e4b-53c4-8707-6697185b54c3,THG-COM-002,3,,1,Launch Readiness,Commercial / Marketing,Workstream Lead,,
+cb948bec-c4a7-5690-b870-bfb3dac882a7,c9fb69ea-3e4b-53c4-8707-6697185b54c3,THG-COM-002,3.1,cf9b7388-c30c-540e-b80b-b4169015e2af,2,Channel partnerships,Commercial / Marketing,Work Package Owner,160,32000.00
+ecad4445-4540-59e9-8db4-18be0f5c087a,c9fb69ea-3e4b-53c4-8707-6697185b54c3,THG-COM-002,3.2,cf9b7388-c30c-540e-b80b-b4169015e2af,2,Launch collateral,Commercial / Marketing,Work Package Owner,320,48000.00

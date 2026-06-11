@@ -1,0 +1,23 @@
+THERAGEN
+Database Schema Specification
+Two-schema reference: PMBOK Project Management + Document Management Governance
+Document ID	THG-ENT-DBS-001
+Version	1.0
+Status	BASELINE
+Effective Date	2026-05-26
+Owner	PMO Director (with IT / Data co-ownership)
+Approver	Chief Operating Officer
+Review Cycle	Annual
+Classification	Confidential – Internal
+Applies To	All Theragen systems implementing the Integrated Documentation System
+Scope summary
+PMBOK schema entities	31
+PMBOK schema fields	271
+PMBOK relationships	32
+PMBOK indexes	13
+PMBOK enumerations	35
+Document Management entities	31
+Document Management fields	276
+Document Management relationships	35
+Document Management indexes	13
+Document Management enumerations	34

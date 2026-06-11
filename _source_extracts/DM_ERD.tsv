@@ -1,0 +1,61 @@
+THERAGEN  |  DM_ERD
+Text-based ERD. Each row shows a parent → child edge.
+—
+Parent	→	Child	Cardinality	Via FK
+department	→	person	1:N	department_id
+department	→	role	1:N	department_id
+role	→	person	1:N	role_id
+person	→	person	1:N	manager_person_id
+document_type	→	controlled_template	1:N	document_type_id
+document_type	→	document	1:N	document_type_id
+department	→	document	1:N	primary_department_id
+document	→	document_version	1:N	document_id
+document_version	→	document_review	1:N	version_id
+document_version	→	document_approval	1:N	version_id
+document	→	document_retirement	1:1	document_id
+document	→	document	1:N	superseded_by_document_id
+intake_submission	→	intake_compliance_prescreen	1:N	intake_id
+intake_submission	→	intake_decision	1:1	intake_id
+intake_submission	→	document	1:N	intake_id
+document	→	raci_assignment	1:N	document_id
+department	→	raci_assignment	1:N	department_id
+document	→	doc_compliance_mapping	1:N	document_id
+compliance_frame	→	doc_compliance_mapping	1:N	frame_id
+document	→	change_request_gov	1:N	document_id
+change_request_gov	→	change_assessment_gov	1:N	cr_gov_id
+change_request_gov	→	document_version	1:N	linked_cr_id
+role	→	training_curriculum	1:N	role_id
+training_curriculum	→	curriculum_item	1:N	curriculum_id
+document	→	curriculum_item	1:N	document_id
+person	→	training_assignment	1:N	person_id
+document	→	training_assignment	1:N	document_id
+training_assignment	→	comprehension_check	1:N	assignment_id
+training_assignment	→	training_attestation	1:1	assignment_id
+records_retention_policy	→	records_disposition	1:N	record_class
+compliance_frame	→	audit_evidence_pack	1:N	frame_id
+audit_evidence_pack	→	audit_evidence_item	1:N	pack_id
+document	→	deviation	1:N	sop_document_id
+deviation	→	capa	1:N	capa_id
+document	→	access_grant	1:N	document_id
+Hierarchy view rooted at document
+document (the spine)
+├── document_version (N)
+│   ├── document_review (N)
+│   └── document_approval (N — 21 CFR §11.50)
+├── document_retirement (1:1, when retired)
+├── raci_assignment (N — per dept)
+├── doc_compliance_mapping (N — per frame)
+├── change_request_gov (N)
+│   └── change_assessment_gov (N — per dept)
+├── curriculum_item (N — used by curricula)
+├── training_assignment (N — per person)
+│   ├── comprehension_check (N attempts)
+│   └── training_attestation (1:1)
+├── deviation (N)
+│   └── capa (linked)
+├── access_grant (N)
+└── audit_trail_entry (N, by entity_id)
+intake_submission (the front door)
+├── intake_compliance_prescreen (N — per frame)
+├── intake_decision (1:1)
+└── document.intake_id (N — documents bound to intake)

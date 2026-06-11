@@ -1,0 +1,76 @@
+/// Fact - project closure checklist items (PMBOK P26).
+table 'Closure Item'
+	lineageTag: 0baea3eb-cf6e-5574-9898-aebde8eeb1aa
+
+	column 'Closure Item ID'
+		dataType: string
+		isHidden
+		lineageTag: f8bb778e-8e48-5a8c-a69e-9f4c78831889
+		summarizeBy: none
+		sourceColumn: Closure Item ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project ID'
+		dataType: string
+		isHidden
+		lineageTag: 4131030c-31fb-58d5-be12-2ee6f7071374
+		summarizeBy: none
+		sourceColumn: Project ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project Code'
+		dataType: string
+		lineageTag: 820d0ace-16b7-5c32-8bc8-a01831f13971
+		summarizeBy: none
+		sourceColumn: Project Code
+
+		annotation SummarizationSetBy = User
+
+	column 'Closure Item'
+		dataType: string
+		lineageTag: 9f47aa21-cea2-5ede-b630-ee20e837a39c
+		summarizeBy: none
+		sourceColumn: Closure Item
+
+		annotation SummarizationSetBy = User
+
+	column 'Owner Role'
+		dataType: string
+		lineageTag: 96d29f93-c478-5202-a5a3-10fafafe62b7
+		summarizeBy: none
+		sourceColumn: Owner Role
+
+		annotation SummarizationSetBy = User
+
+	column 'Done'
+		dataType: boolean
+		lineageTag: 3929b9c5-9b6b-55d5-9470-e61770cbf624
+		summarizeBy: none
+		sourceColumn: Done
+
+		annotation SummarizationSetBy = User
+
+	column 'Evidence'
+		dataType: string
+		lineageTag: 2bb9342e-582b-5f2a-9301-c1456ca1086c
+		summarizeBy: none
+		sourceColumn: Evidence
+
+		annotation SummarizationSetBy = User
+
+	partition 'Closure Item' = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "\closure_checklist_item.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Selected = Table.SelectColumns(Promoted, {"closure_item_id", "project_id", "project_code", "item", "owner_role", "done", "evidence"}),
+				    Nulled = Table.ReplaceValue(Selected, "", null, Replacer.ReplaceValue, Table.ColumnNames(Selected)),
+				    Typed = Table.TransformColumnTypes(Nulled, {{"closure_item_id", type text}, {"project_id", type text}, {"project_code", type text}, {"item", type text}, {"owner_role", type text}, {"done", type logical}, {"evidence", type text}}),
+				    Renamed = Table.RenameColumns(Typed, {{"closure_item_id", "Closure Item ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"item", "Closure Item"}, {"owner_role", "Owner Role"}, {"done", "Done"}, {"evidence", "Evidence"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table

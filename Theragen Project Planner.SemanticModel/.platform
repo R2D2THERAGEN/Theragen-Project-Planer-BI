@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "Theragen Project Planner"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "bb05326e-d361-5fd9-94c1-0964847e22bb"
+  }
+}

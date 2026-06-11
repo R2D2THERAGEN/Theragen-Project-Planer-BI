@@ -1,0 +1,110 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "27b02c2800da55fb8fa4",
+  "position": {
+    "x": 8,
+    "y": 384,
+    "z": 1000,
+    "width": 1264,
+    "height": 324
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Lesson Learned"
+                    }
+                  },
+                  "Property": "Project Code"
+                }
+              },
+              "queryRef": "Lesson Learned.Project Code"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Lesson Learned"
+                    }
+                  },
+                  "Property": "Lesson Category"
+                }
+              },
+              "queryRef": "Lesson Learned.Lesson Category"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Lesson Learned"
+                    }
+                  },
+                  "Property": "Lesson"
+                }
+              },
+              "queryRef": "Lesson Learned.Lesson"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Lesson Learned"
+                    }
+                  },
+                  "Property": "Recommendation"
+                }
+              },
+              "queryRef": "Lesson Learned.Recommendation"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Lesson Learned"
+                    }
+                  },
+                  "Property": "Lesson Status"
+                }
+              },
+              "queryRef": "Lesson Learned.Lesson Status"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Lessons learned register'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

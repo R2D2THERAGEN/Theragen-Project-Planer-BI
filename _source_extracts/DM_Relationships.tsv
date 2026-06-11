@@ -1,0 +1,39 @@
+THERAGEN  |  DM_Relationships
+Foreign-key relationships and cardinality.
+—
+Parent entity	Parent field	Child entity	Child field	Cardinality	On delete	Description
+department	department_id	person	department_id	1:N	RESTRICT	Person belongs to a department.
+department	department_id	role	department_id	1:N	SET NULL	Role optionally tied to dept.
+role	role_id	person	role_id	1:N	SET NULL	Person primary role.
+person	person_id	person	manager_person_id	1:N	SET NULL	Manager reporting (self-ref).
+document_type	document_type_id	controlled_template	document_type_id	1:N	RESTRICT	Templates per type.
+document_type	document_type_id	document	document_type_id	1:N	RESTRICT	Doc instances per type.
+department	department_id	document	primary_department_id	1:N	RESTRICT	Owning dept.
+document	document_id	document_version	document_id	1:N	CASCADE	Versions per doc.
+document_version	version_id	document_review	version_id	1:N	CASCADE	Reviews per version.
+document_version	version_id	document_approval	version_id	1:N	CASCADE	Approvals per version.
+document	document_id	document_retirement	document_id	1:1	CASCADE	Retirement event.
+document	document_id	document	superseded_by_document_id	1:N	SET NULL	Successor link.
+intake_submission	intake_id	intake_compliance_prescreen	intake_id	1:N	CASCADE	Pre-screens per intake.
+intake_submission	intake_id	intake_decision	intake_id	1:1	CASCADE	Decision per intake.
+intake_submission	intake_id	document	intake_id	1:N	SET NULL	Documents tied to intake.
+document	document_id	raci_assignment	document_id	1:N	CASCADE	RACI per doc.
+department	department_id	raci_assignment	department_id	1:N	CASCADE	RACI per dept.
+document	document_id	doc_compliance_mapping	document_id	1:N	CASCADE	Compliance frames per doc.
+compliance_frame	frame_id	doc_compliance_mapping	frame_id	1:N	CASCADE	Docs per frame.
+document	document_id	change_request_gov	document_id	1:N	RESTRICT	CRs against a doc.
+change_request_gov	cr_gov_id	change_assessment_gov	cr_gov_id	1:N	CASCADE	Assessments per CR.
+change_request_gov	cr_gov_id	document_version	linked_cr_id	1:N	SET NULL	CR drives versions.
+role	role_id	training_curriculum	role_id	1:N	SET NULL	Curriculum for a role.
+training_curriculum	curriculum_id	curriculum_item	curriculum_id	1:N	CASCADE	Items in curriculum.
+document	document_id	curriculum_item	document_id	1:N	RESTRICT	Doc in curriculum.
+person	person_id	training_assignment	person_id	1:N	CASCADE	Assignments per person.
+document	document_id	training_assignment	document_id	1:N	RESTRICT	Assignments per doc.
+training_assignment	assignment_id	comprehension_check	assignment_id	1:N	CASCADE	Quiz attempts.
+training_assignment	assignment_id	training_attestation	assignment_id	1:1	CASCADE	Attestation per assignment.
+records_retention_policy	policy_id	records_disposition	record_class	1:N	RESTRICT	Disposition uses policy by record class.
+compliance_frame	frame_id	audit_evidence_pack	frame_id	1:N	RESTRICT	Pack targets a frame.
+audit_evidence_pack	pack_id	audit_evidence_item	pack_id	1:N	CASCADE	Items in pack.
+document	document_id	deviation	sop_document_id	1:N	RESTRICT	Deviation from an SOP.
+deviation	deviation_id	capa	capa_id	1:N	SET NULL	CAPA opened from deviation.
+document	document_id	access_grant	document_id	1:N	CASCADE	Grants per doc.

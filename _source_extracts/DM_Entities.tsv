@@ -1,0 +1,35 @@
+THERAGEN  |  DM_Entities
+31 entities making up the Document Management schema.
+—
+ID	Table name	Plain name	Lifecycle phase	Owner role	Description
+D01	department	Department	Reference	PMO Director	Cross-functional department lookup.
+D02	person	Person	Reference	HR Director	Workforce member or external contributor.
+D03	role	Role	Reference	HR Director	Job role catalog.
+D04	compliance_frame	Compliance Frame	Reference	Quality / Regulatory Director	Regulatory or methodological frame.
+D05	document_type	Document Type	Reference	PMO Director	Controlled document type catalog (CHR, SOP, etc.).
+D06	controlled_template	Controlled Template	Reference	PMO Director	Versioned blank template that documents are created from.
+D07	document	Document	Cross-Lifecycle	Document Owner	Controlled document record. The spine of the DM schema.
+D08	document_version	Document Version	Cross-Lifecycle	Document Owner	Immutable version history for a Document.
+D09	document_review	Document Review	Cross-Lifecycle	Document Owner	Review event prior to baseline or amendment.
+D10	document_approval	Document Approval	Cross-Lifecycle	Approver	21 CFR Part 11 §11.50 signed approval.
+D11	document_retirement	Document Retirement	Cross-Lifecycle	Approver	Retirement event for a baselined document.
+D12	intake_submission	Intake Submission	Intake	PMO Director	Submitted Integrated Intake Form.
+D13	intake_compliance_prescreen	Intake Compliance Pre-screen	Intake	Quality / Regulatory Director	Per-frame pre-screen attestation.
+D14	intake_decision	Intake Decision	Intake	PMO Director	Triage decision and routing for an intake.
+D15	raci_assignment	RACI Assignment	Cross-Lifecycle	PMO Director	Per-document, per-department R/A/C/I role.
+D16	doc_compliance_mapping	Document × Compliance Mapping	Cross-Lifecycle	Quality / Regulatory Director	Which frames govern which doc; with evidence link.
+D17	change_request_gov	Change Request (Governance)	Executing	PMO Director	CR against a controlled document. Class A/B/C per SOP-003.
+D18	change_assessment_gov	Change Impact Assessment (Gov)	Executing	PMO Director	Per-department impact statement on a governance CR.
+D19	training_curriculum	Training Curriculum	Cross-Lifecycle	HR Director	Set of documents required for a given role.
+D20	curriculum_item	Curriculum Item	Cross-Lifecycle	HR Director	Document required by a curriculum.
+D21	training_assignment	Training Assignment	Cross-Lifecycle	HR Director	Curriculum or single doc assigned to a person.
+D22	comprehension_check	Comprehension Check	Cross-Lifecycle	HR Director	Quiz attempt result tied to an assignment.
+D23	training_attestation	Training Attestation	Cross-Lifecycle	HR Director	Signed attestation under 21 CFR §11.50.
+D24	records_retention_policy	Records Retention Policy	Reference	Quality / Regulatory Director	Retention rules per record class.
+D25	records_disposition	Records Disposition	Cross-Lifecycle	Records Steward	Disposition event for a record reaching end of retention.
+D26	audit_evidence_pack	Audit Evidence Pack	Cross-Lifecycle	Quality / Regulatory Director	Curated record set assembled for an audit.
+D27	audit_evidence_item	Audit Evidence Item	Cross-Lifecycle	Quality / Regulatory Director	Individual record included in an evidence pack.
+D28	deviation	Deviation	Cross-Lifecycle	Document Owner	Documented deviation from an SOP.
+D29	capa	CAPA Record	Cross-Lifecycle	Quality / Regulatory Director	Corrective and Preventive Action.
+D30	access_grant	Access Grant	Reference	Information Security Officer	Role-based access assignment to a document.
+D31	audit_trail_entry	Audit Trail Entry	Cross-Lifecycle	Information Security Officer	Append-only audit log entry (21 CFR §11.10(e)).

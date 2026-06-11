@@ -1,0 +1,25 @@
+﻿person_id,employee_number,email,display_name,department_code,department_name,role_title,employment_type,active,start_date
+4d7b84e1-3237-5236-b516-16e5f054a655,EMP-00401,m.patel@theragen.com,Maya Patel,CLN,Clinical / Medical Affairs,Medical Director,Employee,TRUE,2024-01-15
+e74320fc-5dd9-5330-be78-086e0508b50a,EMP-00402,d.okafor@theragen.com,Daniel Okafor,CLN,Clinical / Medical Affairs,Clinical Operations Lead,Employee,TRUE,2024-01-15
+2855d25e-e048-5080-bb0e-1196ce1352e1,EMP-00403,s.reyes@theragen.com,Sofia Reyes,CLN,Clinical / Medical Affairs,Clinical Research Associate,Employee,TRUE,2024-01-15
+9b478123-7b4f-5756-a5fb-d912cbdb6589,EMP-00404,j.whitfield@theragen.com,James Whitfield,REG,Regulatory / Quality,Quality / Regulatory Director,Employee,TRUE,2024-01-15
+16f1836e-598b-52bc-8d14-4814cbacee42,EMP-00405,a.lindqvist@theragen.com,Anna Lindqvist,REG,Regulatory / Quality,Regulatory Affairs Specialist,Employee,TRUE,2024-01-15
+6a0700d0-18fe-5f73-95b1-02d3edc6b753,EMP-00406,p.nair@theragen.com,Priya Nair,REG,Regulatory / Quality,Quality Engineer,Employee,TRUE,2024-01-15
+c77dbea5-664d-5305-abda-7037d5f531cf,EMP-00407,e.brooks@theragen.com,Ethan Brooks,RND,R&D / Engineering,VP Engineering,Employee,TRUE,2024-01-15
+101ef560-996f-5481-9625-a78f61ecfd02,EMP-00408,l.hoffmann@theragen.com,Lena Hoffmann,RND,R&D / Engineering,Firmware Lead,Employee,TRUE,2024-01-15
+c11bacc3-9c34-5864-b900-72d7a1a03837,EMP-00409,m.chen@theragen.com,Marcus Chen,RND,R&D / Engineering,Systems Engineer,Employee,TRUE,2024-01-15
+c3e0540a-708c-5011-a086-58ec024abd79,EMP-00410,a.tanaka@theragen.com,Aiko Tanaka,RND,R&D / Engineering,Test Engineer,Employee,TRUE,2024-01-15
+8a02357b-d744-562b-a7ad-8359f1585dfa,EMP-00411,r.hale@theragen.com,Robert Hale,OPS,Operations / PMO,PMO Director,Employee,TRUE,2024-01-15
+7144f78b-3f33-5800-bd7f-f894b15e01aa,EMP-00412,g.mwangi@theragen.com,Grace Mwangi,OPS,Operations / PMO,Senior Project Manager,Employee,TRUE,2024-01-15
+11037be3-710e-5a2e-a7f0-fadee2eb6fdc,EMP-00413,t.becker@theragen.com,Tom Becker,OPS,Operations / PMO,Project Manager,Employee,TRUE,2024-01-15
+6ac3503b-a8a2-5b42-bda9-e82dc9b054d3,EMP-00414,i.fonseca@theragen.com,Isabel Fonseca,OPS,Operations / PMO,Project Coordinator,Employee,TRUE,2024-01-15
+a2459816-9f62-5345-b905-fe4aa502e999,EMP-00415,v.osei@theragen.com,Victor Osei,FIN,Finance / Procurement,Finance Lead,Employee,TRUE,2024-01-15
+24f50fc1-ebc2-5858-abee-82a4ed95cf95,EMP-00416,h.kim@theragen.com,Hannah Kim,FIN,Finance / Procurement,Procurement Manager,Employee,TRUE,2024-01-15
+55aad255-0b8f-5ad1-96f2-0727c92643e9,EMP-00417,o.marsh@theragen.com,Olivia Marsh,COM,Commercial / Marketing,Commercial Director,Employee,TRUE,2024-01-15
+81720f99-4190-5ee3-96bf-d21c44635ea1,EMP-00418,l.romero@theragen.com,Lucas Romero,COM,Commercial / Marketing,Product Marketing Manager,Employee,TRUE,2024-01-15
+81f1829d-692c-51ed-aff9-8f4645a8aea0,EMP-00419,n.hassan@theragen.com,Nadia Hassan,IT,IT / Data / Security,Information Security Officer,Employee,TRUE,2024-01-15
+4c3359c7-f508-523c-9f70-e111c84a62e3,EMP-00420,s.delgado@theragen.com,Sam Delgado,IT,IT / Data / Security,Data Platform Lead,Employee,TRUE,2024-01-15
+2319435a-2e81-5b0e-ba4e-33a5b1a93f08,EMP-00421,c.barnett@theragen.com,Chloe Barnett,IT,IT / Data / Security,BI Developer,Employee,TRUE,2024-01-15
+3ba00d40-ac21-5ba0-9559-5464dc42221b,EMP-00422,p.novak@theragen.com,Peter Novak,HR,HR / People,HR Director,Employee,TRUE,2024-01-15
+6b27ac85-f4ce-50b9-9a0d-f55d986466a6,EMP-00423,r.adler@theragen.com,Ruth Adler,HR,HR / People,Training & Competency Lead,Employee,TRUE,2024-01-15
+053293e3-e689-5fc9-b2ce-9eea3906c3ec,EMP-00424,o.sinclair@theragen.com,Omar Sinclair,OPS,Operations / PMO,Chief Operating Officer,Employee,TRUE,2024-01-15

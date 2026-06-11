@@ -1,0 +1,36 @@
+THERAGEN  |  PMBOK_Relationships
+Foreign-key relationships and cardinality.
+—
+Parent entity	Parent field	Child entity	Child field	Cardinality	On delete	Description
+project	project_id	project_charter	project_id	1:1	CASCADE	Charter belongs to one project.
+project	project_id	stakeholder	project_id	1:N	CASCADE	Stakeholders belong to one project.
+project	project_id	scope_statement	project_id	1:1	CASCADE	Scope statement per project.
+scope_statement	scope_id	scope_inclusion	scope_id	1:N	CASCADE	Inclusions under scope.
+scope_statement	scope_id	scope_exclusion	scope_id	1:N	CASCADE	Exclusions under scope.
+scope_statement	scope_id	acceptance_criterion	scope_id	1:N	CASCADE	Criteria under scope.
+project	project_id	wbs_element	project_id	1:N	CASCADE	WBS belongs to project.
+wbs_element	wbs_element_id	wbs_element	parent_wbs_element_id	1:N	SET NULL	Self-ref hierarchy.
+wbs_element	wbs_element_id	wbs_dictionary_entry	wbs_element_id	1:1	CASCADE	Dictionary entry per WBS.
+wbs_element	wbs_element_id	schedule_activity	wbs_element_id	1:N	CASCADE	Activities under WBS.
+wbs_element	wbs_element_id	budget_line_item	wbs_element_id	1:N	CASCADE	Budget rows tied to WBS.
+project	project_id	milestone	project_id	1:N	CASCADE	Milestones per project.
+schedule_activity	activity_id	schedule_dependency	predecessor_activity_id	1:N	CASCADE	Predecessor links.
+schedule_activity	activity_id	schedule_dependency	successor_activity_id	1:N	CASCADE	Successor links.
+project	project_id	risk	project_id	1:N	CASCADE	Risks per project.
+risk	risk_id	risk_response	risk_id	1:N	CASCADE	Responses per risk.
+project	project_id	communications_audience	project_id	1:N	CASCADE	Comms matrix rows.
+project	project_id	meeting_cadence	project_id	1:N	CASCADE	Recurring meetings.
+project	project_id	quality_standard	project_id	1:N	CASCADE	Quality frames in scope.
+project	project_id	quality_activity	project_id	1:N	CASCADE	QA/QC activities.
+project	project_id	quality_metric	project_id	1:N	CASCADE	Quality KPIs.
+project	project_id	change_request	project_id	1:N	CASCADE	CRs per project.
+change_request	cr_id	change_impact_assessment	cr_id	1:N	CASCADE	Assessments per CR.
+project	project_id	status_report	project_id	1:N	CASCADE	Status reports per project.
+status_report	report_id	status_report_area	report_id	1:N	CASCADE	Knowledge-area entries.
+project	project_id	lesson_learned	project_id	1:N	CASCADE	Lessons per project.
+project	project_id	closure_checklist_item	project_id	1:N	CASCADE	Closure items per project.
+project	project_id	assumption	project_id	1:N	CASCADE	Assumptions per project.
+project	project_id	constraint	project_id	1:N	CASCADE	Constraints per project.
+project	project_id	decision	project_id	1:N	CASCADE	Decisions per project.
+project	project_id	project_team_member	project_id	1:N	CASCADE	Team membership.
+project	project_id	approval	artifact_doc_id (via doc_id)	1:N	RESTRICT	Approvals indirectly tied to project docs.

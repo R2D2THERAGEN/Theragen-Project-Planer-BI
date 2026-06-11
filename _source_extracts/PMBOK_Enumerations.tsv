@@ -1,0 +1,187 @@
+THERAGEN  |  PMBOK_Enumerations
+All 35 enum / lookup value sets used in the PMBOK schema.
+—
+Enum name	Position	Value
+department_code	1	Clinical / Medical Affairs
+department_code	2	Regulatory / Quality
+department_code	3	R&D / Engineering
+department_code	4	Operations / PMO
+department_code	5	Finance / Procurement
+department_code	6	Commercial / Marketing
+department_code	7	IT / Data / Security
+department_code	8	HR / People
+approach_type	1	predictive
+approach_type	2	agile
+approach_type	3	hybrid
+lifecycle_phase	1	Initiating
+lifecycle_phase	2	Planning
+lifecycle_phase	3	Executing
+lifecycle_phase	4	Monitoring
+lifecycle_phase	5	Closing
+lifecycle_phase	6	Closed
+project_status	1	Proposed
+project_status	2	Active
+project_status	3	Paused
+project_status	4	Completed
+project_status	5	Cancelled
+doc_status	1	DRAFT
+doc_status	2	REVIEW
+doc_status	3	BASELINE
+doc_status	4	AMENDED
+doc_status	5	RETIRED
+raci_role	1	R
+raci_role	2	A
+raci_role	3	C
+raci_role	4	I
+hml	1	High
+hml	2	Medium
+hml	3	Low
+comm_channel	1	Email
+comm_channel	2	Teams
+comm_channel	3	Slack
+comm_channel	4	Meeting
+comm_channel	5	Phone
+comm_channel	6	Dashboard
+comm_channel	7	Report
+comm_format	1	Report
+comm_format	2	Email
+comm_format	3	Meeting
+comm_format	4	Dashboard
+cadence	1	Daily
+cadence	2	Weekly
+cadence	3	Bi-weekly
+cadence	4	Monthly
+cadence	5	Quarterly
+cadence	6	Semi-Annual
+cadence	7	Annual
+cadence	8	Per release
+cadence	9	Per phase gate
+verification_method	1	Test
+verification_method	2	Review
+verification_method	3	Inspection
+verification_method	4	Demonstration
+verification_method	5	Analysis
+verification_status	1	Open
+verification_status	2	Passed
+verification_status	3	Failed
+verification_status	4	Waived
+activity_status	1	Not started
+activity_status	2	In progress
+activity_status	3	At risk
+activity_status	4	Done
+activity_status	5	Cancelled
+milestone_status	1	On track
+milestone_status	2	At risk
+milestone_status	3	Slipped
+milestone_status	4	Achieved
+milestone_status	5	Cancelled
+dep_relationship	1	FS
+dep_relationship	2	FF
+dep_relationship	3	SS
+dep_relationship	4	SF
+cost_category	1	Labor
+cost_category	2	Materials
+cost_category	3	Vendor
+cost_category	4	Other
+cost_category	5	CapEx
+cost_category	6	OpEx
+cost_category	7	Contingency
+cost_category	8	Mgmt Reserve
+funding_source	1	OpEx
+funding_source	2	CapEx
+funding_source	3	Grant
+funding_source	4	Unfunded
+funding_source	5	TBD
+risk_category	1	Technical
+risk_category	2	Schedule
+risk_category	3	Cost
+risk_category	4	Regulatory
+risk_category	5	Vendor
+risk_category	6	People
+risk_category	7	Safety
+risk_category	8	Reputational
+risk_response_type	1	Avoid
+risk_response_type	2	Transfer
+risk_response_type	3	Mitigate
+risk_response_type	4	Accept
+risk_status	1	Open
+risk_status	2	Mitigating
+risk_status	3	Monitoring
+risk_status	4	Closed
+risk_status	5	Realized
+response_action_type	1	Mitigation
+response_action_type	2	Transfer
+response_action_type	3	Acceptance
+response_action_type	4	Avoidance
+action_status	1	Open
+action_status	2	In progress
+action_status	3	Done
+action_status	4	Blocked
+compliance_frame	1	FDA 21 CFR Part 11
+compliance_frame	2	HIPAA
+compliance_frame	3	PMBOK 7th Ed.
+compliance_frame	4	ISO 13485
+compliance_frame	5	GxP
+compliance_frame	6	SOC 2
+compliance_frame	7	ISO 9001
+compliance_frame	8	None
+quality_activity_type	1	QA
+quality_activity_type	2	QC
+cr_class	1	A - Minor
+cr_class	2	B - Substantive
+cr_class	3	C - Controlling
+cr_class	4	Emergency / Safety
+cr_type	1	Scope
+cr_type	2	Schedule
+cr_type	3	Cost
+cr_type	4	Quality
+cr_type	5	Compliance
+cr_type	6	Other
+cr_decision	1	Pending
+cr_decision	2	Approved
+cr_decision	3	Rejected
+cr_decision	4	Deferred
+cr_status	1	Open
+cr_status	2	In Assessment
+cr_status	3	Approved
+cr_status	4	Implementing
+cr_status	5	Verified
+cr_status	6	Closed
+cr_status	7	Rejected
+gyr	1	Green
+gyr	2	Yellow
+gyr	3	Red
+trend	1	Improving
+trend	2	Steady
+trend	3	Worsening
+knowledge_area	1	Scope
+knowledge_area	2	Schedule
+knowledge_area	3	Cost
+knowledge_area	4	Quality
+knowledge_area	5	Risk
+knowledge_area	6	Stakeholders
+knowledge_area	7	Compliance
+knowledge_area	8	Procurement
+knowledge_area	9	Communications
+lesson_category	1	Process
+lesson_category	2	Tools
+lesson_category	3	Team
+lesson_category	4	Vendor
+lesson_category	5	Regulatory
+lesson_category	6	Other
+lesson_status	1	Open
+lesson_status	2	Addressed
+lesson_status	3	Adopted
+lesson_status	4	Archived
+constraint_type	1	Budget
+constraint_type	2	Schedule
+constraint_type	3	Resource
+constraint_type	4	Regulatory
+constraint_type	5	Technical
+constraint_type	6	Contractual
+constraint_type	7	Other
+signature_meaning	1	Approval
+signature_meaning	2	Review
+signature_meaning	3	Authorship
+signature_meaning	4	Training Attestation
+signature_meaning	5	Witness

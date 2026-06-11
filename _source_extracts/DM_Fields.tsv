@@ -1,0 +1,280 @@
+THERAGEN  |  DM_Fields
+All 276 fields across the 31 DM entities.
+—
+Entity ID	Field	Type	Length / Precision	Required	Key	FK reference	Default	Description	Enum	Example
+D01	department_id	UUID		Y	PK
+D01	code	VARCHAR	4	Y	UK			CLN/REG/RND/OPS/FIN/COM/IT/HR/ENT.	department_code	CLN
+D01	name	VARCHAR	100	Y	UK			Display name.		Clinical / Medical Affairs
+D01	head_person_id	UUID		N	FK	person.person_id		Department head.
+D01	active	BOOLEAN		Y		TRUE	Active flag.		TRUE
+D02	person_id	UUID		Y	PK
+D02	employee_number	VARCHAR	20	N	UK			HRIS identifier.		EMP-00482
+D02	email	VARCHAR	254	Y	UK			Primary email.		m.patel@theragen.com
+D02	display_name	VARCHAR	150	Y				Full name.		Maya Patel
+D02	department_id	UUID		Y	FK	department.department_id		Home department.
+D02	role_id	UUID		N	FK	role.role_id		Primary role.
+D02	manager_person_id	UUID		N	FK	person.person_id		Reporting manager (self-ref).
+D02	employment_type	ENUM		Y		Employee	Worker type.	employment_type	Employee
+D02	active	BOOLEAN		Y		TRUE	Active flag.		TRUE
+D02	start_date	DATE		Y				Start date.
+D02	end_date	DATE		N				End date (if any).
+D03	role_id	UUID		Y	PK
+D03	name	VARCHAR	100	Y	UK			Role name.		Project Manager
+D03	department_id	UUID		N	FK	department.department_id		Owning department, if specific.
+D03	controlled_work	BOOLEAN		Y		TRUE	If role performs controlled work (drives training requirement).		TRUE
+D03	description	TEXT		N				Role description.
+D04	frame_id	UUID		Y	PK
+D04	code	VARCHAR	32	Y	UK			Short code.		21CFR11
+D04	name	VARCHAR	100	Y	UK			Display name.	compliance_frame	FDA 21 CFR Part 11
+D04	authority	VARCHAR	100	Y				Issuing body.		FDA
+D04	applies_to	TEXT		Y				When applicable.
+D04	reference_url	VARCHAR	500	N				Authoritative source URL.
+D05	document_type_id	UUID		Y	PK
+D05	code	VARCHAR	4	Y	UK			3-letter type code.		CHR
+D05	name	VARCHAR	100	Y				Plain name.		Project Charter
+D05	lifecycle_phase	ENUM		Y			Lifecycle phase.	lifecycle_phase	Initiating
+D05	default_review_cycle	ENUM		Y		Annual	Default review cadence.	review_cycle	Annual
+D05	requires_approval	BOOLEAN		Y		TRUE	Whether Z-2 approval required.		TRUE
+D06	template_id	UUID		Y	PK
+D06	template_code	VARCHAR	30	Y	UK			Template Doc ID.		THG-OPS-CHR-TMPL
+D06	document_type_id	UUID		Y	FK	document_type.document_type_id		Which type.
+D06	title	VARCHAR	200	Y				Template title.
+D06	version	VARCHAR	10	Y		1.0	Template version.		1.0
+D06	status	ENUM		Y		BASELINE	Template status.	doc_status	BASELINE
+D06	storage_path	VARCHAR	500	Y				SharePoint or repo path.
+D06	owner_person_id	UUID		Y	FK	person.person_id		Template owner.
+D06	published_at	TIMESTAMPTZ		Y				Publication timestamp.
+D07	document_id	UUID		Y	PK
+D07	doc_id	VARCHAR	30	Y	UK			Theragen Doc ID, e.g. THG-OPS-CHR-014.		THG-OPS-CHR-014
+D07	document_type_id	UUID		Y	FK	document_type.document_type_id		Type.
+D07	primary_department_id	UUID		Y	FK	department.department_id		Owning department.
+D07	title	VARCHAR	200	Y				Document title.
+D07	subtitle	VARCHAR	500	N				One-line subtitle.
+D07	lifecycle_phase	ENUM		Y			Lifecycle phase.	lifecycle_phase	Initiating
+D07	status	ENUM		Y		DRAFT	Current status.	doc_status	BASELINE
+D07	current_version	VARCHAR	10	Y		0.1	Current version.		1.0
+D07	owner_person_id	UUID		Y	FK	person.person_id		Document Owner.
+D07	approver_person_id	UUID		N	FK	person.person_id		Designated Approver.
+D07	review_cycle	ENUM		Y		Annual	Review cycle.	review_cycle	Annual
+D07	next_review_due	DATE		N				Next periodic review due date.
+D07	intake_id	VARCHAR	16	N	FK	intake_submission.intake_id		Originating intake.		INT-2026-0042
+D07	classification	ENUM		Y		Confidential – Internal	Sensitivity classification.	classification	Confidential – Internal
+D07	storage_system	ENUM		Y		PMO SharePoint	System of record.	storage_system	eQMS
+D07	storage_path	VARCHAR	500	Y				File path or URL.
+D07	retired_at	TIMESTAMPTZ		N				If retired, when.
+D07	superseded_by_document_id	UUID		N	FK	document.document_id		Successor doc if any.
+D07	created_at	TIMESTAMPTZ		Y		now()	Created.
+D07	updated_at	TIMESTAMPTZ		Y		now()	Updated.
+D08	version_id	UUID		Y	PK
+D08	document_id	UUID		Y	FK	document.document_id		Parent document.
+D08	version	VARCHAR	10	Y				Version string.		1.0
+D08	status	ENUM		Y		DRAFT	Status at this version.	doc_status	BASELINE
+D08	change_summary	TEXT		Y				What changed.		Initial baseline
+D08	change_class	ENUM		N			If amendment, class.	cr_class	B - Substantive
+D08	linked_cr_id	UUID		N	FK	change_request_gov.cr_gov_id		Linked CR.
+D08	author_person_id	UUID		Y	FK	person.person_id		Author.
+D08	effective_date	DATE		N				Effective on.
+D08	storage_path	VARCHAR	500	Y				Versioned file path.
+D08	created_at	TIMESTAMPTZ		Y		now()	Created.
+D09	review_id	UUID		Y	PK
+D09	version_id	UUID		Y	FK	document_version.version_id		Version under review.
+D09	reviewer_person_id	UUID		Y	FK	person.person_id		Reviewer.
+D09	review_type	ENUM		Y		Technical	Type.	review_type	Technical
+D09	disposition	ENUM		Y			Disposition.	review_disposition	Accepted
+D09	comments	TEXT		N				Comments / dispositions.
+D09	reviewed_at	TIMESTAMPTZ		Y				Review timestamp.
+D10	approval_id	UUID		Y	PK
+D10	version_id	UUID		Y	FK	document_version.version_id		Version being approved.
+D10	approver_person_id	UUID		Y	FK	person.person_id		Approver.
+D10	signature_meaning	ENUM		Y		Approval	Per 21 CFR §11.50.	signature_meaning	Approval
+D10	signed_at	TIMESTAMPTZ		Y				Sign timestamp.
+D10	esig_hash	VARCHAR	128	Y				Signature hash.
+D10	ip_address	INET		N				Client IP at signing.
+D10	reason	TEXT		N				Reason / context.
+D11	retirement_id	UUID		Y	PK
+D11	document_id	UUID		Y	FK	document.document_id		Document retired.
+D11	retired_by_person_id	UUID		Y	FK	person.person_id		Approver of retirement.
+D11	reason	TEXT		Y				Why retired.
+D11	superseded_by_document_id	UUID		N	FK	document.document_id		Successor.
+D11	archive_path	VARCHAR	500	Y				Archive location.
+D11	retired_at	TIMESTAMPTZ		Y				Retirement timestamp.
+D12	intake_submission_id	UUID		Y	PK
+D12	intake_id	VARCHAR	16	Y	UK			INT-YYYY-NNNN.		INT-2026-0042
+D12	submitted_at	TIMESTAMPTZ		Y				Submission timestamp.
+D12	requester_person_id	UUID		Y	FK	person.person_id		Requester.
+D12	requesting_department_id	UUID		Y	FK	department.department_id		Requesting department.
+D12	request_title	VARCHAR	200	Y				Request title.
+D12	request_type	ENUM		Y			Type.	request_type	Clinical or study request
+D12	business_problem	TEXT		Y				2-4 sentences.
+D12	desired_outcome	TEXT		Y				Success definition.
+D12	strategic_linkage	TEXT		N				Linked strategic objective.
+D12	requested_by_date	DATE		N				Need-by date.
+D12	scope_in	TEXT		N				Scope sketch — in.
+D12	scope_out	TEXT		N				Scope sketch — out.
+D12	phi_flag	BOOLEAN		Y		FALSE	PHI involved?		TRUE
+D12	cfr11_flag	BOOLEAN		Y		FALSE	21 CFR Part 11 involved?		TRUE
+D12	clinical_flag	BOOLEAN		Y		FALSE	Clinical / study?		TRUE
+D12	vendor_flag	BOOLEAN		Y		FALSE	Vendor involved?
+D12	data_sharing_flag	BOOLEAN		Y		FALSE	External data sharing?
+D12	effort	ENUM		Y			Effort bucket.	effort_bucket	Medium (1-3 mo)
+D12	budget_envelope	ENUM		Y		Unknown	Budget bucket.	budget_envelope	$250k-1M
+D12	funding_source	ENUM		N			Funding source.	funding_source	OpEx
+D12	status	ENUM		Y		Submitted	Submission lifecycle.	intake_status	In flight
+D13	prescreen_id	UUID		Y	PK
+D13	intake_id	VARCHAR	16	Y	FK	intake_submission.intake_id		Parent intake.
+D13	frame_id	UUID		Y	FK	compliance_frame.frame_id		Frame screened.
+D13	reviewer_person_id	UUID		Y	FK	person.person_id		Pre-screen reviewer.
+D13	decision	ENUM		Y			Result.	prescreen_decision	Cleared
+D13	rationale	TEXT		Y				Rationale / conditions.
+D13	reviewed_at	TIMESTAMPTZ		Y				Timestamp.
+D14	decision_id	UUID		Y	PK
+D14	intake_id	VARCHAR	16	Y	UK	intake_submission.intake_id		Parent intake.
+D14	decided_by_person_id	UUID		Y	FK	person.person_id		PMO Director or delegate.
+D14	decided_at	TIMESTAMPTZ		Y				Timestamp.
+D14	decision	ENUM		Y			Routing.	intake_decision	Approved → Charter
+D14	primary_department_id	UUID		Y	FK	department.department_id		Assigned primary department.
+D14	secondary_departments	TEXT		N				JSON array of department codes.
+D14	linked_charter_doc_id	VARCHAR	30	N	FK	document.doc_id		Charter once issued.
+D14	linked_project_id	UUID		N	FK	project.project_id		Project once kicked off.
+D14	notes	TEXT		N				Triage notes.
+D15	raci_id	UUID		Y	PK
+D15	document_id	UUID		Y	FK	document.document_id		Document.
+D15	department_id	UUID		Y	FK	department.department_id		Department.
+D15	role	ENUM		Y			R/A/C/I.	raci_role	A
+D15	touchpoint	VARCHAR	300	N				What the dept does on this doc.
+D15	valid_from	DATE		Y				Effective from.
+D15	valid_to	DATE		N				Effective to (open ended).
+D16	mapping_id	UUID		Y	PK
+D16	document_id	UUID		Y	FK	document.document_id		Document.
+D16	frame_id	UUID		Y	FK	compliance_frame.frame_id		Frame.
+D16	applies_to_sections	TEXT		N				Which sections of the doc.
+D16	evidence_reference	TEXT		N				Audit evidence pointer.
+D17	cr_gov_id	UUID		Y	PK
+D17	cr_code	VARCHAR	8	Y	UK			CHG-NNN.		CHG-014
+D17	document_id	UUID		Y	FK	document.document_id		Target controlled document.
+D17	intake_id	VARCHAR	16	N	FK	intake_submission.intake_id		Linked intake if applicable.
+D17	requested_at	DATE		Y				Submission date.
+D17	requested_by_person_id	UUID		Y	FK	person.person_id		Requester.
+D17	cr_class	ENUM		Y			Class A/B/C/Emergency.	cr_class	C - Controlling
+D17	description	TEXT		Y				Proposed change.
+D17	reason	TEXT		Y				Driver.
+D17	decision	ENUM		Y		Pending	Approval decision.	cr_decision	Approved
+D17	decided_by_person_id	UUID		N	FK	person.person_id		Approver.
+D17	decided_at	DATE		N				Decision date.
+D17	implementation_verified	BOOLEAN		N		FALSE	Verified.
+D17	status	ENUM		Y		Open	CR state.	cr_status	Closed
+D18	gov_impact_id	UUID		Y	PK
+D18	cr_gov_id	UUID		Y	FK	change_request_gov.cr_gov_id		Parent CR.
+D18	department_id	UUID		Y	FK	department.department_id		Assessor's department.
+D18	impact_summary	TEXT		Y				Impact statement.
+D18	compliance_impact	TEXT		N				Compliance / regulatory impact.
+D18	submitted_at	DATE		Y				Submission date.
+D19	curriculum_id	UUID		Y	PK
+D19	code	VARCHAR	30	Y	UK			Curriculum code.		CUR-PM-001
+D19	name	VARCHAR	100	Y				Curriculum name.		Project Manager Baseline
+D19	role_id	UUID		N	FK	role.role_id		Role this curriculum targets.
+D19	department_id	UUID		N	FK	department.department_id		Owning department.
+D19	active	BOOLEAN		Y		TRUE	Active flag.
+D20	curriculum_item_id	UUID		Y	PK
+D20	curriculum_id	UUID		Y	FK	training_curriculum.curriculum_id		Parent curriculum.
+D20	document_id	UUID		Y	FK	document.document_id		Required doc.
+D20	required	BOOLEAN		Y		TRUE	Required vs recommended.
+D20	sequence	SMALLINT		Y		1	Display order.
+D21	assignment_id	UUID		Y	PK
+D21	person_id	UUID		Y	FK	person.person_id		Trainee.
+D21	document_id	UUID		Y	FK	document.document_id		Specific doc.
+D21	curriculum_id	UUID		N	FK	training_curriculum.curriculum_id		Curriculum that triggered the assignment.
+D21	assigned_at	DATE		Y				Assignment date.
+D21	target_date	DATE		Y				Target completion.
+D21	status	ENUM		Y		Assigned	Assignment state.	training_status	Attested
+D21	manager_person_id	UUID		Y	FK	person.person_id		Assigning manager.
+D22	check_id	UUID		Y	PK
+D22	assignment_id	UUID		Y	FK	training_assignment.assignment_id		Parent assignment.
+D22	attempt_number	SMALLINT		Y		1	Attempt number.		1
+D22	score_pct	NUMERIC	5,2	Y			Score 0-100.		92.00
+D22	passed	BOOLEAN		Y		FALSE	Pass = score ≥ 80.		TRUE
+D22	taken_at	TIMESTAMPTZ		Y				Quiz timestamp.
+D23	attestation_id	UUID		Y	PK
+D23	assignment_id	UUID		Y	FK	training_assignment.assignment_id		Parent assignment.
+D23	person_id	UUID		Y	FK	person.person_id		Trainee.
+D23	document_id	UUID		Y	FK	document.document_id		Doc attested to.
+D23	version	VARCHAR	10	Y				Doc version at attestation.		1.0
+D23	attestation_meaning	ENUM		Y		Training Attestation	Per 21 CFR §11.50.	signature_meaning	Training Attestation
+D23	attested_at	TIMESTAMPTZ		Y				Signed timestamp.
+D23	esig_hash	VARCHAR	128	Y				Signature hash.
+D23	refresher_due	DATE		N				Next refresher date.
+D24	policy_id	UUID		Y	PK
+D24	record_class	ENUM		Y	UK			Record class.	record_class	Clinical records
+D24	system_of_record	ENUM		Y			Authoritative system.	storage_system	eTMF
+D24	retention_years	SMALLINT		Y			Minimum retention years.		7
+D24	retention_basis	ENUM		Y			Retention basis.	retention_basis	Life of asset + 7 yrs
+D24	disposition_default	ENUM		Y		Archive	Default disposition.	disposition	Archive
+D24	legal_basis	VARCHAR	200	N				Citation.		ISO 13485 §4.2.5
+D25	disposition_id	UUID		Y	PK
+D25	document_id	UUID		N	FK	document.document_id		Linked document.
+D25	record_class	ENUM		Y			Record class disposed.	record_class
+D25	disposition	ENUM		Y			Action.	disposition	Archive
+D25	disposed_by_person_id	UUID		Y	FK	person.person_id		Records Steward.
+D25	disposed_at	DATE		Y				Disposition date.
+D25	method	VARCHAR	200	N				Method (shred / archive / transfer).
+D25	approved_by_person_id	UUID		Y	FK	person.person_id		Approver.
+D25	notes	TEXT		N				Notes.
+D26	pack_id	UUID		Y	PK
+D26	pack_code	VARCHAR	30	Y	UK			Pack code.		AEP-FDA-2026-Q3
+D26	audit_name	VARCHAR	200	Y				Audit description.		FDA inspection — cardio study
+D26	audit_scope	TEXT		Y				Scope of evidence.
+D26	frame_id	UUID		Y	FK	compliance_frame.frame_id		Frame being audited.
+D26	prepared_by_person_id	UUID		Y	FK	person.person_id		Pack owner.
+D26	prepared_at	TIMESTAMPTZ		Y				Pack assembly time.
+D26	audit_start	DATE		Y				Audit start.
+D26	audit_end	DATE		N				Audit end.
+D26	outcome	ENUM		N			Outcome.	audit_outcome	No findings
+D26	retain_until	DATE		Y				Retention end (audit + 7 yrs).
+D27	evidence_item_id	UUID		Y	PK
+D27	pack_id	UUID		Y	FK	audit_evidence_pack.pack_id		Parent pack.
+D27	document_id	UUID		N	FK	document.document_id		Linked document.
+D27	attestation_id	UUID		N	FK	training_attestation.attestation_id		Linked attestation.
+D27	disposition_id	UUID		N	FK	records_disposition.disposition_id		Linked disposition.
+D27	description	TEXT		Y				What this item demonstrates.
+D27	added_by_person_id	UUID		Y	FK	person.person_id		Person who added.
+D27	added_at	TIMESTAMPTZ		Y				Add timestamp.
+D28	deviation_id	UUID		Y	PK
+D28	sop_document_id	UUID		Y	FK	document.document_id		SOP deviated from.
+D28	reported_by_person_id	UUID		Y	FK	person.person_id		Reporter.
+D28	reported_at	TIMESTAMPTZ		Y				Timestamp.
+D28	severity	ENUM		Y			Minor / Major / Critical.	severity	Major
+D28	description	TEXT		Y				What happened.
+D28	root_cause	TEXT		N				Root cause if known.
+D28	capa_id	UUID		N	FK	capa.capa_id		Linked CAPA if opened.
+D28	status	ENUM		Y		Open	State.	deviation_status	Closed
+D29	capa_id	UUID		Y	PK
+D29	code	VARCHAR	16	Y	UK			CAPA-NNN.		CAPA-014
+D29	trigger	ENUM		Y			Trigger.	capa_trigger	Deviation
+D29	opened_at	DATE		Y				Open date.
+D29	opened_by_person_id	UUID		Y	FK	person.person_id		Opener.
+D29	owner_person_id	UUID		Y	FK	person.person_id		CAPA owner.
+D29	root_cause_due	DATE		Y				RCA due.
+D29	root_cause	TEXT		N				Root cause analysis.
+D29	corrective_action	TEXT		N				Corrective action.
+D29	preventive_action	TEXT		N				Preventive action.
+D29	effectiveness_review_due	DATE		N				Effectiveness check due.
+D29	status	ENUM		Y		Open	State.	capa_status	Effectiveness Verified
+D29	closed_at	DATE		N				Closure date.
+D30	grant_id	UUID		Y	PK
+D30	document_id	UUID		Y	FK	document.document_id		Document.
+D30	principal_type	ENUM		Y			Person, Role, or Department.	principal_type	Role
+D30	principal_id	UUID		Y				ID of person/role/department.
+D30	permission	ENUM		Y		Read	Permission granted.	permission	Read
+D30	granted_by_person_id	UUID		Y	FK	person.person_id		Granter.
+D30	granted_at	TIMESTAMPTZ		Y				Grant timestamp.
+D30	revoked_at	TIMESTAMPTZ		N				Revocation timestamp.
+D31	trail_id	BIGSERIAL		Y	PK
+D31	occurred_at	TIMESTAMPTZ		Y		now()	Event timestamp.
+D31	actor_person_id	UUID		N	FK	person.person_id		Acting person.
+D31	action	ENUM		Y			Action taken.	audit_action	approve
+D31	entity_type	VARCHAR	50	Y				Entity touched.		document
+D31	entity_id	UUID		Y				Entity ID.
+D31	before_state	JSONB		N				Pre-image.
+D31	after_state	JSONB		N				Post-image.
+D31	ip_address	INET		N				Client IP.
+D31	reason	TEXT		N				Reason supplied.

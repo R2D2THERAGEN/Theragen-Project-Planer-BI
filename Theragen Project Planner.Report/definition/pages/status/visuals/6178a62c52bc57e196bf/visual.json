@@ -1,0 +1,128 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "6178a62c52bc57e196bf",
+  "position": {
+    "x": 8,
+    "y": 484,
+    "z": 1000,
+    "width": 1264,
+    "height": 224
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Status Report"
+                    }
+                  },
+                  "Property": "Period End"
+                }
+              },
+              "queryRef": "Status Report.Period End"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Status Report"
+                    }
+                  },
+                  "Property": "Overall Status"
+                }
+              },
+              "queryRef": "Status Report.Overall Status"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Status Report"
+                    }
+                  },
+                  "Property": "Trend"
+                }
+              },
+              "queryRef": "Status Report.Trend"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Status Report"
+                    }
+                  },
+                  "Property": "Executive Summary"
+                }
+              },
+              "queryRef": "Status Report.Executive Summary"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Status Report"
+                    }
+                  },
+                  "Property": "Decisions Needed"
+                }
+              },
+              "queryRef": "Status Report.Decisions Needed"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Status Report"
+                  }
+                },
+                "Property": "Period End"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Status reports - executive summary and decisions needed'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,67 @@
+/// Person directory (DM D02). Owners, requesters and assignees on facts.
+table 'Person'
+	lineageTag: b4c6cdec-1a41-5001-b43e-dd06efbc25e0
+
+	column 'Person ID'
+		dataType: string
+		isHidden
+		lineageTag: 8a36c70d-b5a1-58fb-9953-3148e215b563
+		summarizeBy: none
+		sourceColumn: Person ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Person'
+		dataType: string
+		lineageTag: 34350de5-beb8-5edf-86a3-673e1258680c
+		summarizeBy: none
+		sourceColumn: Person
+
+		annotation SummarizationSetBy = User
+
+	column 'Email'
+		dataType: string
+		lineageTag: 26ed695f-8b9e-5b1a-ab10-22c8c36c8128
+		summarizeBy: none
+		sourceColumn: Email
+
+		annotation SummarizationSetBy = User
+
+	column 'Person Department'
+		dataType: string
+		lineageTag: 58bb88a2-1793-516b-b410-823c9ef29b76
+		summarizeBy: none
+		sourceColumn: Person Department
+
+		annotation SummarizationSetBy = User
+
+	column 'Role Title'
+		dataType: string
+		lineageTag: 11796fc0-b073-5de3-a0f8-dda5fee14e7e
+		summarizeBy: none
+		sourceColumn: Role Title
+
+		annotation SummarizationSetBy = User
+
+	column 'Employee Number'
+		dataType: string
+		lineageTag: 62ecdf90-9dcd-5d73-a8a2-1bfcac8cd2c0
+		summarizeBy: none
+		sourceColumn: Employee Number
+
+		annotation SummarizationSetBy = User
+
+	partition 'Person' = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "\person.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Selected = Table.SelectColumns(Promoted, {"person_id", "display_name", "email", "department_name", "role_title", "employee_number"}),
+				    Nulled = Table.ReplaceValue(Selected, "", null, Replacer.ReplaceValue, Table.ColumnNames(Selected)),
+				    Typed = Table.TransformColumnTypes(Nulled, {{"person_id", type text}, {"display_name", type text}, {"email", type text}, {"department_name", type text}, {"role_title", type text}, {"employee_number", type text}}),
+				    Renamed = Table.RenameColumns(Typed, {{"person_id", "Person ID"}, {"display_name", "Person"}, {"email", "Email"}, {"department_name", "Person Department"}, {"role_title", "Role Title"}, {"employee_number", "Employee Number"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table

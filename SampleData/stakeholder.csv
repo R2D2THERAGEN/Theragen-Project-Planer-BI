@@ -1,0 +1,39 @@
+﻿stakeholder_id,project_id,project_code,stk_code,person_id,stakeholder_name,role,department,engagement,interest,influence,communication_preference
+46b1e51f-e397-5f7a-9b1f-1173eb61dce9,2ee385b2-99f4-5b3a-b6f1-a4fd637f6485,THG-CLN-014,S-001,4c3359c7-f508-523c-9f70-e111c84a62e3,Sam Delgado,Data Platform Lead,IT / Data / Security,I,High,Medium,Teams
+e8982808-b753-5071-99d4-60c5e59da078,2ee385b2-99f4-5b3a-b6f1-a4fd637f6485,THG-CLN-014,S-002,11037be3-710e-5a2e-a7f0-fadee2eb6fdc,Tom Becker,Project Manager,Operations / PMO,I,Medium,Low,Dashboard
+f7578765-6c2f-5a2b-bc61-b4fd205b50ca,2ee385b2-99f4-5b3a-b6f1-a4fd637f6485,THG-CLN-014,S-003,16f1836e-598b-52bc-8d14-4814cbacee42,Anna Lindqvist,Regulatory Affairs Specialist,Regulatory / Quality,R,High,Low,Dashboard
+992f8e46-0886-5eb5-a442-0d7424349856,2ee385b2-99f4-5b3a-b6f1-a4fd637f6485,THG-CLN-014,S-004,6a0700d0-18fe-5f73-95b1-02d3edc6b753,Priya Nair,Quality Engineer,Regulatory / Quality,I,High,Medium,Dashboard
+2f522c1c-476f-5a7c-8490-0de31d132a4a,2ee385b2-99f4-5b3a-b6f1-a4fd637f6485,THG-CLN-014,S-005,2319435a-2e81-5b0e-ba4e-33a5b1a93f08,Chloe Barnett,BI Developer,IT / Data / Security,C,High,Medium,Dashboard
+03ec3299-cbc8-5e5a-a856-f8a5147fc4e8,2ee385b2-99f4-5b3a-b6f1-a4fd637f6485,THG-CLN-014,S-006,053293e3-e689-5fc9-b2ce-9eea3906c3ec,Omar Sinclair,Chief Operating Officer,Operations / PMO,I,Low,Low,Teams
+67df46f8-dc6e-58b1-8fe7-54547e59bc92,777ea2a7-20e0-5b0d-a53b-ba290af326fc,THG-RND-007,S-001,e74320fc-5dd9-5330-be78-086e0508b50a,Daniel Okafor,Clinical Operations Lead,Clinical / Medical Affairs,I,High,Low,Meeting
+61b5fd03-d5d2-5f1d-a2f7-939194b60ef9,777ea2a7-20e0-5b0d-a53b-ba290af326fc,THG-RND-007,S-002,2319435a-2e81-5b0e-ba4e-33a5b1a93f08,Chloe Barnett,BI Developer,IT / Data / Security,C,Medium,Low,Email
+eeb4cd91-f0eb-5724-b00a-c9348b12ad8c,777ea2a7-20e0-5b0d-a53b-ba290af326fc,THG-RND-007,S-003,24f50fc1-ebc2-5858-abee-82a4ed95cf95,Hannah Kim,Procurement Manager,Finance / Procurement,I,High,Medium,Meeting
+2d00376e-bbd9-512f-842c-2f1adf87a341,777ea2a7-20e0-5b0d-a53b-ba290af326fc,THG-RND-007,S-004,7144f78b-3f33-5800-bd7f-f894b15e01aa,Grace Mwangi,Senior Project Manager,Operations / PMO,I,Medium,Medium,Meeting
+bc506813-1893-538a-814d-f83207c1bb5f,777ea2a7-20e0-5b0d-a53b-ba290af326fc,THG-RND-007,S-005,81720f99-4190-5ee3-96bf-d21c44635ea1,Lucas Romero,Product Marketing Manager,Commercial / Marketing,R,Low,Medium,Email
+203daf99-40d9-574a-b4ad-5e6f7c9cc6e2,777ea2a7-20e0-5b0d-a53b-ba290af326fc,THG-RND-007,S-006,9b478123-7b4f-5756-a5fb-d912cbdb6589,James Whitfield,Quality / Regulatory Director,Regulatory / Quality,A,High,Medium,Meeting
+2cce1b1a-1d67-5e2c-8693-9111ba0a1afd,777ea2a7-20e0-5b0d-a53b-ba290af326fc,THG-RND-007,S-007,55aad255-0b8f-5ad1-96f2-0727c92643e9,Olivia Marsh,Commercial Director,Commercial / Marketing,I,High,High,Dashboard
+5d192955-05a2-5214-a01b-916fe47b64c7,5e8efc63-4e18-5155-a82f-8e3539c74478,THG-IT-003,S-001,6b27ac85-f4ce-50b9-9a0d-f55d986466a6,Ruth Adler,Training & Competency Lead,HR / People,R,High,High,Dashboard
+b59f79e4-45d3-515f-b527-4bc103c665ac,5e8efc63-4e18-5155-a82f-8e3539c74478,THG-IT-003,S-002,24f50fc1-ebc2-5858-abee-82a4ed95cf95,Hannah Kim,Procurement Manager,Finance / Procurement,R,High,High,Email
+944d1d90-6f93-517d-9dde-8bdf589c124c,5e8efc63-4e18-5155-a82f-8e3539c74478,THG-IT-003,S-003,a2459816-9f62-5345-b905-fe4aa502e999,Victor Osei,Finance Lead,Finance / Procurement,R,Medium,Medium,Email
+4a181ee9-7ddc-5616-b691-1cd8b55bf44e,5e8efc63-4e18-5155-a82f-8e3539c74478,THG-IT-003,S-004,4c3359c7-f508-523c-9f70-e111c84a62e3,Sam Delgado,Data Platform Lead,IT / Data / Security,R,Low,Medium,Email
+3c56dda4-4d80-5cdc-ab69-7a47c75ca39a,5e8efc63-4e18-5155-a82f-8e3539c74478,THG-IT-003,S-005,4d7b84e1-3237-5236-b516-16e5f054a655,Maya Patel,Medical Director,Clinical / Medical Affairs,C,Medium,Medium,Meeting
+c3837d52-5ce2-5597-a2f7-11938cdb7a86,5e8efc63-4e18-5155-a82f-8e3539c74478,THG-IT-003,S-006,2855d25e-e048-5080-bb0e-1196ce1352e1,Sofia Reyes,Clinical Research Associate,Clinical / Medical Affairs,C,Medium,High,Dashboard
+b72056a8-248c-5afe-ba2e-9cbe48e8eb5b,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,S-001,3ba00d40-ac21-5ba0-9559-5464dc42221b,Peter Novak,HR Director,HR / People,I,Medium,Low,Email
+42662c27-2415-5c6b-894b-401cd8503fa7,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,S-002,053293e3-e689-5fc9-b2ce-9eea3906c3ec,Omar Sinclair,Chief Operating Officer,Operations / PMO,C,Medium,Medium,Meeting
+2d452c0c-c32b-5e3b-ba3f-45d341307a9b,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,S-003,2855d25e-e048-5080-bb0e-1196ce1352e1,Sofia Reyes,Clinical Research Associate,Clinical / Medical Affairs,A,High,Low,Meeting
+829ead97-9288-5aa7-bf2a-316811c9f855,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,S-004,55aad255-0b8f-5ad1-96f2-0727c92643e9,Olivia Marsh,Commercial Director,Commercial / Marketing,R,Medium,High,Meeting
+90118ea9-7d24-5432-a873-5ca7e8f633c8,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,S-005,7144f78b-3f33-5800-bd7f-f894b15e01aa,Grace Mwangi,Senior Project Manager,Operations / PMO,R,High,High,Teams
+32c7f49f-38e3-58f3-a85a-a8a2485b4249,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,S-006,6b27ac85-f4ce-50b9-9a0d-f55d986466a6,Ruth Adler,Training & Competency Lead,HR / People,I,Medium,Low,Dashboard
+3167e4ee-c8ed-5969-97c1-79a7015efc99,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,S-001,16f1836e-598b-52bc-8d14-4814cbacee42,Anna Lindqvist,Regulatory Affairs Specialist,Regulatory / Quality,R,High,High,Meeting
+ce7c3471-ef80-5107-8110-c40384db6522,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,S-002,2855d25e-e048-5080-bb0e-1196ce1352e1,Sofia Reyes,Clinical Research Associate,Clinical / Medical Affairs,C,Low,Medium,Meeting
+0ca04de5-4bdd-5611-9a0d-2c37b30a758f,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,S-003,a2459816-9f62-5345-b905-fe4aa502e999,Victor Osei,Finance Lead,Finance / Procurement,R,Medium,High,Email
+87825342-cd48-50fc-aa5d-ab109b872048,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,S-004,e74320fc-5dd9-5330-be78-086e0508b50a,Daniel Okafor,Clinical Operations Lead,Clinical / Medical Affairs,I,High,High,Meeting
+abc5d563-ad8b-5ea3-95a1-f2a975fc2724,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,S-005,c3e0540a-708c-5011-a086-58ec024abd79,Aiko Tanaka,Test Engineer,R&D / Engineering,C,Medium,Medium,Dashboard
+835b9c3b-b635-5a81-a778-bcf6e1c41119,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,S-006,c77dbea5-664d-5305-abda-7037d5f531cf,Ethan Brooks,VP Engineering,R&D / Engineering,A,High,Medium,Meeting
+25fbd776-5d4c-5917-8add-c7264f833437,c9fb69ea-3e4b-53c4-8707-6697185b54c3,THG-COM-002,S-001,2855d25e-e048-5080-bb0e-1196ce1352e1,Sofia Reyes,Clinical Research Associate,Clinical / Medical Affairs,A,High,High,Meeting
+04937095-228d-5930-bbfd-557bc59d014b,c9fb69ea-3e4b-53c4-8707-6697185b54c3,THG-COM-002,S-002,6ac3503b-a8a2-5b42-bda9-e82dc9b054d3,Isabel Fonseca,Project Coordinator,Operations / PMO,A,Medium,Medium,Dashboard
+3536b310-bcd6-5bd7-b4c4-f59bace52143,c9fb69ea-3e4b-53c4-8707-6697185b54c3,THG-COM-002,S-003,053293e3-e689-5fc9-b2ce-9eea3906c3ec,Omar Sinclair,Chief Operating Officer,Operations / PMO,C,High,Low,Meeting
+8aecf1cb-390d-53b5-bfc7-9a563d8b82b3,c9fb69ea-3e4b-53c4-8707-6697185b54c3,THG-COM-002,S-004,6b27ac85-f4ce-50b9-9a0d-f55d986466a6,Ruth Adler,Training & Competency Lead,HR / People,C,Medium,Medium,Email
+fabc70d3-8750-506b-8d02-221cf05f65f9,c9fb69ea-3e4b-53c4-8707-6697185b54c3,THG-COM-002,S-005,4c3359c7-f508-523c-9f70-e111c84a62e3,Sam Delgado,Data Platform Lead,IT / Data / Security,R,Medium,Medium,Teams
+ff4fae0a-7283-5aa7-ae37-8963c6c8a3df,c9fb69ea-3e4b-53c4-8707-6697185b54c3,THG-COM-002,S-006,6a0700d0-18fe-5f73-95b1-02d3edc6b753,Priya Nair,Quality Engineer,Regulatory / Quality,I,High,Medium,Dashboard
+9703e390-0cb9-5a39-aef7-3b74eafc9761,c9fb69ea-3e4b-53c4-8707-6697185b54c3,THG-COM-002,S-007,81720f99-4190-5ee3-96bf-d21c44635ea1,Lucas Romero,Product Marketing Manager,Commercial / Marketing,R,High,Low,Meeting

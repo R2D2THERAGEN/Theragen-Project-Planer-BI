@@ -1,0 +1,9 @@
+﻿department_id,code,name,active
+a03d6a8f-6c5e-5298-8870-c46650c1de2d,CLN,Clinical / Medical Affairs,TRUE
+cf470b44-58d5-5a27-89c9-266cfe70fd0e,REG,Regulatory / Quality,TRUE
+79f51ff1-4f90-514a-b387-69c0b2a471e5,RND,R&D / Engineering,TRUE
+b67c94f8-9541-5f0f-9585-cbc7ba90d0dd,OPS,Operations / PMO,TRUE
+720f4768-40df-55c6-a7bf-d287cca36f39,FIN,Finance / Procurement,TRUE
+17baa432-e359-5160-b694-48736e562fea,COM,Commercial / Marketing,TRUE
+7220246a-0e71-550b-a4ef-747d325c9bd8,IT,IT / Data / Security,TRUE
+6610fe20-e1ee-5f03-8065-67cb312a8bbb,HR,HR / People,TRUE

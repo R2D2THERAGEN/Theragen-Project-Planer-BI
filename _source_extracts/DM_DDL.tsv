@@ -1,0 +1,480 @@
+THERAGEN  |  DM_DDL
+PostgreSQL CREATE TABLE statements for the Document Management schema.
+—
+-- ============================================================
+-- doc_mgmt schema
+-- Generated from Theragen DBS-001 v1.0
+-- ============================================================
+CREATE SCHEMA IF NOT EXISTS doc_mgmt;
+-- D01  Department
+-- Cross-functional department lookup.
+CREATE TABLE doc_mgmt.department (
+    department_id UUID NOT NULL PRIMARY KEY,
+    code VARCHAR(4) NOT NULL UNIQUE,  -- CLN/REG/RND/OPS/FIN/COM/IT/HR/ENT.
+    name VARCHAR(100) NOT NULL UNIQUE,  -- Display name.
+    head_person_id UUID,  -- Department head.
+    active BOOLEAN NOT NULL DEFAULT Active flag.,
+    CONSTRAINT fk_department_head_person_id FOREIGN KEY (head_person_id) REFERENCES doc_mgmt.person(person_id)
+);
+-- D02  Person
+-- Workforce member or external contributor.
+CREATE TABLE doc_mgmt.person (
+    person_id UUID NOT NULL PRIMARY KEY,
+    employee_number VARCHAR(20) UNIQUE,  -- HRIS identifier.
+    email VARCHAR(254) NOT NULL UNIQUE,  -- Primary email.
+    display_name VARCHAR(150) NOT NULL,  -- Full name.
+    department_id UUID NOT NULL,  -- Home department.
+    role_id UUID,  -- Primary role.
+    manager_person_id UUID,  -- Reporting manager (self-ref).
+    employment_type VARCHAR NOT NULL DEFAULT Worker type.,  -- employment_type
+    active BOOLEAN NOT NULL DEFAULT Active flag.,
+    start_date DATE NOT NULL,  -- Start date.
+    end_date DATE,  -- End date (if any).
+    CONSTRAINT fk_person_department_id FOREIGN KEY (department_id) REFERENCES doc_mgmt.department(department_id),
+    CONSTRAINT fk_person_role_id FOREIGN KEY (role_id) REFERENCES doc_mgmt.role(role_id),
+    CONSTRAINT fk_person_manager_person_id FOREIGN KEY (manager_person_id) REFERENCES doc_mgmt.person(person_id)
+);
+-- D03  Role
+-- Job role catalog.
+CREATE TABLE doc_mgmt.role (
+    role_id UUID NOT NULL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,  -- Role name.
+    department_id UUID,  -- Owning department, if specific.
+    controlled_work BOOLEAN NOT NULL DEFAULT If role performs controlled work (drives training requirement).,
+    description TEXT,  -- Role description.
+    CONSTRAINT fk_role_department_id FOREIGN KEY (department_id) REFERENCES doc_mgmt.department(department_id)
+);
+-- D04  Compliance Frame
+-- Regulatory or methodological frame.
+CREATE TABLE doc_mgmt.compliance_frame (
+    frame_id UUID NOT NULL PRIMARY KEY,
+    code VARCHAR(32) NOT NULL UNIQUE,  -- Short code.
+    name VARCHAR(100) NOT NULL UNIQUE,  -- Display name.
+    authority VARCHAR(100) NOT NULL,  -- Issuing body.
+    applies_to TEXT NOT NULL,  -- When applicable.
+    reference_url VARCHAR(500),  -- Authoritative source URL.
+);
+-- D05  Document Type
+-- Controlled document type catalog (CHR, SOP, etc.).
+CREATE TABLE doc_mgmt.document_type (
+    document_type_id UUID NOT NULL PRIMARY KEY,
+    code VARCHAR(4) NOT NULL UNIQUE,  -- 3-letter type code.
+    name VARCHAR(100) NOT NULL,  -- Plain name.
+    lifecycle_phase VARCHAR NOT NULL DEFAULT Lifecycle phase.,  -- lifecycle_phase
+    default_review_cycle VARCHAR NOT NULL DEFAULT Default review cadence.,  -- review_cycle
+    requires_approval BOOLEAN NOT NULL DEFAULT Whether Z-2 approval required.
+);
+-- D06  Controlled Template
+-- Versioned blank template that documents are created from.
+CREATE TABLE doc_mgmt.controlled_template (
+    template_id UUID NOT NULL PRIMARY KEY,
+    template_code VARCHAR(30) NOT NULL UNIQUE,  -- Template Doc ID.
+    document_type_id UUID NOT NULL,  -- Which type.
+    title VARCHAR(200) NOT NULL,  -- Template title.
+    version VARCHAR(10) NOT NULL DEFAULT Template version.,
+    status VARCHAR NOT NULL DEFAULT Template status.,  -- doc_status
+    storage_path VARCHAR(500) NOT NULL,  -- SharePoint or repo path.
+    owner_person_id UUID NOT NULL,  -- Template owner.
+    published_at TIMESTAMPTZ NOT NULL,  -- Publication timestamp.
+    CONSTRAINT fk_controlled_template_document_type_id FOREIGN KEY (document_type_id) REFERENCES doc_mgmt.document_type(document_type_id),
+    CONSTRAINT fk_controlled_template_owner_person_id FOREIGN KEY (owner_person_id) REFERENCES doc_mgmt.person(person_id)
+);
+-- D07  Document
+-- Controlled document record. The spine of the DM schema.
+CREATE TABLE doc_mgmt.document (
+    document_id UUID NOT NULL PRIMARY KEY,
+    doc_id VARCHAR(30) NOT NULL UNIQUE,  -- Theragen Doc ID, e.g. THG-OPS-CHR-014.
+    document_type_id UUID NOT NULL,  -- Type.
+    primary_department_id UUID NOT NULL,  -- Owning department.
+    title VARCHAR(200) NOT NULL,  -- Document title.
+    subtitle VARCHAR(500),  -- One-line subtitle.
+    lifecycle_phase VARCHAR NOT NULL DEFAULT Lifecycle phase.,  -- lifecycle_phase
+    status VARCHAR NOT NULL DEFAULT Current status.,  -- doc_status
+    current_version VARCHAR(10) NOT NULL DEFAULT Current version.,
+    owner_person_id UUID NOT NULL,  -- Document Owner.
+    approver_person_id UUID,  -- Designated Approver.
+    review_cycle VARCHAR NOT NULL DEFAULT Review cycle.,  -- review_cycle
+    next_review_due DATE,  -- Next periodic review due date.
+    intake_id VARCHAR(16),  -- Originating intake.
+    classification VARCHAR NOT NULL DEFAULT Sensitivity classification.,  -- classification
+    storage_system VARCHAR NOT NULL DEFAULT System of record.,  -- storage_system
+    storage_path VARCHAR(500) NOT NULL,  -- File path or URL.
+    retired_at TIMESTAMPTZ,  -- If retired, when.
+    superseded_by_document_id UUID,  -- Successor doc if any.
+    created_at TIMESTAMPTZ NOT NULL DEFAULT Created.,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT Updated.,
+    CONSTRAINT fk_document_document_type_id FOREIGN KEY (document_type_id) REFERENCES doc_mgmt.document_type(document_type_id),
+    CONSTRAINT fk_document_primary_department_id FOREIGN KEY (primary_department_id) REFERENCES doc_mgmt.department(department_id),
+    CONSTRAINT fk_document_owner_person_id FOREIGN KEY (owner_person_id) REFERENCES doc_mgmt.person(person_id),
+    CONSTRAINT fk_document_approver_person_id FOREIGN KEY (approver_person_id) REFERENCES doc_mgmt.person(person_id),
+    CONSTRAINT fk_document_intake_id FOREIGN KEY (intake_id) REFERENCES doc_mgmt.intake_submission(intake_id),
+    CONSTRAINT fk_document_superseded_by_document_id FOREIGN KEY (superseded_by_document_id) REFERENCES doc_mgmt.document(document_id)
+);
+-- D08  Document Version
+-- Immutable version history for a Document.
+CREATE TABLE doc_mgmt.document_version (
+    version_id UUID NOT NULL PRIMARY KEY,
+    document_id UUID NOT NULL,  -- Parent document.
+    version VARCHAR(10) NOT NULL,  -- Version string.
+    status VARCHAR NOT NULL DEFAULT Status at this version.,  -- doc_status
+    change_summary TEXT NOT NULL,  -- What changed.
+    change_class VARCHAR DEFAULT If amendment, class.,  -- cr_class
+    linked_cr_id UUID,  -- Linked CR.
+    author_person_id UUID NOT NULL,  -- Author.
+    effective_date DATE,  -- Effective on.
+    storage_path VARCHAR(500) NOT NULL,  -- Versioned file path.
+    created_at TIMESTAMPTZ NOT NULL DEFAULT Created.,
+    CONSTRAINT fk_document_version_document_id FOREIGN KEY (document_id) REFERENCES doc_mgmt.document(document_id),
+    CONSTRAINT fk_document_version_linked_cr_id FOREIGN KEY (linked_cr_id) REFERENCES doc_mgmt.change_request_gov(cr_gov_id),
+    CONSTRAINT fk_document_version_author_person_id FOREIGN KEY (author_person_id) REFERENCES doc_mgmt.person(person_id)
+);
+-- D09  Document Review
+-- Review event prior to baseline or amendment.
+CREATE TABLE doc_mgmt.document_review (
+    review_id UUID NOT NULL PRIMARY KEY,
+    version_id UUID NOT NULL,  -- Version under review.
+    reviewer_person_id UUID NOT NULL,  -- Reviewer.
+    review_type VARCHAR NOT NULL DEFAULT Type.,  -- review_type
+    disposition VARCHAR NOT NULL DEFAULT Disposition.,  -- review_disposition
+    comments TEXT,  -- Comments / dispositions.
+    reviewed_at TIMESTAMPTZ NOT NULL,  -- Review timestamp.
+    CONSTRAINT fk_document_review_version_id FOREIGN KEY (version_id) REFERENCES doc_mgmt.document_version(version_id),
+    CONSTRAINT fk_document_review_reviewer_person_id FOREIGN KEY (reviewer_person_id) REFERENCES doc_mgmt.person(person_id)
+);
+-- D10  Document Approval
+-- 21 CFR Part 11 §11.50 signed approval.
+CREATE TABLE doc_mgmt.document_approval (
+    approval_id UUID NOT NULL PRIMARY KEY,
+    version_id UUID NOT NULL,  -- Version being approved.
+    approver_person_id UUID NOT NULL,  -- Approver.
+    signature_meaning VARCHAR NOT NULL DEFAULT Per 21 CFR §11.50.,  -- signature_meaning
+    signed_at TIMESTAMPTZ NOT NULL,  -- Sign timestamp.
+    esig_hash VARCHAR(128) NOT NULL,  -- Signature hash.
+    ip_address INET,  -- Client IP at signing.
+    reason TEXT,  -- Reason / context.
+    CONSTRAINT fk_document_approval_version_id FOREIGN KEY (version_id) REFERENCES doc_mgmt.document_version(version_id),
+    CONSTRAINT fk_document_approval_approver_person_id FOREIGN KEY (approver_person_id) REFERENCES doc_mgmt.person(person_id)
+);
+-- D11  Document Retirement
+-- Retirement event for a baselined document.
+CREATE TABLE doc_mgmt.document_retirement (
+    retirement_id UUID NOT NULL PRIMARY KEY,
+    document_id UUID NOT NULL,  -- Document retired.
+    retired_by_person_id UUID NOT NULL,  -- Approver of retirement.
+    reason TEXT NOT NULL,  -- Why retired.
+    superseded_by_document_id UUID,  -- Successor.
+    archive_path VARCHAR(500) NOT NULL,  -- Archive location.
+    retired_at TIMESTAMPTZ NOT NULL,  -- Retirement timestamp.
+    CONSTRAINT fk_document_retirement_document_id FOREIGN KEY (document_id) REFERENCES doc_mgmt.document(document_id),
+    CONSTRAINT fk_document_retirement_retired_by_person_id FOREIGN KEY (retired_by_person_id) REFERENCES doc_mgmt.person(person_id),
+    CONSTRAINT fk_document_retirement_superseded_by_document_id FOREIGN KEY (superseded_by_document_id) REFERENCES doc_mgmt.document(document_id)
+);
+-- D12  Intake Submission
+-- Submitted Integrated Intake Form.
+CREATE TABLE doc_mgmt.intake_submission (
+    intake_submission_id UUID NOT NULL PRIMARY KEY,
+    intake_id VARCHAR(16) NOT NULL UNIQUE,  -- INT-YYYY-NNNN.
+    submitted_at TIMESTAMPTZ NOT NULL,  -- Submission timestamp.
+    requester_person_id UUID NOT NULL,  -- Requester.
+    requesting_department_id UUID NOT NULL,  -- Requesting department.
+    request_title VARCHAR(200) NOT NULL,  -- Request title.
+    request_type VARCHAR NOT NULL DEFAULT Type.,  -- request_type
+    business_problem TEXT NOT NULL,  -- 2-4 sentences.
+    desired_outcome TEXT NOT NULL,  -- Success definition.
+    strategic_linkage TEXT,  -- Linked strategic objective.
+    requested_by_date DATE,  -- Need-by date.
+    scope_in TEXT,  -- Scope sketch — in.
+    scope_out TEXT,  -- Scope sketch — out.
+    phi_flag BOOLEAN NOT NULL DEFAULT PHI involved?,
+    cfr11_flag BOOLEAN NOT NULL DEFAULT 21 CFR Part 11 involved?,
+    clinical_flag BOOLEAN NOT NULL DEFAULT Clinical / study?,
+    vendor_flag BOOLEAN NOT NULL DEFAULT Vendor involved?,
+    data_sharing_flag BOOLEAN NOT NULL DEFAULT External data sharing?,
+    effort VARCHAR NOT NULL DEFAULT Effort bucket.,  -- effort_bucket
+    budget_envelope VARCHAR NOT NULL DEFAULT Budget bucket.,  -- budget_envelope
+    funding_source VARCHAR DEFAULT Funding source.,  -- funding_source
+    status VARCHAR NOT NULL DEFAULT Submission lifecycle.,  -- intake_status
+    CONSTRAINT fk_intake_submission_requester_person_id FOREIGN KEY (requester_person_id) REFERENCES doc_mgmt.person(person_id),
+    CONSTRAINT fk_intake_submission_requesting_department_id FOREIGN KEY (requesting_department_id) REFERENCES doc_mgmt.department(department_id)
+);
+-- D13  Intake Compliance Pre-screen
+-- Per-frame pre-screen attestation.
+CREATE TABLE doc_mgmt.intake_compliance_prescreen (
+    prescreen_id UUID NOT NULL PRIMARY KEY,
+    intake_id VARCHAR(16) NOT NULL,  -- Parent intake.
+    frame_id UUID NOT NULL,  -- Frame screened.
+    reviewer_person_id UUID NOT NULL,  -- Pre-screen reviewer.
+    decision VARCHAR NOT NULL DEFAULT Result.,  -- prescreen_decision
+    rationale TEXT NOT NULL,  -- Rationale / conditions.
+    reviewed_at TIMESTAMPTZ NOT NULL,  -- Timestamp.
+    CONSTRAINT fk_intake_compliance_prescreen_intake_id FOREIGN KEY (intake_id) REFERENCES doc_mgmt.intake_submission(intake_id),
+    CONSTRAINT fk_intake_compliance_prescreen_frame_id FOREIGN KEY (frame_id) REFERENCES doc_mgmt.compliance_frame(frame_id),
+    CONSTRAINT fk_intake_compliance_prescreen_reviewer_person_id FOREIGN KEY (reviewer_person_id) REFERENCES doc_mgmt.person(person_id)
+);
+-- D14  Intake Decision
+-- Triage decision and routing for an intake.
+CREATE TABLE doc_mgmt.intake_decision (
+    decision_id UUID NOT NULL PRIMARY KEY,
+    intake_id VARCHAR(16) NOT NULL UNIQUE,  -- Parent intake.
+    decided_by_person_id UUID NOT NULL,  -- PMO Director or delegate.
+    decided_at TIMESTAMPTZ NOT NULL,  -- Timestamp.
+    decision VARCHAR NOT NULL DEFAULT Routing.,  -- intake_decision
+    primary_department_id UUID NOT NULL,  -- Assigned primary department.
+    secondary_departments TEXT,  -- JSON array of department codes.
+    linked_charter_doc_id VARCHAR(30),  -- Charter once issued.
+    linked_project_id UUID,  -- Project once kicked off.
+    notes TEXT,  -- Triage notes.
+    CONSTRAINT fk_intake_decision_decided_by_person_id FOREIGN KEY (decided_by_person_id) REFERENCES doc_mgmt.person(person_id),
+    CONSTRAINT fk_intake_decision_primary_department_id FOREIGN KEY (primary_department_id) REFERENCES doc_mgmt.department(department_id),
+    CONSTRAINT fk_intake_decision_linked_charter_doc_id FOREIGN KEY (linked_charter_doc_id) REFERENCES doc_mgmt.document(doc_id),
+    CONSTRAINT fk_intake_decision_linked_project_id FOREIGN KEY (linked_project_id) REFERENCES doc_mgmt.project(project_id)
+);
+-- D15  RACI Assignment
+-- Per-document, per-department R/A/C/I role.
+CREATE TABLE doc_mgmt.raci_assignment (
+    raci_id UUID NOT NULL PRIMARY KEY,
+    document_id UUID NOT NULL,  -- Document.
+    department_id UUID NOT NULL,  -- Department.
+    role VARCHAR NOT NULL DEFAULT R/A/C/I.,  -- raci_role
+    touchpoint VARCHAR(300),  -- What the dept does on this doc.
+    valid_from DATE NOT NULL,  -- Effective from.
+    valid_to DATE,  -- Effective to (open ended).
+    CONSTRAINT fk_raci_assignment_document_id FOREIGN KEY (document_id) REFERENCES doc_mgmt.document(document_id),
+    CONSTRAINT fk_raci_assignment_department_id FOREIGN KEY (department_id) REFERENCES doc_mgmt.department(department_id)
+);
+-- D16  Document × Compliance Mapping
+-- Which frames govern which doc; with evidence link.
+CREATE TABLE doc_mgmt.doc_compliance_mapping (
+    mapping_id UUID NOT NULL PRIMARY KEY,
+    document_id UUID NOT NULL,  -- Document.
+    frame_id UUID NOT NULL,  -- Frame.
+    applies_to_sections TEXT,  -- Which sections of the doc.
+    evidence_reference TEXT,  -- Audit evidence pointer.
+    CONSTRAINT fk_doc_compliance_mapping_document_id FOREIGN KEY (document_id) REFERENCES doc_mgmt.document(document_id),
+    CONSTRAINT fk_doc_compliance_mapping_frame_id FOREIGN KEY (frame_id) REFERENCES doc_mgmt.compliance_frame(frame_id)
+);
+-- D17  Change Request (Governance)
+-- CR against a controlled document. Class A/B/C per SOP-003.
+CREATE TABLE doc_mgmt.change_request_gov (
+    cr_gov_id UUID NOT NULL PRIMARY KEY,
+    cr_code VARCHAR(8) NOT NULL UNIQUE,  -- CHG-NNN.
+    document_id UUID NOT NULL,  -- Target controlled document.
+    intake_id VARCHAR(16),  -- Linked intake if applicable.
+    requested_at DATE NOT NULL,  -- Submission date.
+    requested_by_person_id UUID NOT NULL,  -- Requester.
+    cr_class VARCHAR NOT NULL DEFAULT Class A/B/C/Emergency.,  -- cr_class
+    description TEXT NOT NULL,  -- Proposed change.
+    reason TEXT NOT NULL,  -- Driver.
+    decision VARCHAR NOT NULL DEFAULT Approval decision.,  -- cr_decision
+    decided_by_person_id UUID,  -- Approver.
+    decided_at DATE,  -- Decision date.
+    implementation_verified BOOLEAN DEFAULT Verified.,
+    status VARCHAR NOT NULL DEFAULT CR state.,  -- cr_status
+    CONSTRAINT fk_change_request_gov_document_id FOREIGN KEY (document_id) REFERENCES doc_mgmt.document(document_id),
+    CONSTRAINT fk_change_request_gov_intake_id FOREIGN KEY (intake_id) REFERENCES doc_mgmt.intake_submission(intake_id),
+    CONSTRAINT fk_change_request_gov_requested_by_person_id FOREIGN KEY (requested_by_person_id) REFERENCES doc_mgmt.person(person_id),
+    CONSTRAINT fk_change_request_gov_decided_by_person_id FOREIGN KEY (decided_by_person_id) REFERENCES doc_mgmt.person(person_id)
+);
+-- D18  Change Impact Assessment (Gov)
+-- Per-department impact statement on a governance CR.
+CREATE TABLE doc_mgmt.change_assessment_gov (
+    gov_impact_id UUID NOT NULL PRIMARY KEY,
+    cr_gov_id UUID NOT NULL,  -- Parent CR.
+    department_id UUID NOT NULL,  -- Assessor's department.
+    impact_summary TEXT NOT NULL,  -- Impact statement.
+    compliance_impact TEXT,  -- Compliance / regulatory impact.
+    submitted_at DATE NOT NULL,  -- Submission date.
+    CONSTRAINT fk_change_assessment_gov_cr_gov_id FOREIGN KEY (cr_gov_id) REFERENCES doc_mgmt.change_request_gov(cr_gov_id),
+    CONSTRAINT fk_change_assessment_gov_department_id FOREIGN KEY (department_id) REFERENCES doc_mgmt.department(department_id)
+);
+-- D19  Training Curriculum
+-- Set of documents required for a given role.
+CREATE TABLE doc_mgmt.training_curriculum (
+    curriculum_id UUID NOT NULL PRIMARY KEY,
+    code VARCHAR(30) NOT NULL UNIQUE,  -- Curriculum code.
+    name VARCHAR(100) NOT NULL,  -- Curriculum name.
+    role_id UUID,  -- Role this curriculum targets.
+    department_id UUID,  -- Owning department.
+    active BOOLEAN NOT NULL DEFAULT Active flag.,
+    CONSTRAINT fk_training_curriculum_role_id FOREIGN KEY (role_id) REFERENCES doc_mgmt.role(role_id),
+    CONSTRAINT fk_training_curriculum_department_id FOREIGN KEY (department_id) REFERENCES doc_mgmt.department(department_id)
+);
+-- D20  Curriculum Item
+-- Document required by a curriculum.
+CREATE TABLE doc_mgmt.curriculum_item (
+    curriculum_item_id UUID NOT NULL PRIMARY KEY,
+    curriculum_id UUID NOT NULL,  -- Parent curriculum.
+    document_id UUID NOT NULL,  -- Required doc.
+    required BOOLEAN NOT NULL DEFAULT Required vs recommended.,
+    sequence SMALLINT NOT NULL DEFAULT Display order.,
+    CONSTRAINT fk_curriculum_item_curriculum_id FOREIGN KEY (curriculum_id) REFERENCES doc_mgmt.training_curriculum(curriculum_id),
+    CONSTRAINT fk_curriculum_item_document_id FOREIGN KEY (document_id) REFERENCES doc_mgmt.document(document_id)
+);
+-- D21  Training Assignment
+-- Curriculum or single doc assigned to a person.
+CREATE TABLE doc_mgmt.training_assignment (
+    assignment_id UUID NOT NULL PRIMARY KEY,
+    person_id UUID NOT NULL,  -- Trainee.
+    document_id UUID NOT NULL,  -- Specific doc.
+    curriculum_id UUID,  -- Curriculum that triggered the assignment.
+    assigned_at DATE NOT NULL,  -- Assignment date.
+    target_date DATE NOT NULL,  -- Target completion.
+    status VARCHAR NOT NULL DEFAULT Assignment state.,  -- training_status
+    manager_person_id UUID NOT NULL,  -- Assigning manager.
+    CONSTRAINT fk_training_assignment_person_id FOREIGN KEY (person_id) REFERENCES doc_mgmt.person(person_id),
+    CONSTRAINT fk_training_assignment_document_id FOREIGN KEY (document_id) REFERENCES doc_mgmt.document(document_id),
+    CONSTRAINT fk_training_assignment_curriculum_id FOREIGN KEY (curriculum_id) REFERENCES doc_mgmt.training_curriculum(curriculum_id),
+    CONSTRAINT fk_training_assignment_manager_person_id FOREIGN KEY (manager_person_id) REFERENCES doc_mgmt.person(person_id)
+);
+-- D22  Comprehension Check
+-- Quiz attempt result tied to an assignment.
+CREATE TABLE doc_mgmt.comprehension_check (
+    check_id UUID NOT NULL PRIMARY KEY,
+    assignment_id UUID NOT NULL,  -- Parent assignment.
+    attempt_number SMALLINT NOT NULL DEFAULT Attempt number.,
+    score_pct NUMERIC(5,2) NOT NULL DEFAULT Score 0-100.,
+    passed BOOLEAN NOT NULL DEFAULT Pass = score ≥ 80.,
+    taken_at TIMESTAMPTZ NOT NULL,  -- Quiz timestamp.
+    CONSTRAINT fk_comprehension_check_assignment_id FOREIGN KEY (assignment_id) REFERENCES doc_mgmt.training_assignment(assignment_id)
+);
+-- D23  Training Attestation
+-- Signed attestation under 21 CFR §11.50.
+CREATE TABLE doc_mgmt.training_attestation (
+    attestation_id UUID NOT NULL PRIMARY KEY,
+    assignment_id UUID NOT NULL,  -- Parent assignment.
+    person_id UUID NOT NULL,  -- Trainee.
+    document_id UUID NOT NULL,  -- Doc attested to.
+    version VARCHAR(10) NOT NULL,  -- Doc version at attestation.
+    attestation_meaning VARCHAR NOT NULL DEFAULT Per 21 CFR §11.50.,  -- signature_meaning
+    attested_at TIMESTAMPTZ NOT NULL,  -- Signed timestamp.
+    esig_hash VARCHAR(128) NOT NULL,  -- Signature hash.
+    refresher_due DATE,  -- Next refresher date.
+    CONSTRAINT fk_training_attestation_assignment_id FOREIGN KEY (assignment_id) REFERENCES doc_mgmt.training_assignment(assignment_id),
+    CONSTRAINT fk_training_attestation_person_id FOREIGN KEY (person_id) REFERENCES doc_mgmt.person(person_id),
+    CONSTRAINT fk_training_attestation_document_id FOREIGN KEY (document_id) REFERENCES doc_mgmt.document(document_id)
+);
+-- D24  Records Retention Policy
+-- Retention rules per record class.
+CREATE TABLE doc_mgmt.records_retention_policy (
+    policy_id UUID NOT NULL PRIMARY KEY,
+    record_class VARCHAR NOT NULL UNIQUE,  -- Record class.
+    system_of_record VARCHAR NOT NULL DEFAULT Authoritative system.,  -- storage_system
+    retention_years SMALLINT NOT NULL DEFAULT Minimum retention years.,
+    retention_basis VARCHAR NOT NULL DEFAULT Retention basis.,  -- retention_basis
+    disposition_default VARCHAR NOT NULL DEFAULT Default disposition.,  -- disposition
+    legal_basis VARCHAR(200),  -- Citation.
+);
+-- D25  Records Disposition
+-- Disposition event for a record reaching end of retention.
+CREATE TABLE doc_mgmt.records_disposition (
+    disposition_id UUID NOT NULL PRIMARY KEY,
+    document_id UUID,  -- Linked document.
+    record_class VARCHAR NOT NULL DEFAULT Record class disposed.,  -- record_class
+    disposition VARCHAR NOT NULL DEFAULT Action.,  -- disposition
+    disposed_by_person_id UUID NOT NULL,  -- Records Steward.
+    disposed_at DATE NOT NULL,  -- Disposition date.
+    method VARCHAR(200),  -- Method (shred / archive / transfer).
+    approved_by_person_id UUID NOT NULL,  -- Approver.
+    notes TEXT,  -- Notes.
+    CONSTRAINT fk_records_disposition_document_id FOREIGN KEY (document_id) REFERENCES doc_mgmt.document(document_id),
+    CONSTRAINT fk_records_disposition_disposed_by_person_id FOREIGN KEY (disposed_by_person_id) REFERENCES doc_mgmt.person(person_id),
+    CONSTRAINT fk_records_disposition_approved_by_person_id FOREIGN KEY (approved_by_person_id) REFERENCES doc_mgmt.person(person_id)
+);
+-- D26  Audit Evidence Pack
+-- Curated record set assembled for an audit.
+CREATE TABLE doc_mgmt.audit_evidence_pack (
+    pack_id UUID NOT NULL PRIMARY KEY,
+    pack_code VARCHAR(30) NOT NULL UNIQUE,  -- Pack code.
+    audit_name VARCHAR(200) NOT NULL,  -- Audit description.
+    audit_scope TEXT NOT NULL,  -- Scope of evidence.
+    frame_id UUID NOT NULL,  -- Frame being audited.
+    prepared_by_person_id UUID NOT NULL,  -- Pack owner.
+    prepared_at TIMESTAMPTZ NOT NULL,  -- Pack assembly time.
+    audit_start DATE NOT NULL,  -- Audit start.
+    audit_end DATE,  -- Audit end.
+    outcome VARCHAR DEFAULT Outcome.,  -- audit_outcome
+    retain_until DATE NOT NULL,  -- Retention end (audit + 7 yrs).
+    CONSTRAINT fk_audit_evidence_pack_frame_id FOREIGN KEY (frame_id) REFERENCES doc_mgmt.compliance_frame(frame_id),
+    CONSTRAINT fk_audit_evidence_pack_prepared_by_person_id FOREIGN KEY (prepared_by_person_id) REFERENCES doc_mgmt.person(person_id)
+);
+-- D27  Audit Evidence Item
+-- Individual record included in an evidence pack.
+CREATE TABLE doc_mgmt.audit_evidence_item (
+    evidence_item_id UUID NOT NULL PRIMARY KEY,
+    pack_id UUID NOT NULL,  -- Parent pack.
+    document_id UUID,  -- Linked document.
+    attestation_id UUID,  -- Linked attestation.
+    disposition_id UUID,  -- Linked disposition.
+    description TEXT NOT NULL,  -- What this item demonstrates.
+    added_by_person_id UUID NOT NULL,  -- Person who added.
+    added_at TIMESTAMPTZ NOT NULL,  -- Add timestamp.
+    CONSTRAINT fk_audit_evidence_item_pack_id FOREIGN KEY (pack_id) REFERENCES doc_mgmt.audit_evidence_pack(pack_id),
+    CONSTRAINT fk_audit_evidence_item_document_id FOREIGN KEY (document_id) REFERENCES doc_mgmt.document(document_id),
+    CONSTRAINT fk_audit_evidence_item_attestation_id FOREIGN KEY (attestation_id) REFERENCES doc_mgmt.training_attestation(attestation_id),
+    CONSTRAINT fk_audit_evidence_item_disposition_id FOREIGN KEY (disposition_id) REFERENCES doc_mgmt.records_disposition(disposition_id),
+    CONSTRAINT fk_audit_evidence_item_added_by_person_id FOREIGN KEY (added_by_person_id) REFERENCES doc_mgmt.person(person_id)
+);
+-- D28  Deviation
+-- Documented deviation from an SOP.
+CREATE TABLE doc_mgmt.deviation (
+    deviation_id UUID NOT NULL PRIMARY KEY,
+    sop_document_id UUID NOT NULL,  -- SOP deviated from.
+    reported_by_person_id UUID NOT NULL,  -- Reporter.
+    reported_at TIMESTAMPTZ NOT NULL,  -- Timestamp.
+    severity VARCHAR NOT NULL DEFAULT Minor / Major / Critical.,  -- severity
+    description TEXT NOT NULL,  -- What happened.
+    root_cause TEXT,  -- Root cause if known.
+    capa_id UUID,  -- Linked CAPA if opened.
+    status VARCHAR NOT NULL DEFAULT State.,  -- deviation_status
+    CONSTRAINT fk_deviation_sop_document_id FOREIGN KEY (sop_document_id) REFERENCES doc_mgmt.document(document_id),
+    CONSTRAINT fk_deviation_reported_by_person_id FOREIGN KEY (reported_by_person_id) REFERENCES doc_mgmt.person(person_id),
+    CONSTRAINT fk_deviation_capa_id FOREIGN KEY (capa_id) REFERENCES doc_mgmt.capa(capa_id)
+);
+-- D29  CAPA Record
+-- Corrective and Preventive Action.
+CREATE TABLE doc_mgmt.capa (
+    capa_id UUID NOT NULL PRIMARY KEY,
+    code VARCHAR(16) NOT NULL UNIQUE,  -- CAPA-NNN.
+    trigger VARCHAR NOT NULL DEFAULT Trigger.,  -- capa_trigger
+    opened_at DATE NOT NULL,  -- Open date.
+    opened_by_person_id UUID NOT NULL,  -- Opener.
+    owner_person_id UUID NOT NULL,  -- CAPA owner.
+    root_cause_due DATE NOT NULL,  -- RCA due.
+    root_cause TEXT,  -- Root cause analysis.
+    corrective_action TEXT,  -- Corrective action.
+    preventive_action TEXT,  -- Preventive action.
+    effectiveness_review_due DATE,  -- Effectiveness check due.
+    status VARCHAR NOT NULL DEFAULT State.,  -- capa_status
+    closed_at DATE,  -- Closure date.
+    CONSTRAINT fk_capa_opened_by_person_id FOREIGN KEY (opened_by_person_id) REFERENCES doc_mgmt.person(person_id),
+    CONSTRAINT fk_capa_owner_person_id FOREIGN KEY (owner_person_id) REFERENCES doc_mgmt.person(person_id)
+);
+-- D30  Access Grant
+-- Role-based access assignment to a document.
+CREATE TABLE doc_mgmt.access_grant (
+    grant_id UUID NOT NULL PRIMARY KEY,
+    document_id UUID NOT NULL,  -- Document.
+    principal_type VARCHAR NOT NULL DEFAULT Person, Role, or Department.,  -- principal_type
+    principal_id UUID NOT NULL,  -- ID of person/role/department.
+    permission VARCHAR NOT NULL DEFAULT Permission granted.,  -- permission
+    granted_by_person_id UUID NOT NULL,  -- Granter.
+    granted_at TIMESTAMPTZ NOT NULL,  -- Grant timestamp.
+    revoked_at TIMESTAMPTZ,  -- Revocation timestamp.
+    CONSTRAINT fk_access_grant_document_id FOREIGN KEY (document_id) REFERENCES doc_mgmt.document(document_id),
+    CONSTRAINT fk_access_grant_granted_by_person_id FOREIGN KEY (granted_by_person_id) REFERENCES doc_mgmt.person(person_id)
+);
+-- D31  Audit Trail Entry
+-- Append-only audit log entry (21 CFR §11.10(e)).
+CREATE TABLE doc_mgmt.audit_trail_entry (
+    trail_id BIGSERIAL NOT NULL PRIMARY KEY,
+    occurred_at TIMESTAMPTZ NOT NULL DEFAULT Event timestamp.,
+    actor_person_id UUID,  -- Acting person.
+    action VARCHAR NOT NULL DEFAULT Action taken.,  -- audit_action
+    entity_type VARCHAR(50) NOT NULL,  -- Entity touched.
+    entity_id UUID NOT NULL,  -- Entity ID.
+    before_state JSONB,  -- Pre-image.
+    after_state JSONB,  -- Post-image.
+    ip_address INET,  -- Client IP.
+    reason TEXT,  -- Reason supplied.
+    CONSTRAINT fk_audit_trail_entry_actor_person_id FOREIGN KEY (actor_person_id) REFERENCES doc_mgmt.person(person_id)
+);

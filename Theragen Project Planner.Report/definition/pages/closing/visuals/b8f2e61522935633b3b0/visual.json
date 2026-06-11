@@ -1,0 +1,75 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "b8f2e61522935633b3b0",
+  "position": {
+    "x": 436,
+    "y": 116,
+    "z": 1000,
+    "width": 420,
+    "height": 260
+  },
+  "visual": {
+    "visualType": "clusteredColumnChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Lesson Learned"
+                    }
+                  },
+                  "Property": "Lesson Status"
+                }
+              },
+              "queryRef": "Lesson Learned.Lesson Status"
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Lessons"
+                }
+              },
+              "queryRef": "_Measures.Lessons"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Lessons by status'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

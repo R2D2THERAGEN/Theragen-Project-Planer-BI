@@ -1,0 +1,117 @@
+/// Fact - stakeholder register entries (PMBOK P03) with RACI engagement and interest/influence.
+table 'Stakeholder'
+	lineageTag: 93b1cda5-0c54-5226-9561-ab27307b116b
+
+	column 'Stakeholder ID'
+		dataType: string
+		isHidden
+		lineageTag: 13b48c4a-06a0-573b-90b6-668021a3c852
+		summarizeBy: none
+		sourceColumn: Stakeholder ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project ID'
+		dataType: string
+		isHidden
+		lineageTag: c1bc63c5-5200-5239-a39e-e2d8d9a26fda
+		summarizeBy: none
+		sourceColumn: Project ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project Code'
+		dataType: string
+		lineageTag: 8bd4fd4b-1edc-5da6-8041-9ad401d73267
+		summarizeBy: none
+		sourceColumn: Project Code
+
+		annotation SummarizationSetBy = User
+
+	column 'Stk Code'
+		dataType: string
+		lineageTag: f1461f77-4536-55e2-968d-280c42aed178
+		summarizeBy: none
+		sourceColumn: Stk Code
+
+		annotation SummarizationSetBy = User
+
+	column 'Person ID'
+		dataType: string
+		isHidden
+		lineageTag: 1d86aeef-dcb7-5c2d-8f33-633e0a966382
+		summarizeBy: none
+		sourceColumn: Person ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Stakeholder'
+		dataType: string
+		lineageTag: 039a7175-f46b-56e9-a06d-c8365cfc34c8
+		summarizeBy: none
+		sourceColumn: Stakeholder
+
+		annotation SummarizationSetBy = User
+
+	column 'Stakeholder Role'
+		dataType: string
+		lineageTag: 7493670e-9772-5387-a929-9651201b6b62
+		summarizeBy: none
+		sourceColumn: Stakeholder Role
+
+		annotation SummarizationSetBy = User
+
+	column 'Department'
+		dataType: string
+		lineageTag: 71acbcf7-4317-5ed5-84f8-3287fac1c0bc
+		summarizeBy: none
+		sourceColumn: Department
+
+		annotation SummarizationSetBy = User
+
+	column 'Engagement'
+		dataType: string
+		lineageTag: a1bfcac6-771f-5159-9205-5cf68c1112b2
+		summarizeBy: none
+		sourceColumn: Engagement
+
+		annotation SummarizationSetBy = User
+
+	column 'Interest'
+		dataType: string
+		lineageTag: c457848f-06e7-585d-bf06-9ca993af00b7
+		summarizeBy: none
+		sourceColumn: Interest
+
+		annotation SummarizationSetBy = User
+
+	column 'Influence'
+		dataType: string
+		lineageTag: 80bb41f0-f45f-5fad-b0bc-46b2ca9c3533
+		summarizeBy: none
+		sourceColumn: Influence
+
+		annotation SummarizationSetBy = User
+
+	column 'Comm Preference'
+		dataType: string
+		lineageTag: eb1f6a32-d7d0-5c58-b3e7-cfcdacdceb76
+		summarizeBy: none
+		sourceColumn: Comm Preference
+
+		annotation SummarizationSetBy = User
+
+	partition 'Stakeholder' = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "\stakeholder.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Selected = Table.SelectColumns(Promoted, {"stakeholder_id", "project_id", "project_code", "stk_code", "person_id", "stakeholder_name", "role", "department", "engagement", "interest", "influence", "communication_preference"}),
+				    Nulled = Table.ReplaceValue(Selected, "", null, Replacer.ReplaceValue, Table.ColumnNames(Selected)),
+				    Typed = Table.TransformColumnTypes(Nulled, {{"stakeholder_id", type text}, {"project_id", type text}, {"project_code", type text}, {"stk_code", type text}, {"person_id", type text}, {"stakeholder_name", type text}, {"role", type text}, {"department", type text}, {"engagement", type text}, {"interest", type text}, {"influence", type text}, {"communication_preference", type text}}),
+				    Renamed = Table.RenameColumns(Typed, {{"stakeholder_id", "Stakeholder ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"stk_code", "Stk Code"}, {"person_id", "Person ID"}, {"stakeholder_name", "Stakeholder"}, {"role", "Stakeholder Role"}, {"department", "Department"}, {"engagement", "Engagement"}, {"interest", "Interest"}, {"influence", "Influence"}, {"communication_preference", "Comm Preference"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table

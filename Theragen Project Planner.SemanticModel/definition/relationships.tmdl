@@ -1,0 +1,140 @@
+relationship 0b426874-9786-5b76-bc2a-8e55da3a721c
+	fromColumn: 'Schedule Activity'.'WBS ID'
+	toColumn: 'WBS Element'.'WBS ID'
+
+relationship 22d78774-df7d-5c41-8cf6-41558657fd25
+	fromColumn: 'Budget Line'.'WBS ID'
+	toColumn: 'WBS Element'.'WBS ID'
+
+relationship e61c41ac-6d41-50a9-991f-2ca728b272a8
+	fromColumn: 'WBS Element'.'Project ID'
+	toColumn: 'Project'.'Project ID'
+
+relationship 67c4a40c-e8a0-5f53-b99a-736c82146bae
+	fromColumn: 'Milestone'.'Project ID'
+	toColumn: 'Project'.'Project ID'
+
+relationship 852633ec-eb8e-512d-9aaf-acc9b3f31c49
+	fromColumn: 'Risk'.'Project ID'
+	toColumn: 'Project'.'Project ID'
+
+relationship 59dd1784-01a9-5100-b0ba-fc30a20b9e4a
+	fromColumn: 'Change Request'.'Project ID'
+	toColumn: 'Project'.'Project ID'
+
+relationship 0a5bccb2-c905-5f74-8cdb-859aaa1441f4
+	fromColumn: 'Status Report'.'Project ID'
+	toColumn: 'Project'.'Project ID'
+
+relationship 40848ee2-39b5-5bd0-a889-cc7a43879dd8
+	fromColumn: 'Stakeholder'.'Project ID'
+	toColumn: 'Project'.'Project ID'
+
+relationship ee12f387-0222-5efc-b2a9-bbd11c02c5ae
+	fromColumn: 'Team Member'.'Project ID'
+	toColumn: 'Project'.'Project ID'
+
+relationship 5d1b76f4-cc9f-585f-8668-4e1ca4859d41
+	fromColumn: 'Lesson Learned'.'Project ID'
+	toColumn: 'Project'.'Project ID'
+
+relationship 2821ecf9-dfcb-5c21-a29a-f5a5ff9f99ed
+	fromColumn: 'Closure Item'.'Project ID'
+	toColumn: 'Project'.'Project ID'
+
+relationship cef3759e-82f5-5d65-9754-d75e27adc19a
+	fromColumn: 'Risk Response'.'Risk ID'
+	toColumn: 'Risk'.'Risk ID'
+
+relationship 5e88b87c-3b96-5043-b1b4-bb757716ee86
+	fromColumn: 'Status Report Area'.'Report ID'
+	toColumn: 'Status Report'.'Report ID'
+
+relationship 5d87909b-aee9-5d9f-b01a-58c96176282c
+	fromColumn: 'Status Report Area'.'Knowledge Area'
+	toColumn: 'Knowledge Area'.'Knowledge Area'
+
+relationship b18fe796-47f6-59d1-a776-de37e5d1d47f
+	fromColumn: 'Schedule Activity'.'Planned Finish'
+	toColumn: 'Date'.'Date'
+
+relationship 08598685-cb21-5c0e-bb12-3219d1305ad4
+	isActive: false
+	fromColumn: 'Schedule Activity'.'Planned Start'
+	toColumn: 'Date'.'Date'
+
+relationship 11323588-6d71-5e60-b765-f2d68a11429d
+	isActive: false
+	fromColumn: 'Schedule Activity'.'Actual Finish'
+	toColumn: 'Date'.'Date'
+
+relationship 0d31cbd6-da49-5104-9447-8c4d36152c9a
+	fromColumn: 'Milestone'.'Baseline Date'
+	toColumn: 'Date'.'Date'
+
+relationship cfd67a32-d7ef-51f0-ab78-ae5c7fc511d1
+	isActive: false
+	fromColumn: 'Milestone'.'Forecast Date'
+	toColumn: 'Date'.'Date'
+
+relationship 6b80a762-de36-5fa8-ad16-26f17ac7e5d7
+	isActive: false
+	fromColumn: 'Milestone'.'Actual Date'
+	toColumn: 'Date'.'Date'
+
+relationship 67c99177-b3fc-5043-94e5-93e7f16b228e
+	fromColumn: 'Risk'.'Due Date'
+	toColumn: 'Date'.'Date'
+
+relationship 287a4833-a36a-50ce-b6f0-7c8c9c7e8cc8
+	fromColumn: 'Change Request'.'Requested Date'
+	toColumn: 'Date'.'Date'
+
+relationship 8cba913f-7c37-5f6a-968e-442fa825d450
+	isActive: false
+	fromColumn: 'Change Request'.'Decided Date'
+	toColumn: 'Date'.'Date'
+
+relationship 85857d96-7b97-5e9b-90f3-298b96baae30
+	fromColumn: 'Status Report'.'Period End'
+	toColumn: 'Date'.'Date'
+
+relationship a3c0ba61-b033-58e9-a4b8-61c46834f9e8
+	fromColumn: 'Team Member'.'Start Date'
+	toColumn: 'Date'.'Date'
+
+relationship eaa83ba5-4ea4-507f-85d1-5a80954838b9
+	fromColumn: 'Schedule Activity'.'Department'
+	toColumn: 'Department'.'Department'
+
+relationship 664758f3-1191-5302-8b5f-bab0596e61ac
+	fromColumn: 'Risk'.'Department'
+	toColumn: 'Department'.'Department'
+
+relationship 05ec261c-e60a-56f9-97cb-02e1ddad40ed
+	fromColumn: 'Stakeholder'.'Department'
+	toColumn: 'Department'.'Department'
+
+relationship d83e588e-5e4a-5b07-9ad3-3ed70d69571e
+	fromColumn: 'Team Member'.'Department'
+	toColumn: 'Department'.'Department'
+
+relationship 18c4d645-2fa3-5d1d-9f39-e7c197ab18dd
+	fromColumn: 'Schedule Activity'.'Owner ID'
+	toColumn: 'Person'.'Person ID'
+
+relationship b554ef4d-0b1a-5ae7-8036-8ce4bccfc939
+	fromColumn: 'Risk'.'Owner ID'
+	toColumn: 'Person'.'Person ID'
+
+relationship 4b9274df-02b5-5bc5-8a94-c2d5baee2eba
+	fromColumn: 'Change Request'.'Requested By ID'
+	toColumn: 'Person'.'Person ID'
+
+relationship 23940bba-3560-59fb-8c5d-32dc200447de
+	fromColumn: 'Stakeholder'.'Person ID'
+	toColumn: 'Person'.'Person ID'
+
+relationship 1e96e112-249c-50bc-9c79-d9ae58c5b542
+	fromColumn: 'Team Member'.'Person ID'
+	toColumn: 'Person'.'Person ID'

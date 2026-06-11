@@ -1,0 +1,5 @@
+/// Folder containing the PMBOK sample data CSVs. Repoint when the PostgreSQL source goes live.
+expression DataFolder = "C:\Users\Allen\OneDrive - Neurotech NA\Documents\GitHub\Theragen-Project-Planer-BI\SampleData" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]
+	lineageTag: a1b34a4f-a58c-5be2-a121-e60f2672a241
+
+	annotation PBI_ResultType = Text

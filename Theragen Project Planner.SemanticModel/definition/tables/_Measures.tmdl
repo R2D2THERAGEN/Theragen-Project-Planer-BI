@@ -1,0 +1,489 @@
+/// Measure home table. All portfolio analytics measures live here.
+table _Measures
+	lineageTag: b9d3783d-5c24-599e-a34b-18d15b2f7b90
+
+	/// Count of projects in context.
+	measure 'Projects' = COUNTROWS('Project')
+		formatString: #,0
+		displayFolder: Portfolio
+		lineageTag: f308346b-1865-5886-a9b0-7c1a5ae8bd07
+
+	/// Projects with status Active.
+	measure 'Active Projects' = CALCULATE([Projects], 'Project'[Project Status] = "Active")
+		formatString: #,0
+		displayFolder: Portfolio
+		lineageTag: e8f16eeb-fb34-546f-9553-873d85c6784d
+
+	/// Projects with status Proposed.
+	measure 'Proposed Projects' = CALCULATE([Projects], 'Project'[Project Status] = "Proposed")
+		formatString: #,0
+		displayFolder: Portfolio
+		lineageTag: d2e6aa18-197a-5c0e-bc34-733a79b52c19
+
+	/// Sum of charter-approved budget totals (project.budget_total).
+	measure 'Portfolio Charter Budget' = SUM('Project'[Charter Budget])
+		formatString: \$#,##0;(\$#,##0);\$0
+		displayFolder: Portfolio
+		lineageTag: f13a2590-0a02-5218-b72d-13a75d0119b4
+
+	/// Count of schedule activities.
+	measure 'Activities' = COUNTROWS('Schedule Activity')
+		formatString: #,0
+		displayFolder: Schedule
+		lineageTag: 13c0a6de-deb2-5251-b7f4-8a8bac3439d0
+
+	/// Activities completed.
+	measure 'Activities Done' = CALCULATE([Activities], 'Schedule Activity'[Activity Status] = "Done")
+		formatString: #,0
+		displayFolder: Schedule
+		lineageTag: e176fac5-77e7-5b93-a891-270092b92b21
+
+	/// Activities currently in progress.
+	measure 'Activities In Progress' = CALCULATE([Activities], 'Schedule Activity'[Activity Status] = "In progress")
+		formatString: #,0
+		displayFolder: Schedule
+		lineageTag: a91e8eef-945c-59d5-8609-a91757a04d24
+
+	/// Activities flagged at risk.
+	measure 'Activities At Risk' = CALCULATE([Activities], 'Schedule Activity'[Activity Status] = "At risk")
+		formatString: #,0
+		displayFolder: Schedule
+		lineageTag: 7d11f723-480a-5d1f-a968-d4bd6b6d1053
+
+	/// Percent complete weighted by activity duration.
+	measure 'Pct Complete (Duration Weighted)' = DIVIDE(SUMX('Schedule Activity', 'Schedule Activity'[Duration Days] * 'Schedule Activity'[Pct Complete]), SUMX('Schedule Activity', 'Schedule Activity'[Duration Days]) * 100)
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: Schedule
+		lineageTag: ccb8569b-1c5e-5eb5-bb17-ed8b7e9e1cfb
+
+	/// Open activities past their planned finish date.
+	measure 'Activities Overdue' = COUNTROWS(FILTER('Schedule Activity', 'Schedule Activity'[Planned Finish] < TODAY() && NOT 'Schedule Activity'[Activity Status] IN {"Done", "Cancelled"}))
+		formatString: #,0
+		displayFolder: Schedule
+		lineageTag: 56e00548-c516-5bbf-93e5-92577a3b9624
+
+	/// Share of activities overdue.
+	measure 'Overdue Pct' = DIVIDE([Activities Overdue], [Activities])
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: Schedule
+		lineageTag: cad61e38-c1df-5775-a814-688b681f41d0
+
+	/// Done activities that finished on or before planned finish.
+	measure 'On-Time Completion Pct' = DIVIDE(COUNTROWS(FILTER('Schedule Activity', 'Schedule Activity'[Activity Status] = "Done" && NOT ISBLANK('Schedule Activity'[Actual Finish]) && 'Schedule Activity'[Actual Finish] <= 'Schedule Activity'[Planned Finish])), [Activities Done])
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: Schedule
+		lineageTag: ca6b387a-59e6-5992-b821-22e1bf3033da
+
+	/// Average planned working-day duration.
+	measure 'Avg Duration Days' = AVERAGE('Schedule Activity'[Duration Days])
+		formatString: #,0.0
+		displayFolder: Schedule
+		lineageTag: e23fdcd8-4e20-5bfc-a21b-a689e2b3c086
+
+	/// Budget at completion from work-package estimates (wbs_element.estimated_cost). EVM baseline.
+	measure 'BAC (WBS Estimates)' = CALCULATE(SUM('WBS Element'[Estimated Cost]), 'WBS Element'[WBS Level] = 2)
+		formatString: \$#,##0;(\$#,##0);\$0
+		displayFolder: EVM
+		lineageTag: 58d1f0b8-f947-54f9-8f84-8b5b83901d34
+
+	/// EV = work-package estimate x mean percent complete of its activities.
+	measure 'Earned Value' = SUMX(FILTER('WBS Element', 'WBS Element'[WBS Level] = 2), 'WBS Element'[Estimated Cost] * CALCULATE(AVERAGE('Schedule Activity'[Pct Complete])) / 100)
+		formatString: \$#,##0;(\$#,##0);\$0
+		displayFolder: EVM
+		lineageTag: 65516059-1e26-57cc-9bfb-c7d8c8cd5c0e
+
+	/// PV = work-package estimate x planned-elapsed fraction of its activities as of today.
+	measure 'Planned Value' = VAR AsOf = TODAY() RETURN SUMX(FILTER('WBS Element', 'WBS Element'[WBS Level] = 2), 'WBS Element'[Estimated Cost] * CALCULATE(AVERAGEX('Schedule Activity', VAR s = 'Schedule Activity'[Planned Start] VAR f = 'Schedule Activity'[Planned Finish] RETURN IF(AsOf >= f, 1, IF(AsOf <= s, 0, DIVIDE(AsOf - s, f - s))))))
+		formatString: \$#,##0;(\$#,##0);\$0
+		displayFolder: EVM
+		lineageTag: c9f8e5e6-e5ac-521c-897d-7369abb22acb
+
+	/// EV minus PV. Negative = behind schedule.
+	measure 'Schedule Variance (SV)' = [Earned Value] - [Planned Value]
+		formatString: \$#,##0;(\$#,##0);\$0
+		displayFolder: EVM
+		lineageTag: 345e0773-c2c2-5d04-b59c-e72209c1cf61
+
+	/// Schedule Performance Index = EV / PV. Below 1.0 = behind schedule. CPI/EAC require a cost-actuals feed (Phase 2 - not in THG-ENT-DBS-001 v1.0).
+	measure 'SPI' = DIVIDE([Earned Value], [Planned Value])
+		formatString: 0.00
+		displayFolder: EVM
+		lineageTag: 1c3a2236-054e-593f-8b87-94927e127a19
+
+	/// Count of milestones.
+	measure 'Milestones' = COUNTROWS('Milestone')
+		formatString: #,0
+		displayFolder: Milestones
+		lineageTag: 609e8f92-34af-50fc-8da0-37b542df32d7
+
+	/// Milestones achieved.
+	measure 'Milestones Achieved' = CALCULATE([Milestones], 'Milestone'[Milestone Status] = "Achieved")
+		formatString: #,0
+		displayFolder: Milestones
+		lineageTag: 198ffad9-30f2-504d-8442-ef1a60ec8b09
+
+	/// Milestones at risk.
+	measure 'Milestones At Risk' = CALCULATE([Milestones], 'Milestone'[Milestone Status] = "At risk")
+		formatString: #,0
+		displayFolder: Milestones
+		lineageTag: d3762617-8333-5ad6-89d1-b6a43fc6cec1
+
+	/// Milestones slipped.
+	measure 'Milestones Slipped' = CALCULATE([Milestones], 'Milestone'[Milestone Status] = "Slipped")
+		formatString: #,0
+		displayFolder: Milestones
+		lineageTag: 4d405786-f2df-52ac-ab6d-72beb06e09cb
+
+	/// Achieved milestones that landed on or before baseline.
+	measure 'Milestone Hit Rate' = DIVIDE(COUNTROWS(FILTER('Milestone', 'Milestone'[Milestone Status] = "Achieved" && NOT ISBLANK('Milestone'[Actual Date]) && 'Milestone'[Actual Date] <= 'Milestone'[Baseline Date])), [Milestones Achieved])
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: Milestones
+		lineageTag: b5b73ab5-9dc8-52c5-bece-464cf1063c80
+
+	/// Mean slip days (actual/forecast vs baseline). Positive = late.
+	measure 'Avg Milestone Slip Days' = AVERAGE('Milestone'[Slip Days])
+		formatString: #,0.0
+		displayFolder: Milestones
+		lineageTag: dab88ca5-70ab-5048-9afd-601039d4ecdf
+
+	/// Funded budget including contingency (budget_line_item.total).
+	measure 'Budget Total' = SUM('Budget Line'[Total])
+		formatString: \$#,##0;(\$#,##0);\$0
+		displayFolder: Cost
+		lineageTag: 8052388b-eecd-5989-a80b-2a9953f809cd
+
+	/// Budget before contingency.
+	measure 'Budget Subtotal' = SUM('Budget Line'[Subtotal])
+		formatString: \$#,##0;(\$#,##0);\$0
+		displayFolder: Cost
+		lineageTag: 7a3f497d-0615-52bb-94d4-4c7c4dc1c8ff
+
+	/// Contingency reserve in the funded budget.
+	measure 'Contingency Amount' = [Budget Total] - [Budget Subtotal]
+		formatString: \$#,##0;(\$#,##0);\$0
+		displayFolder: Cost
+		lineageTag: 618b090d-99b3-5b7e-9205-80bdc40e7092
+
+	/// Labor component.
+	measure 'Labor Amount' = SUM('Budget Line'[Labor Amount])
+		formatString: \$#,##0;(\$#,##0);\$0
+		displayFolder: Cost
+		lineageTag: fa8526f8-30a6-523d-aaf9-3724d8f2004d
+
+	/// Materials component.
+	measure 'Materials Amount' = SUM('Budget Line'[Materials Amount])
+		formatString: \$#,##0;(\$#,##0);\$0
+		displayFolder: Cost
+		lineageTag: 5a4c6464-2d98-505e-8e79-bc3e002f7e00
+
+	/// Vendor / contractor component.
+	measure 'Vendor Amount' = SUM('Budget Line'[Vendor Amount])
+		formatString: \$#,##0;(\$#,##0);\$0
+		displayFolder: Cost
+		lineageTag: 51417b76-b312-513f-bbe1-298f77bbf782
+
+	/// Other cost component.
+	measure 'Other Amount' = SUM('Budget Line'[Other Amount])
+		formatString: \$#,##0;(\$#,##0);\$0
+		displayFolder: Cost
+		lineageTag: a79f7d26-a5f3-52ee-bd9f-1287afaab408
+
+	/// Net cost impact of approved change requests.
+	measure 'Approved CR Cost Impact' = CALCULATE(SUM('Change Request'[Cost Impact]), 'Change Request'[Decision] = "Approved")
+		formatString: \$#,##0;(\$#,##0);\$0
+		displayFolder: Cost
+		lineageTag: af22fa3c-01f0-59d2-a0cc-dc872fd24e0e
+
+	/// Funded budget adjusted for approved change requests.
+	measure 'Working Budget' = [Budget Total] + [Approved CR Cost Impact]
+		formatString: \$#,##0;(\$#,##0);\$0
+		displayFolder: Cost
+		lineageTag: 0ce7688e-ae9c-5dd5-a750-f0b9ea35a7cc
+
+	/// Detailed budget vs charter-approved total. Positive = over charter.
+	measure 'Budget vs Charter' = [Budget Total] - [Portfolio Charter Budget]
+		formatString: \$#,##0;(\$#,##0);\$0
+		displayFolder: Cost
+		lineageTag: e406b017-b166-5b38-a836-de821c9f3402
+
+	/// Count of risks.
+	measure 'Risks' = COUNTROWS('Risk')
+		formatString: #,0
+		displayFolder: Risk
+		lineageTag: 2c601208-1930-5ae0-bf86-0147e98e8f92
+
+	/// Risks not yet closed or realized.
+	measure 'Open Risks' = CALCULATE([Risks], 'Risk'[Risk Status] IN {"Open", "Mitigating", "Monitoring"})
+		formatString: #,0
+		displayFolder: Risk
+		lineageTag: 7558ff3b-f1bd-51ac-8900-6431066b84fe
+
+	/// Open risks with score >= 12 on the 5x5 matrix.
+	measure 'High Risks' = CALCULATE([Risks], 'Risk'[Risk Score] >= 12, 'Risk'[Risk Status] IN {"Open", "Mitigating", "Monitoring"})
+		formatString: #,0
+		displayFolder: Risk
+		lineageTag: 2791c558-1d40-5d27-b039-b3dc189aeff2
+
+	/// Open risks with score >= 20.
+	measure 'Critical Risks' = CALCULATE([Risks], 'Risk'[Risk Score] >= 20, 'Risk'[Risk Status] IN {"Open", "Mitigating", "Monitoring"})
+		formatString: #,0
+		displayFolder: Risk
+		lineageTag: ce031611-ef04-5193-afd3-3e4b4b7eb3a9
+
+	/// Risks that materialized.
+	measure 'Realized Risks' = CALCULATE([Risks], 'Risk'[Risk Status] = "Realized")
+		formatString: #,0
+		displayFolder: Risk
+		lineageTag: 506027bb-348f-5814-9043-f21859f191a5
+
+	/// Sum of L x I scores across open risks.
+	measure 'Total Risk Exposure' = CALCULATE(SUM('Risk'[Risk Score]), 'Risk'[Risk Status] IN {"Open", "Mitigating", "Monitoring"})
+		formatString: #,0
+		displayFolder: Risk
+		lineageTag: 901eb3c0-f2e2-518c-9b0e-9eecb5d9f40f
+
+	/// Sum of residual scores across open risks (post-mitigation).
+	measure 'Residual Exposure' = CALCULATE(SUM('Risk'[Residual Score]), 'Risk'[Risk Status] IN {"Open", "Mitigating", "Monitoring"})
+		formatString: #,0
+		displayFolder: Risk
+		lineageTag: 3ccfae15-8896-5748-b234-74819cc0bd1c
+
+	/// Exposure reduction achieved by planned mitigations.
+	measure 'Risk Reduction Pct' = 1 - DIVIDE([Residual Exposure], [Total Risk Exposure])
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: Risk
+		lineageTag: 557fc6e2-0e32-5da4-8bfc-752a088f6b01
+
+	/// Open risks whose mitigation due date has passed.
+	measure 'Risks Past Due' = COUNTROWS(FILTER('Risk', NOT ISBLANK('Risk'[Due Date]) && 'Risk'[Due Date] < TODAY() && 'Risk'[Risk Status] IN {"Open", "Mitigating"}))
+		formatString: #,0
+		displayFolder: Risk
+		lineageTag: 3a51dcf7-2871-5f22-9bfa-15657d9dad9a
+
+	/// Mean risk score.
+	measure 'Avg Risk Score' = AVERAGE('Risk'[Risk Score])
+		formatString: #,0.0
+		displayFolder: Risk
+		lineageTag: a5865c0e-50e3-54dd-8128-0d4b07790b9e
+
+	/// Risk response actions in context.
+	measure 'Response Actions' = COUNTROWS('Risk Response')
+		formatString: #,0
+		displayFolder: Risk
+		lineageTag: eff6df34-0bb0-5a5d-9247-1393237adcff
+
+	/// Risk response actions not yet done.
+	measure 'Open Response Actions' = CALCULATE(COUNTROWS('Risk Response'), NOT 'Risk Response'[Action Status] IN {"Done"})
+		formatString: #,0
+		displayFolder: Risk
+		lineageTag: 808d5d77-6f7c-515b-88bf-29ac4470033b
+
+	/// Count of CRs.
+	measure 'Change Requests' = COUNTROWS('Change Request')
+		formatString: #,0
+		displayFolder: Change
+		lineageTag: d9160ca7-dcc4-55ec-929e-eaf0d387672f
+
+	/// CRs still in the pipeline.
+	measure 'Open CRs' = CALCULATE([Change Requests], NOT 'Change Request'[CR Status] IN {"Closed", "Rejected"})
+		formatString: #,0
+		displayFolder: Change
+		lineageTag: f16b76b3-3049-5a7f-abc5-3135266ee5e1
+
+	/// CRs approved.
+	measure 'Approved CRs' = CALCULATE([Change Requests], 'Change Request'[Decision] = "Approved")
+		formatString: #,0
+		displayFolder: Change
+		lineageTag: 2e4d98a2-f50d-5741-8cd3-822a01046cb8
+
+	/// CRs rejected.
+	measure 'Rejected CRs' = CALCULATE([Change Requests], 'Change Request'[Decision] = "Rejected")
+		formatString: #,0
+		displayFolder: Change
+		lineageTag: 8015c3b5-aa69-5a26-8cfd-66fc7a6d8a16
+
+	/// CRs awaiting a decision.
+	measure 'Pending CRs' = CALCULATE([Change Requests], 'Change Request'[Decision] = "Pending")
+		formatString: #,0
+		displayFolder: Change
+		lineageTag: e63d32d2-806b-568c-a035-e99ae3dc3bb8
+
+	/// Approved share of decided CRs.
+	measure 'CR Approval Rate' = DIVIDE([Approved CRs], [Approved CRs] + [Rejected CRs])
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: Change
+		lineageTag: e88b14b8-a2a2-5854-a501-bbf35b0e7a85
+
+	/// Mean days from request to decision.
+	measure 'Avg CR Cycle Days' = AVERAGE('Change Request'[Cycle Time Days])
+		formatString: #,0.0
+		displayFolder: Change
+		lineageTag: 62cf493c-37a7-5d9f-ae32-2b1bd874685a
+
+	/// Net schedule delta from approved CRs.
+	measure 'Net Schedule Impact Days' = CALCULATE(SUM('Change Request'[Schedule Impact Days]), 'Change Request'[Decision] = "Approved")
+		formatString: #,0
+		displayFolder: Change
+		lineageTag: 3c5a2d2c-5527-50b8-a3b4-7b6b1fc45587
+
+	/// Emergency / safety class CRs.
+	measure 'Emergency CRs' = CALCULATE([Change Requests], 'Change Request'[CR Class] = "Emergency / Safety")
+		formatString: #,0
+		displayFolder: Change
+		lineageTag: 49d2bbd3-3a3d-55f5-81ca-d896ddcd884e
+
+	/// Reports submitted.
+	measure 'Status Reports' = COUNTROWS('Status Report')
+		formatString: #,0
+		displayFolder: Health
+		lineageTag: 388d0d72-2c2d-5f3b-89a5-56c82552a37a
+
+	/// Most recent reporting period end.
+	measure 'Latest Report Date' = MAX('Status Report'[Period End])
+		formatString: yyyy-mm-dd
+		displayFolder: Health
+		lineageTag: b243c6fc-c582-5ea5-9eb0-ba7d1204066a
+
+	/// Overall G/Y/R from the most recent report in context.
+	measure 'Latest Overall Status' = VAR d0 = MAX('Status Report'[Period End]) RETURN MAXX(FILTER('Status Report', 'Status Report'[Period End] = d0), 'Status Report'[Overall Status])
+		displayFolder: Health
+		lineageTag: 16fb1287-ed9c-5a77-b5d0-f91fb98b6d8c
+
+	/// Trend from the most recent report in context.
+	measure 'Latest Trend' = VAR d0 = MAX('Status Report'[Period End]) RETURN MAXX(FILTER('Status Report', 'Status Report'[Period End] = d0), 'Status Report'[Trend])
+		displayFolder: Health
+		lineageTag: 43e954cc-f834-55be-a769-579825cab73d
+
+	/// Mean knowledge-area health: Green=3, Yellow=2, Red=1.
+	measure 'Health Score' = AVERAGEX('Status Report Area', SWITCH('Status Report Area'[Area Status], "Green", 3, "Yellow", 2, "Red", 1))
+		formatString: 0.00
+		displayFolder: Health
+		lineageTag: ffd962b2-4175-531c-b99d-b3563cb3f10a
+
+	/// Knowledge-area health entries in context.
+	measure 'Area Entries' = COUNTROWS('Status Report Area')
+		formatString: #,0
+		displayFolder: Health
+		lineageTag: 76278add-9a8f-5825-a940-455b00810092
+
+	/// Knowledge-area entries reported Red.
+	measure 'Red Areas' = CALCULATE(COUNTROWS('Status Report Area'), 'Status Report Area'[Area Status] = "Red")
+		formatString: #,0
+		displayFolder: Health
+		lineageTag: c3dcfdf2-2c0c-5e5c-9697-34b35874ff10
+
+	/// Knowledge-area entries reported Yellow.
+	measure 'Yellow Areas' = CALCULATE(COUNTROWS('Status Report Area'), 'Status Report Area'[Area Status] = "Yellow")
+		formatString: #,0
+		displayFolder: Health
+		lineageTag: c0ada9ad-2111-5b40-8183-8ae728d15bc3
+
+	/// Knowledge-area entries reported Green.
+	measure 'Green Areas' = CALCULATE(COUNTROWS('Status Report Area'), 'Status Report Area'[Area Status] = "Green")
+		formatString: #,0
+		displayFolder: Health
+		lineageTag: dd5709f6-80a0-5f04-8db8-e801cbdf4819
+
+	/// Stakeholder register entries.
+	measure 'Stakeholders' = COUNTROWS('Stakeholder')
+		formatString: #,0
+		displayFolder: Stakeholders
+		lineageTag: 10aa4498-e4e9-5877-83ce-f429d8aeb748
+
+	/// Influence = High.
+	measure 'High Influence Stakeholders' = CALCULATE([Stakeholders], 'Stakeholder'[Influence] = "High")
+		formatString: #,0
+		displayFolder: Stakeholders
+		lineageTag: f9e09000-9fd7-5a2b-b1a4-e2c2891093c1
+
+	/// High interest and high influence (manage closely).
+	measure 'Key Players' = CALCULATE([Stakeholders], 'Stakeholder'[Influence] = "High", 'Stakeholder'[Interest] = "High")
+		formatString: #,0
+		displayFolder: Stakeholders
+		lineageTag: 1adffced-044b-536f-a9a3-872f27168a8e
+
+	/// RACI = Accountable.
+	measure 'Accountable Count' = CALCULATE([Stakeholders], 'Stakeholder'[Engagement] = "A")
+		formatString: #,0
+		displayFolder: Stakeholders
+		lineageTag: fc15ce16-e751-526d-a2f7-a4385cee7ec2
+
+	/// RACI = Responsible.
+	measure 'Responsible Count' = CALCULATE([Stakeholders], 'Stakeholder'[Engagement] = "R")
+		formatString: #,0
+		displayFolder: Stakeholders
+		lineageTag: 1be9bdd7-eb42-5035-b868-66aef08a6ed0
+
+	/// Team assignments.
+	measure 'Team Members' = COUNTROWS('Team Member')
+		formatString: #,0
+		displayFolder: Team
+		lineageTag: 5349c225-a470-5253-b5ac-012fe0c3c48c
+
+	/// Sum of allocation percentages as full-time equivalents.
+	measure 'Total FTE' = SUM('Team Member'[Allocation Pct]) / 100
+		formatString: #,0.0
+		displayFolder: Team
+		lineageTag: a947b3be-b4c3-5868-ad17-9edb7a1bac1c
+
+	/// Mean allocation per assignment.
+	measure 'Avg Allocation Pct' = AVERAGE('Team Member'[Allocation Pct]) / 100
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: Team
+		lineageTag: 2368ff5b-06b2-5582-920b-1565ed3367d8
+
+	/// Lessons captured.
+	measure 'Lessons' = COUNTROWS('Lesson Learned')
+		formatString: #,0
+		displayFolder: Closing
+		lineageTag: 19cfe555-d868-5349-96bb-594c7b403b2c
+
+	/// Lessons awaiting action.
+	measure 'Open Lessons' = CALCULATE([Lessons], 'Lesson Learned'[Lesson Status] = "Open")
+		formatString: #,0
+		displayFolder: Closing
+		lineageTag: f4454050-19e9-557f-af41-667d512d9b5f
+
+	/// Lessons adopted into practice.
+	measure 'Adopted Lessons' = CALCULATE([Lessons], 'Lesson Learned'[Lesson Status] = "Adopted")
+		formatString: #,0
+		displayFolder: Closing
+		lineageTag: 8bf0d301-0214-57dd-8449-562a57dfad61
+
+	/// Closure checklist items.
+	measure 'Closure Items' = COUNTROWS('Closure Item')
+		formatString: #,0
+		displayFolder: Closing
+		lineageTag: 0808081c-b3c4-5c7b-a977-ceee5ae08207
+
+	/// Checklist items complete.
+	measure 'Closure Items Done' = CALCULATE([Closure Items], 'Closure Item'[Done] = TRUE())
+		formatString: #,0
+		displayFolder: Closing
+		lineageTag: aea6ec20-196f-510e-be1c-521f9f73fa48
+
+	/// Closure checklist completion.
+	measure 'Closure Complete Pct' = DIVIDE([Closure Items Done], [Closure Items])
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: Closing
+		lineageTag: 36753eb4-39b8-514e-89de-1a17d248c94f
+
+	column Value
+		dataType: string
+		isHidden
+		lineageTag: 5b25cfc3-5d37-5fa2-961a-05daa1eb43ca
+		summarizeBy: none
+		sourceColumn: Value
+
+		annotation SummarizationSetBy = User
+
+	partition _Measures = m
+		mode: import
+		source =
+				let
+				    Source = Table.FromRows({}, {"Value"}),
+				    Typed = Table.TransformColumnTypes(Source, {{"Value", type text}})
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table

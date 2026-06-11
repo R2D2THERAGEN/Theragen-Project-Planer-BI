@@ -1,0 +1,170 @@
+/// Fact - project change requests (PMBOK P21) with impact and decision cycle.
+table 'Change Request'
+	lineageTag: 7b9a0e97-8386-59c4-86e7-6b81e0f4bc37
+
+	column 'CR ID'
+		dataType: string
+		isHidden
+		lineageTag: 5a3372ae-062c-5e87-88be-36c885b8fe44
+		summarizeBy: none
+		sourceColumn: CR ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project ID'
+		dataType: string
+		isHidden
+		lineageTag: eae2ae8f-0656-5689-b5fe-fc429c9531a2
+		summarizeBy: none
+		sourceColumn: Project ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project Code'
+		dataType: string
+		lineageTag: 32d1032f-b2bb-5c15-abd2-56c7689087a9
+		summarizeBy: none
+		sourceColumn: Project Code
+
+		annotation SummarizationSetBy = User
+
+	column 'CR Code'
+		dataType: string
+		lineageTag: e7107e71-f4a8-5b78-9e23-8f2a9abc8700
+		summarizeBy: none
+		sourceColumn: CR Code
+
+		annotation SummarizationSetBy = User
+
+	column 'Intake ID'
+		dataType: string
+		lineageTag: 5f7b879f-9bd9-547b-88d1-62b477920db5
+		summarizeBy: none
+		sourceColumn: Intake ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Requested Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 5ddb210f-4f0b-5041-ba95-ecd74b70a0d8
+		summarizeBy: none
+		sourceColumn: Requested Date
+
+		annotation SummarizationSetBy = User
+
+	column 'Requested By ID'
+		dataType: string
+		isHidden
+		lineageTag: b39e1323-0211-5a5a-b9af-c7f2cc45bef9
+		summarizeBy: none
+		sourceColumn: Requested By ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Requested By'
+		dataType: string
+		lineageTag: cfce37e1-35bc-52cd-8316-81edd3d5d0bd
+		summarizeBy: none
+		sourceColumn: Requested By
+
+		annotation SummarizationSetBy = User
+
+	column 'CR Class'
+		dataType: string
+		lineageTag: 3011681e-6a3c-5e04-83ba-0dea51506588
+		summarizeBy: none
+		sourceColumn: CR Class
+
+		annotation SummarizationSetBy = User
+
+	column 'Change Type'
+		dataType: string
+		lineageTag: c12f5534-29fa-5a5b-830b-bf615d6483d2
+		summarizeBy: none
+		sourceColumn: Change Type
+
+		annotation SummarizationSetBy = User
+
+	column 'CR Description'
+		dataType: string
+		lineageTag: 3fb56c03-96f4-540c-8d54-221855dfa152
+		summarizeBy: none
+		sourceColumn: CR Description
+
+		annotation SummarizationSetBy = User
+
+	column 'Reason'
+		dataType: string
+		lineageTag: 5cf1d5e3-aef1-5be7-a432-64a1785abf4a
+		summarizeBy: none
+		sourceColumn: Reason
+
+		annotation SummarizationSetBy = User
+
+	column 'Schedule Impact Days'
+		dataType: int64
+		formatString: #,0
+		lineageTag: 5c888022-922d-5cc5-9f91-32c8a5731c8e
+		summarizeBy: none
+		sourceColumn: Schedule Impact Days
+
+		annotation SummarizationSetBy = User
+
+	column 'Cost Impact'
+		dataType: decimal
+		formatString: \$#,##0;(\$#,##0);\$0
+		lineageTag: fad84841-abff-597f-968c-3a5f96e2d6d6
+		summarizeBy: none
+		sourceColumn: Cost Impact
+
+		annotation SummarizationSetBy = User
+
+	column 'Decision'
+		dataType: string
+		lineageTag: f110871a-e180-585f-8471-0e0e9e6eca55
+		summarizeBy: none
+		sourceColumn: Decision
+
+		annotation SummarizationSetBy = User
+
+	column 'Decided Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 98b9f059-7062-557e-aa8d-110dcc3fcfa4
+		summarizeBy: none
+		sourceColumn: Decided Date
+
+		annotation SummarizationSetBy = User
+
+	column 'Cycle Time Days'
+		dataType: int64
+		formatString: #,0
+		lineageTag: 0af08ba2-7712-5ea2-a8be-4cd40b2f553f
+		summarizeBy: none
+		sourceColumn: Cycle Time Days
+
+		annotation SummarizationSetBy = User
+
+	column 'CR Status'
+		dataType: string
+		lineageTag: fcc0e2dd-acf9-595d-bc2c-8d42184732b9
+		summarizeBy: none
+		sourceColumn: CR Status
+
+		annotation SummarizationSetBy = User
+
+	partition 'Change Request' = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "\change_request.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Selected = Table.SelectColumns(Promoted, {"cr_id", "project_id", "project_code", "cr_code", "intake_id", "requested_at", "requested_by_person_id", "requested_by_name", "cr_class", "change_types", "description", "reason", "impact_schedule_days", "impact_cost", "decision", "decided_at", "cycle_time_days", "status"}),
+				    Nulled = Table.ReplaceValue(Selected, "", null, Replacer.ReplaceValue, Table.ColumnNames(Selected)),
+				    Typed = Table.TransformColumnTypes(Nulled, {{"cr_id", type text}, {"project_id", type text}, {"project_code", type text}, {"cr_code", type text}, {"intake_id", type text}, {"requested_at", type date}, {"requested_by_person_id", type text}, {"requested_by_name", type text}, {"cr_class", type text}, {"change_types", type text}, {"description", type text}, {"reason", type text}, {"impact_schedule_days", Int64.Type}, {"impact_cost", Currency.Type}, {"decision", type text}, {"decided_at", type date}, {"cycle_time_days", Int64.Type}, {"status", type text}}),
+				    Renamed = Table.RenameColumns(Typed, {{"cr_id", "CR ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"cr_code", "CR Code"}, {"intake_id", "Intake ID"}, {"requested_at", "Requested Date"}, {"requested_by_person_id", "Requested By ID"}, {"requested_by_name", "Requested By"}, {"cr_class", "CR Class"}, {"change_types", "Change Type"}, {"description", "CR Description"}, {"reason", "Reason"}, {"impact_schedule_days", "Schedule Impact Days"}, {"impact_cost", "Cost Impact"}, {"decision", "Decision"}, {"decided_at", "Decided Date"}, {"cycle_time_days", "Cycle Time Days"}, {"status", "CR Status"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table

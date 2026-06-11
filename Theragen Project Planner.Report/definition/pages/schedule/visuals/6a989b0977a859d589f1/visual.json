@@ -1,0 +1,75 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "6a989b0977a859d589f1",
+  "position": {
+    "x": 270,
+    "y": 116,
+    "z": 1000,
+    "width": 500,
+    "height": 280
+  },
+  "visual": {
+    "visualType": "clusteredBarChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "WBS Element"
+                    }
+                  },
+                  "Property": "Deliverable"
+                }
+              },
+              "queryRef": "WBS Element.Deliverable"
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Pct Complete (Duration Weighted)"
+                }
+              },
+              "queryRef": "_Measures.Pct Complete (Duration Weighted)"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'% complete by deliverable'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

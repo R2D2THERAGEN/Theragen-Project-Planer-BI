@@ -1,0 +1,33 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-US
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation PBI_QueryOrder = ["DataFolder", "Project", "Department", "Person", "WBS Element", "Knowledge Area", "Schedule Activity", "Milestone", "Budget Line", "Risk", "Risk Response", "Change Request", "Status Report", "Status Report Area", "Stakeholder", "Team Member", "Lesson Learned", "Closure Item", "_Measures"]
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+ref table Project
+ref table Department
+ref table Person
+ref table 'WBS Element'
+ref table 'Knowledge Area'
+ref table 'Schedule Activity'
+ref table Milestone
+ref table 'Budget Line'
+ref table Risk
+ref table 'Risk Response'
+ref table 'Change Request'
+ref table 'Status Report'
+ref table 'Status Report Area'
+ref table Stakeholder
+ref table 'Team Member'
+ref table 'Lesson Learned'
+ref table 'Closure Item'
+ref table 'Date'
+ref table _Measures
+
+ref cultureInfo en-US

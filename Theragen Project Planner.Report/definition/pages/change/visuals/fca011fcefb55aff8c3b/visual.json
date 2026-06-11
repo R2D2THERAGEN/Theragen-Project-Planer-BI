@@ -1,0 +1,92 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "fca011fcefb55aff8c3b",
+  "position": {
+    "x": 436,
+    "y": 116,
+    "z": 1000,
+    "width": 420,
+    "height": 280
+  },
+  "visual": {
+    "visualType": "stackedColumnChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Change Request"
+                    }
+                  },
+                  "Property": "CR Class"
+                }
+              },
+              "queryRef": "Change Request.CR Class"
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Change Requests"
+                }
+              },
+              "queryRef": "_Measures.Change Requests"
+            }
+          ]
+        },
+        "Series": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Change Request"
+                    }
+                  },
+                  "Property": "Decision"
+                }
+              },
+              "queryRef": "Change Request.Decision"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'CRs by class and decision'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

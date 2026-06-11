@@ -1,0 +1,190 @@
+THERAGEN  |  DM_Enumerations
+All 34 enum / lookup value sets used in the DM schema.
+—
+Enum name	Position	Value
+department_code	1	Clinical / Medical Affairs
+department_code	2	Regulatory / Quality
+department_code	3	R&D / Engineering
+department_code	4	Operations / PMO
+department_code	5	Finance / Procurement
+department_code	6	Commercial / Marketing
+department_code	7	IT / Data / Security
+department_code	8	HR / People
+department_code	9	Enterprise / Governance
+employment_type	1	Employee
+employment_type	2	Contractor
+employment_type	3	Vendor
+employment_type	4	Intern
+lifecycle_phase	1	Initiating
+lifecycle_phase	2	Planning
+lifecycle_phase	3	Executing
+lifecycle_phase	4	Monitoring
+lifecycle_phase	5	Closing
+lifecycle_phase	6	Cross-Lifecycle
+lifecycle_phase	7	Intake
+lifecycle_phase	8	Governance
+lifecycle_phase	9	Reference
+doc_status	1	DRAFT
+doc_status	2	REVIEW
+doc_status	3	BASELINE
+doc_status	4	AMENDED
+doc_status	5	RETIRED
+review_cycle	1	Annual
+review_cycle	2	Semi-Annual
+review_cycle	3	Quarterly
+review_cycle	4	Monthly
+review_cycle	5	On Major Revision
+review_cycle	6	On Phase Gate
+classification	1	Public
+classification	2	Confidential – Internal
+classification	3	Confidential – Restricted
+classification	4	PHI – HIPAA
+storage_system	1	PMO SharePoint
+storage_system	2	eQMS
+storage_system	3	eTMF
+storage_system	4	HIPAA-controlled store
+storage_system	5	ERP
+storage_system	6	HRIS
+storage_system	7	Other
+raci_role	1	R
+raci_role	2	A
+raci_role	3	C
+raci_role	4	I
+review_type	1	Technical
+review_type	2	Quality
+review_type	3	Compliance
+review_type	4	Editorial
+review_type	5	Peer
+review_disposition	1	Accepted
+review_disposition	2	Accepted with comments
+review_disposition	3	Rejected
+signature_meaning	1	Approval
+signature_meaning	2	Review
+signature_meaning	3	Authorship
+signature_meaning	4	Training Attestation
+signature_meaning	5	Refresher Attestation
+signature_meaning	6	Witness
+request_type	1	Project / Initiative
+request_type	2	Clinical or study request
+request_type	3	Cross-dept work request
+request_type	4	System change
+request_type	5	Vendor / procurement
+request_type	6	Other
+effort_bucket	1	Small (<4 wk)
+effort_bucket	2	Medium (1-3 mo)
+effort_bucket	3	Large (3-12 mo)
+effort_bucket	4	Program (>12 mo)
+budget_envelope	1	$0-25k
+budget_envelope	2	$25-250k
+budget_envelope	3	$250k-1M
+budget_envelope	4	>$1M
+budget_envelope	5	Unknown
+funding_source	1	OpEx
+funding_source	2	CapEx
+funding_source	3	Grant
+funding_source	4	Unfunded
+funding_source	5	TBD
+intake_status	1	Submitted
+intake_status	2	Triaged
+intake_status	3	In flight
+intake_status	4	Paused
+intake_status	5	Complete
+intake_status	6	Declined
+prescreen_decision	1	Cleared
+prescreen_decision	2	Cleared with conditions
+prescreen_decision	3	Block
+intake_decision	1	Approved → Charter
+intake_decision	2	Approved → Work Order
+intake_decision	3	Returned for clarification
+intake_decision	4	Declined
+compliance_frame	1	FDA 21 CFR Part 11
+compliance_frame	2	HIPAA
+compliance_frame	3	PMBOK 7th Ed.
+compliance_frame	4	ISO 13485
+compliance_frame	5	GxP
+compliance_frame	6	SOC 2
+compliance_frame	7	ISO 9001
+cr_class	1	A - Minor
+cr_class	2	B - Substantive
+cr_class	3	C - Controlling
+cr_class	4	Emergency / Safety
+cr_decision	1	Pending
+cr_decision	2	Approved
+cr_decision	3	Rejected
+cr_decision	4	Deferred
+cr_status	1	Open
+cr_status	2	In Assessment
+cr_status	3	Approved
+cr_status	4	Implementing
+cr_status	5	Verified
+cr_status	6	Closed
+cr_status	7	Rejected
+training_status	1	Assigned
+training_status	2	In Progress
+training_status	3	Quiz Pending
+training_status	4	Attested
+training_status	5	Refresher Due
+training_status	6	Overdue
+record_class	1	Project artifacts
+record_class	2	Change records
+record_class	3	Clinical records
+record_class	4	Quality records
+record_class	5	PHI-containing
+record_class	6	Financial records
+record_class	7	HR records
+record_class	8	Audit evidence packs
+retention_basis	1	Life of project + 7 yrs
+retention_basis	2	Life of asset + 7 yrs
+retention_basis	3	Per regulatory hold
+retention_basis	4	Per ISO 13485
+retention_basis	5	6 yrs minimum
+retention_basis	6	7 years
+retention_basis	7	Per HR policy
+retention_basis	8	Audit + 7 yrs
+disposition	1	Archive
+disposition	2	Destroy
+disposition	3	Transfer
+disposition	4	Hold
+audit_outcome	1	No findings
+audit_outcome	2	Minor findings
+audit_outcome	3	Major findings
+audit_outcome	4	Critical findings
+severity	1	Minor
+severity	2	Major
+severity	3	Critical
+deviation_status	1	Open
+deviation_status	2	Under Review
+deviation_status	3	Closed - No CAPA
+deviation_status	4	Closed - CAPA Opened
+capa_trigger	1	Deviation
+capa_trigger	2	Audit Finding
+capa_trigger	3	Risk Mitigation
+capa_trigger	4	Customer Complaint
+capa_trigger	5	Internal Review
+capa_trigger	6	Other
+capa_status	1	Open
+capa_status	2	Root Cause In Progress
+capa_status	3	Action In Progress
+capa_status	4	Action Verified
+capa_status	5	Effectiveness Pending
+capa_status	6	Effectiveness Verified
+capa_status	7	Closed
+principal_type	1	Person
+principal_type	2	Role
+principal_type	3	Department
+permission	1	Read
+permission	2	Comment
+permission	3	Edit
+permission	4	Approve
+permission	5	Administer
+audit_action	1	create
+audit_action	2	read
+audit_action	3	update
+audit_action	4	delete
+audit_action	5	approve
+audit_action	6	retire
+audit_action	7	baseline
+audit_action	8	sign
+audit_action	9	grant
+audit_action	10	revoke
+audit_action	11	export

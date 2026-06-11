@@ -1,0 +1,104 @@
+/// Fact - project team assignments (PMBOK P31) with allocation percentage.
+table 'Team Member'
+	lineageTag: 9695219d-802c-5451-a1fc-2f7cc039de59
+
+	column 'Team Member ID'
+		dataType: string
+		isHidden
+		lineageTag: 52ab2360-0993-5046-986d-3365585767e3
+		summarizeBy: none
+		sourceColumn: Team Member ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project ID'
+		dataType: string
+		isHidden
+		lineageTag: 78af1d01-ac47-5438-80cd-93cd18ad0aab
+		summarizeBy: none
+		sourceColumn: Project ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project Code'
+		dataType: string
+		lineageTag: 14c9527a-5363-5e23-9372-c3e5149ab6db
+		summarizeBy: none
+		sourceColumn: Project Code
+
+		annotation SummarizationSetBy = User
+
+	column 'Person ID'
+		dataType: string
+		isHidden
+		lineageTag: 1b7c54fe-0821-5a88-882a-c0b681999265
+		summarizeBy: none
+		sourceColumn: Person ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Member'
+		dataType: string
+		lineageTag: 817978f8-c945-53ff-adb7-ea4bf4bf96b9
+		summarizeBy: none
+		sourceColumn: Member
+
+		annotation SummarizationSetBy = User
+
+	column 'Team Role'
+		dataType: string
+		lineageTag: cfdde2e5-ebe6-53a0-a458-b66571a661e4
+		summarizeBy: none
+		sourceColumn: Team Role
+
+		annotation SummarizationSetBy = User
+
+	column 'Department'
+		dataType: string
+		lineageTag: 623878a1-fcba-5f83-b0e1-f152d4491b94
+		summarizeBy: none
+		sourceColumn: Department
+
+		annotation SummarizationSetBy = User
+
+	column 'Allocation Pct'
+		dataType: double
+		formatString: 0\%
+		lineageTag: 0875d2dc-3728-59a7-a0ce-bd21e139ef2d
+		summarizeBy: none
+		sourceColumn: Allocation Pct
+
+		annotation SummarizationSetBy = User
+
+	column 'Start Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 5537ea95-6200-53b1-ae9b-380fe8584bb3
+		summarizeBy: none
+		sourceColumn: Start Date
+
+		annotation SummarizationSetBy = User
+
+	column 'End Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 363cfa68-ba54-5f44-8feb-7bdaaf9fda0b
+		summarizeBy: none
+		sourceColumn: End Date
+
+		annotation SummarizationSetBy = User
+
+	partition 'Team Member' = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "\project_team_member.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Selected = Table.SelectColumns(Promoted, {"team_member_id", "project_id", "project_code", "person_id", "member_name", "role", "department", "allocation_pct", "start_date", "end_date"}),
+				    Nulled = Table.ReplaceValue(Selected, "", null, Replacer.ReplaceValue, Table.ColumnNames(Selected)),
+				    Typed = Table.TransformColumnTypes(Nulled, {{"team_member_id", type text}, {"project_id", type text}, {"project_code", type text}, {"person_id", type text}, {"member_name", type text}, {"role", type text}, {"department", type text}, {"allocation_pct", type number}, {"start_date", type date}, {"end_date", type date}}),
+				    Renamed = Table.RenameColumns(Typed, {{"team_member_id", "Team Member ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"person_id", "Person ID"}, {"member_name", "Member"}, {"role", "Team Role"}, {"department", "Department"}, {"allocation_pct", "Allocation Pct"}, {"start_date", "Start Date"}, {"end_date", "End Date"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table

@@ -1,0 +1,92 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "32cf57b3ef375fbcba3b",
+  "position": {
+    "x": 270,
+    "y": 116,
+    "z": 1000,
+    "width": 1002,
+    "height": 250
+  },
+  "visual": {
+    "visualType": "stackedColumnChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Status Report"
+                    }
+                  },
+                  "Property": "Period End"
+                }
+              },
+              "queryRef": "Status Report.Period End"
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Area Entries"
+                }
+              },
+              "queryRef": "_Measures.Area Entries"
+            }
+          ]
+        },
+        "Series": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Status Report Area"
+                    }
+                  },
+                  "Property": "Area Status"
+                }
+              },
+              "queryRef": "Status Report Area.Area Status"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Knowledge-area health over reporting periods'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

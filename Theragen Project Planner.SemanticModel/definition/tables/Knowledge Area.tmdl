@@ -1,0 +1,36 @@
+/// PMBOK knowledge areas (enum knowledge_area) used by status report health entries.
+table 'Knowledge Area'
+	lineageTag: 3e1491d6-a5e0-5681-a32b-f292fddfcd72
+
+	column 'Knowledge Area'
+		dataType: string
+		lineageTag: f27bd9cd-fc01-5b41-8aa1-adf9c35d9b8f
+		summarizeBy: none
+		sortByColumn: 'KA Sort'
+		sourceColumn: Knowledge Area
+
+		annotation SummarizationSetBy = User
+
+	column 'KA Sort'
+		dataType: int64
+		isHidden
+		lineageTag: 9bb16f73-9f00-57e0-a608-7176c9c24580
+		summarizeBy: none
+		sourceColumn: KA Sort
+
+		annotation SummarizationSetBy = User
+
+	partition 'Knowledge Area' = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "\knowledge_area.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Selected = Table.SelectColumns(Promoted, {"knowledge_area", "sort_order"}),
+				    Nulled = Table.ReplaceValue(Selected, "", null, Replacer.ReplaceValue, Table.ColumnNames(Selected)),
+				    Typed = Table.TransformColumnTypes(Nulled, {{"knowledge_area", type text}, {"sort_order", Int64.Type}}),
+				    Renamed = Table.RenameColumns(Typed, {{"knowledge_area", "Knowledge Area"}, {"sort_order", "KA Sort"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table

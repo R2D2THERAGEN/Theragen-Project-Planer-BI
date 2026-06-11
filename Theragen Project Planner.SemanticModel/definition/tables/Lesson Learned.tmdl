@@ -1,0 +1,92 @@
+/// Fact - lessons learned (PMBOK P25).
+table 'Lesson Learned'
+	lineageTag: fca77cc0-7649-5185-8d03-29fe863dc48f
+
+	column 'Lesson ID'
+		dataType: string
+		isHidden
+		lineageTag: cec2efcc-7504-5874-aad2-7745ab37cb82
+		summarizeBy: none
+		sourceColumn: Lesson ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project ID'
+		dataType: string
+		isHidden
+		lineageTag: 0597e31f-c108-5740-9b67-20a7073d41f9
+		summarizeBy: none
+		sourceColumn: Project ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project Code'
+		dataType: string
+		lineageTag: 141c12db-8148-5362-9ee9-b552c6cd85c1
+		summarizeBy: none
+		sourceColumn: Project Code
+
+		annotation SummarizationSetBy = User
+
+	column 'Lesson Category'
+		dataType: string
+		lineageTag: d39f6dbf-b8d2-59b3-82fa-fffc9d413aca
+		summarizeBy: none
+		sourceColumn: Lesson Category
+
+		annotation SummarizationSetBy = User
+
+	column 'Lesson'
+		dataType: string
+		lineageTag: d4544e6a-9790-5eaa-843a-d29d87a538db
+		summarizeBy: none
+		sourceColumn: Lesson
+
+		annotation SummarizationSetBy = User
+
+	column 'What Happened'
+		dataType: string
+		lineageTag: 961ec4a4-5460-5206-844e-bd734161d4e0
+		summarizeBy: none
+		sourceColumn: What Happened
+
+		annotation SummarizationSetBy = User
+
+	column 'Recommendation'
+		dataType: string
+		lineageTag: 6ca85ade-ba99-5b85-9338-433634589d67
+		summarizeBy: none
+		sourceColumn: Recommendation
+
+		annotation SummarizationSetBy = User
+
+	column 'Follow-up Owner'
+		dataType: string
+		lineageTag: e1bcf5ed-df41-5395-8997-3c1ece06eed3
+		summarizeBy: none
+		sourceColumn: Follow-up Owner
+
+		annotation SummarizationSetBy = User
+
+	column 'Lesson Status'
+		dataType: string
+		lineageTag: f7102773-1fa2-56ed-91d7-5b59c977cf3b
+		summarizeBy: none
+		sourceColumn: Lesson Status
+
+		annotation SummarizationSetBy = User
+
+	partition 'Lesson Learned' = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "\lesson_learned.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Selected = Table.SelectColumns(Promoted, {"lesson_id", "project_id", "project_code", "category", "lesson", "what_happened", "recommendation", "followup_owner_role", "status"}),
+				    Nulled = Table.ReplaceValue(Selected, "", null, Replacer.ReplaceValue, Table.ColumnNames(Selected)),
+				    Typed = Table.TransformColumnTypes(Nulled, {{"lesson_id", type text}, {"project_id", type text}, {"project_code", type text}, {"category", type text}, {"lesson", type text}, {"what_happened", type text}, {"recommendation", type text}, {"followup_owner_role", type text}, {"status", type text}}),
+				    Renamed = Table.RenameColumns(Typed, {{"lesson_id", "Lesson ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"category", "Lesson Category"}, {"lesson", "Lesson"}, {"what_happened", "What Happened"}, {"recommendation", "Recommendation"}, {"followup_owner_role", "Follow-up Owner"}, {"status", "Lesson Status"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table

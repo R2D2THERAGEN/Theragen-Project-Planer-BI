@@ -1,0 +1,110 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "9c519a9934db5d62957e",
+  "position": {
+    "x": 8,
+    "y": 236,
+    "z": 1000,
+    "width": 504,
+    "height": 240
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Knowledge Area"
+                    }
+                  },
+                  "Property": "Knowledge Area"
+                }
+              },
+              "queryRef": "Knowledge Area.Knowledge Area"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Green Areas"
+                }
+              },
+              "queryRef": "_Measures.Green Areas"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Yellow Areas"
+                }
+              },
+              "queryRef": "_Measures.Yellow Areas"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Red Areas"
+                }
+              },
+              "queryRef": "_Measures.Red Areas"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Health Score"
+                }
+              },
+              "queryRef": "_Measures.Health Score"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Health by knowledge area'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

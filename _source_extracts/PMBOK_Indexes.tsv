@@ -1,0 +1,17 @@
+THERAGEN  |  PMBOK_Indexes
+Recommended indexes and uniqueness constraints.
+—
+Entity	Index name	Columns	Type	Purpose
+project	ix_project_intake	intake_id	BTREE	Trace from intake to project.
+project	uk_project_code	project_code	UNIQUE	Enforce unique project code.
+stakeholder	ix_stakeholder_project	project_id, stk_code	BTREE	Project + S-NNN lookup.
+wbs_element	uk_wbs_code	project_id, wbs_code	UNIQUE	Unique WBS code per project.
+wbs_element	ix_wbs_parent	parent_wbs_element_id	BTREE	Hierarchy traversal.
+schedule_activity	ix_activity_wbs	wbs_element_id	BTREE	Join by WBS.
+schedule_activity	ix_activity_dates	start_planned, finish_planned	BTREE	Date-range filters.
+risk	uk_risk_code	project_id, risk_code	UNIQUE	R-NNN per project.
+risk	ix_risk_score	project_id, score DESC	BTREE	Top-risk reports.
+change_request	uk_cr_code	project_id, cr_code	UNIQUE	C-NNN per project.
+change_request	ix_cr_status	project_id, status	BTREE	Open-CR queries.
+status_report	ix_report_period	project_id, period_end DESC	BTREE	Latest-report-per-project.
+approval	ix_approval_artifact	artifact_doc_id, signed_at	BTREE	Approval timeline per doc.

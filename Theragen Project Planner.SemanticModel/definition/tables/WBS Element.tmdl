@@ -88,7 +88,7 @@ table 'WBS Element'
 		annotation SummarizationSetBy = User
 
 	column 'Estimated Cost'
-		dataType: decimal
+		dataType: double
 		formatString: \$#,##0;(\$#,##0);\$0
 		lineageTag: 84caaaa2-d57d-5243-9173-6afc4d02b2e3
 		summarizeBy: none
@@ -97,7 +97,7 @@ table 'WBS Element'
 		annotation SummarizationSetBy = User
 
 	/// Level-1 deliverable this node rolls up to.
-	column 'Deliverable' = IF('WBS Element'[WBS Level] = 1, 'WBS Element'[WBS Name], LOOKUPVALUE('WBS Element'[WBS Name], 'WBS Element'[WBS ID], 'WBS Element'[Parent WBS ID]))
+	column Deliverable = IF('WBS Element'[WBS Level] = 1, 'WBS Element'[WBS Name], LOOKUPVALUE('WBS Element'[WBS Name], 'WBS Element'[WBS ID], 'WBS Element'[Parent WBS ID]))
 		dataType: string
 		lineageTag: efd8b700-a804-5fcd-8ab5-da5b9ad52bf8
 		summarizeBy: none
@@ -124,3 +124,4 @@ table 'WBS Element'
 				    Renamed
 
 	annotation PBI_ResultType = Table
+

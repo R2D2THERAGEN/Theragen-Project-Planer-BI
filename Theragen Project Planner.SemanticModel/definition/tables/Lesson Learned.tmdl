@@ -36,7 +36,7 @@ table 'Lesson Learned'
 
 		annotation SummarizationSetBy = User
 
-	column 'Lesson'
+	column Lesson
 		dataType: string
 		lineageTag: d4544e6a-9790-5eaa-843a-d29d87a538db
 		summarizeBy: none
@@ -52,7 +52,7 @@ table 'Lesson Learned'
 
 		annotation SummarizationSetBy = User
 
-	column 'Recommendation'
+	column Recommendation
 		dataType: string
 		lineageTag: 6ca85ade-ba99-5b85-9338-433634589d67
 		summarizeBy: none
@@ -88,3 +88,4 @@ table 'Lesson Learned'
 				    Renamed
 
 	annotation PBI_ResultType = Table
+

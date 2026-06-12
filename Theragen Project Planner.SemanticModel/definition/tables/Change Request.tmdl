@@ -53,6 +53,8 @@ table 'Change Request'
 
 		annotation SummarizationSetBy = User
 
+		annotation UnderlyingDateTimeDataType = Date
+
 	column 'Requested By ID'
 		dataType: string
 		isHidden
@@ -94,7 +96,7 @@ table 'Change Request'
 
 		annotation SummarizationSetBy = User
 
-	column 'Reason'
+	column Reason
 		dataType: string
 		lineageTag: 5cf1d5e3-aef1-5be7-a432-64a1785abf4a
 		summarizeBy: none
@@ -112,7 +114,7 @@ table 'Change Request'
 		annotation SummarizationSetBy = User
 
 	column 'Cost Impact'
-		dataType: decimal
+		dataType: double
 		formatString: \$#,##0;(\$#,##0);\$0
 		lineageTag: fad84841-abff-597f-968c-3a5f96e2d6d6
 		summarizeBy: none
@@ -120,7 +122,7 @@ table 'Change Request'
 
 		annotation SummarizationSetBy = User
 
-	column 'Decision'
+	column Decision
 		dataType: string
 		lineageTag: f110871a-e180-585f-8471-0e0e9e6eca55
 		summarizeBy: none
@@ -136,6 +138,8 @@ table 'Change Request'
 		sourceColumn: Decided Date
 
 		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
 
 	column 'Cycle Time Days'
 		dataType: int64
@@ -166,3 +170,4 @@ table 'Change Request'
 				    Renamed
 
 	annotation PBI_ResultType = Table
+

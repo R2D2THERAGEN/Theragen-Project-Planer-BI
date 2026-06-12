@@ -46,7 +46,7 @@ table 'Budget Line'
 		annotation SummarizationSetBy = User
 
 	column 'Labor Amount'
-		dataType: decimal
+		dataType: double
 		formatString: \$#,##0;(\$#,##0);\$0
 		lineageTag: 14eb2b43-fee3-5c06-9227-91fd2e3883f8
 		summarizeBy: none
@@ -55,7 +55,7 @@ table 'Budget Line'
 		annotation SummarizationSetBy = User
 
 	column 'Materials Amount'
-		dataType: decimal
+		dataType: double
 		formatString: \$#,##0;(\$#,##0);\$0
 		lineageTag: e6282609-7101-54db-942a-a88eb49c7e67
 		summarizeBy: none
@@ -64,7 +64,7 @@ table 'Budget Line'
 		annotation SummarizationSetBy = User
 
 	column 'Vendor Amount'
-		dataType: decimal
+		dataType: double
 		formatString: \$#,##0;(\$#,##0);\$0
 		lineageTag: 6e929270-66d7-5585-be02-9308ad07318e
 		summarizeBy: none
@@ -73,7 +73,7 @@ table 'Budget Line'
 		annotation SummarizationSetBy = User
 
 	column 'Other Amount'
-		dataType: decimal
+		dataType: double
 		formatString: \$#,##0;(\$#,##0);\$0
 		lineageTag: e93f5b05-d50d-5460-96da-471ffe69c5bc
 		summarizeBy: none
@@ -81,8 +81,8 @@ table 'Budget Line'
 
 		annotation SummarizationSetBy = User
 
-	column 'Subtotal'
-		dataType: decimal
+	column Subtotal
+		dataType: double
 		formatString: \$#,##0;(\$#,##0);\$0
 		lineageTag: 95821974-1008-510b-bf2e-0eb9506ed464
 		summarizeBy: none
@@ -99,8 +99,8 @@ table 'Budget Line'
 
 		annotation SummarizationSetBy = User
 
-	column 'Total'
-		dataType: decimal
+	column Total
+		dataType: double
 		formatString: \$#,##0;(\$#,##0);\$0
 		lineageTag: a6b48238-d0c1-5f0d-a0b0-b287ec4383d5
 		summarizeBy: none
@@ -128,3 +128,4 @@ table 'Budget Line'
 				    Renamed
 
 	annotation PBI_ResultType = Table
+

@@ -6,8 +6,8 @@ table 'Knowledge Area'
 		dataType: string
 		lineageTag: f27bd9cd-fc01-5b41-8aa1-adf9c35d9b8f
 		summarizeBy: none
-		sortByColumn: 'KA Sort'
 		sourceColumn: Knowledge Area
+		sortByColumn: 'KA Sort'
 
 		annotation SummarizationSetBy = User
 
@@ -32,3 +32,4 @@ table 'Knowledge Area'
 				    Renamed
 
 	annotation PBI_ResultType = Table
+

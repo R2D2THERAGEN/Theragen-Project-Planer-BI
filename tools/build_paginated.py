@@ -285,7 +285,7 @@ def risk_gauge(left, top, width, height):
 
 
 def dataset_xml(name, d):
-    qp = ("""<QueryParameters><QueryParameter Name="@ProjectCode">
+    qp = ("""<QueryParameters><QueryParameter Name="ProjectCode">
             <Value>=Parameters!ProjectCode.Value</Value>
           </QueryParameter></QueryParameters>""" if d["params"] else "")
     # DAX flattened rowsets name aliased columns "[Alias]" (brackets included)

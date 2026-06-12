@@ -24,7 +24,7 @@
 </DataSet><DataSet Name="DsHeader">
   <Query>
     <DataSourceName>TheragenModel</DataSourceName>
-    <QueryParameters><QueryParameter Name="@ProjectCode">
+    <QueryParameters><QueryParameter Name="ProjectCode">
             <Value>=Parameters!ProjectCode.Value</Value>
           </QueryParameter></QueryParameters>
     <CommandText>EVALUATE CALCULATETABLE(ROW("ProjectName", SELECTEDVALUE('Project'[Project Name]), "ProjectManager", [Project Manager (Selected)], "TargetDate", [Target Date Completion], "Phase", [Current Phase], "MainStatus", [Main Status], "StatusColor", [Status Color], "Description", [Project Description (Selected)], "BusinessValue", [Business Value (Selected)], "ReportDate", [Report Date], "DecisionsNeeded", [Decisions Needed (Latest)]), TREATAS({@ProjectCode}, 'Project'[Project Code]))</CommandText>
@@ -33,7 +33,7 @@
 </DataSet><DataSet Name="DsHealth">
   <Query>
     <DataSourceName>TheragenModel</DataSourceName>
-    <QueryParameters><QueryParameter Name="@ProjectCode">
+    <QueryParameters><QueryParameter Name="ProjectCode">
             <Value>=Parameters!ProjectCode.Value</Value>
           </QueryParameter></QueryParameters>
     <CommandText>EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Knowledge Area'[Knowledge Area], 'Knowledge Area'[KA Sort], TREATAS({@ProjectCode}, 'Project'[Project Code]), "AreaStatusM", [Latest Area Status]), "KnowledgeArea", 'Knowledge Area'[Knowledge Area], "KASort", 'Knowledge Area'[KA Sort], "AreaStatus", [AreaStatusM]) ORDER BY [KASort]</CommandText>
@@ -42,7 +42,7 @@
 </DataSet><DataSet Name="DsRaid">
   <Query>
     <DataSourceName>TheragenModel</DataSourceName>
-    <QueryParameters><QueryParameter Name="@ProjectCode">
+    <QueryParameters><QueryParameter Name="ProjectCode">
             <Value>=Parameters!ProjectCode.Value</Value>
           </QueryParameter></QueryParameters>
     <CommandText>EVALUATE SELECTCOLUMNS(CALCULATETABLE('Risk', TREATAS({@ProjectCode}, 'Project'[Project Code])), "RaidType", 'Risk'[RAID Type], "Description", 'Risk'[Risk Description], "Owner", 'Risk'[Owner], "DueDate", 'Risk'[Due Date], "Score", 'Risk'[Risk Score], "Severity", 'Risk'[Severity], "RiskStatus", 'Risk'[Risk Status]) ORDER BY [Score] DESC</CommandText>
@@ -51,7 +51,7 @@
 </DataSet><DataSet Name="DsWorkstreams">
   <Query>
     <DataSourceName>TheragenModel</DataSourceName>
-    <QueryParameters><QueryParameter Name="@ProjectCode">
+    <QueryParameters><QueryParameter Name="ProjectCode">
             <Value>=Parameters!ProjectCode.Value</Value>
           </QueryParameter></QueryParameters>
     <CommandText>EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('WBS Element'[Deliverable], TREATAS({@ProjectCode}, 'Project'[Project Code]), "StartDateM", [Workstream Start], "TargetDateM", [Workstream Target], "PctCompleteM", [Pct Complete (Duration Weighted)], "WsStatusM", [Workstream Status]), "Deliverable", 'WBS Element'[Deliverable], "StartDate", [StartDateM], "TargetDate", [TargetDateM], "PctComplete", [PctCompleteM], "WsStatus", [WsStatusM]) ORDER BY [StartDate]</CommandText>
@@ -60,7 +60,7 @@
 </DataSet><DataSet Name="DsAccomplishments">
   <Query>
     <DataSourceName>TheragenModel</DataSourceName>
-    <QueryParameters><QueryParameter Name="@ProjectCode">
+    <QueryParameters><QueryParameter Name="ProjectCode">
             <Value>=Parameters!ProjectCode.Value</Value>
           </QueryParameter></QueryParameters>
     <CommandText>EVALUATE SELECTCOLUMNS(CALCULATETABLE('Recent Accomplishment', TREATAS({@ProjectCode}, 'Project'[Project Code])), "Accomplishment", 'Recent Accomplishment'[Accomplishment], "Source", 'Recent Accomplishment'[Source], "CompletedDate", 'Recent Accomplishment'[Completed Date]) ORDER BY [CompletedDate] DESC</CommandText>
@@ -69,7 +69,7 @@
 </DataSet><DataSet Name="DsGauge">
   <Query>
     <DataSourceName>TheragenModel</DataSourceName>
-    <QueryParameters><QueryParameter Name="@ProjectCode">
+    <QueryParameters><QueryParameter Name="ProjectCode">
             <Value>=Parameters!ProjectCode.Value</Value>
           </QueryParameter></QueryParameters>
     <CommandText>EVALUATE CALCULATETABLE(ROW("AvgScore", [Avg Risk Score (Open)], "RiskRating", [Risk Rating], "RatingColor", [Risk Rating Color]), TREATAS({@ProjectCode}, 'Project'[Project Code]))</CommandText>
@@ -78,7 +78,7 @@
 </DataSet><DataSet Name="DsNextSteps">
   <Query>
     <DataSourceName>TheragenModel</DataSourceName>
-    <QueryParameters><QueryParameter Name="@ProjectCode">
+    <QueryParameters><QueryParameter Name="ProjectCode">
             <Value>=Parameters!ProjectCode.Value</Value>
           </QueryParameter></QueryParameters>
     <CommandText>EVALUATE SELECTCOLUMNS(CALCULATETABLE('Upcoming Next Step', TREATAS({@ProjectCode}, 'Project'[Project Code])), "NextStep", 'Upcoming Next Step'[Next Step], "Owner", 'Upcoming Next Step'[Owner], "TargetDate", 'Upcoming Next Step'[Target Date]) ORDER BY [TargetDate]</CommandText>

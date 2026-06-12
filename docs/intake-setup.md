@@ -203,37 +203,43 @@ PostgreSQL.
 ## C. Daily sync schedule
 
 The sync runs as Allen's Windows account at 5:30 AM daily. Task Scheduler discards
-stdout by default, so the command wraps the Python call in `cmd /c` and redirects all
-output to a log file.
+stdout, so the task runs `tools\run_intake_sync.cmd` — a small wrapper that creates
+`logs\` if missing, appends a timestamp header, runs the sync, and appends all output
+plus the exit code to `logs\intake_sync.log`. (The folder is gitignored; the wrapper
+creates it automatically on first run.)
 
-### One-time: create the logs folder
-
-Run once in the repo root (PowerShell or cmd.exe):
-
-```powershell
-mkdir logs
-```
-
-This folder is gitignored. It must exist before the scheduled task runs for the first time.
+> The wrapper hardcodes the Python path `C:\Python314\python.exe`. If Python moves,
+> update `tools\run_intake_sync.cmd`.
 
 ### Register the scheduled task
 
-Run the following in **cmd.exe** (not PowerShell — schtasks /TR quoting works differently
-there). Replace `<REPO>` with the full path to your local repository, e.g.
+Run the following in **cmd.exe** (not PowerShell — schtasks `/TR` quoting works
+differently there). Replace `<REPO>` with the full path to your local repository, e.g.
 `C:\Users\Allen\OneDrive - Neurotech NA\Documents\GitHub\Theragen-Project-Planer-BI`.
 
 ```cmd
-schtasks /Create /TN "Theragen\SyncIntake" /TR "cmd /c \"\"C:\Python314\python.exe\" \"<REPO>\tools\sync_intake.py\" >> \"<REPO>\logs\intake_sync.log\" 2>&1\"" /SC DAILY /ST 05:30 /RL LIMITED /F
+schtasks /Create /TN "Theragen\SyncIntake" /TR "\"<REPO>\tools\run_intake_sync.cmd\"" /SC DAILY /ST 05:30 /RL LIMITED /F
 ```
 
-> **Note on quoting:** The outer `"cmd /c \"..."\"` pattern is required so that
-> `schtasks` passes the redirect operator (`>>`) and `2>&1` to `cmd.exe` rather than
-> interpreting them itself. The inner executable paths must be double-quoted if they
-> contain spaces (the OneDrive path does).
+> **Why a wrapper script instead of an inline `cmd /c ... >> log` command:** cmd.exe
+> toggles quote state on every `"` (backslash is not an escape character at the cmd
+> layer), so with quoted space-containing paths inside `/TR`, the `>>` ends up outside
+> quotes and cmd redirects the `schtasks` command itself — registration fails with
+> "The filename, directory name, or volume label syntax is incorrect." Keeping the
+> redirect inside a script avoids the problem entirely.
 
-After creating the task, open **Task Scheduler** → `Theragen` folder → `SyncIntake` →
-Properties → **Settings** tab → check **Run task as soon as possible after a scheduled
-start is missed**. This ensures the sync catches up if the PC was off at 5:30 AM.
+Then enable missed-start catch-up (sync runs as soon as the PC is back on if it was
+off at 5:30 AM) and battery tolerance. Either tick **Run task as soon as possible
+after a scheduled start is missed** in Task Scheduler → `Theragen` → `SyncIntake` →
+Properties → **Settings**, or run in PowerShell:
+
+```powershell
+$t = Get-ScheduledTask -TaskPath "\Theragen\" -TaskName "SyncIntake"
+$t.Settings.StartWhenAvailable = $true
+$t.Settings.DisallowStartIfOnBatteries = $false
+$t.Settings.StopIfGoingOnBatteries = $false
+Set-ScheduledTask -InputObject $t
+```
 
 ### Enable the task
 
@@ -257,9 +263,20 @@ schtasks /Query /TN "Theragen\SyncIntake" /FO LIST
 ### Morning health check
 
 Review `logs\intake_sync.log` each morning (or after a manual run) to confirm there were
-no errors. A successful run ends with exit code 0; any item-level error exits with code 1
-and the relevant line contains `ERROR item <id>:` (each result line is printed with a
-two-space indent, so the log line reads `  ERROR item <id>: …`). Because of the indent,
+no errors. The wrapper brackets every run with a `---- <date> <time> ----` header and a
+final `exit code N` line, so each day's entry is self-contained:
+
+```
+---- Fri 06/12/2026 05:30:01.12 ----
+2 list item(s) fetched
+  OK new INT-2026-0007 / THG-CLN-004 (LIMS upgrade)
+  OK item 5: status already Proposed
+exit code 0
+```
+
+A successful run ends with `exit code 0`; any item-level error exits with code 1 and the
+relevant line contains `ERROR item <id>:` (each result line is printed with a two-space
+indent, so the log line reads `  ERROR item <id>: …`). Because of the indent,
 `grep "^ERROR"` finds nothing — use a non-anchored search instead:
 
 ```cmd
@@ -273,10 +290,10 @@ grep ERROR logs/intake_sync.log
 ```
 
 > **Scheduled runs and exit codes:** Task Scheduler's "last run result" reflects the
-> `cmd /c` wrapper, not Python's exit code directly. Python's exit code 1 is only clearly
-> visible on manual runs. For scheduled runs the **log file is the primary diagnostic** —
-> always check `logs\intake_sync.log` rather than relying solely on Task Scheduler's
-> last-run status.
+> wrapper script, which forwards Python's exit code (`exit /b %errorlevel%`) — but the
+> **log file is the primary diagnostic**: it records the same exit code per run alongside
+> the actual error lines, so always check `logs\intake_sync.log` rather than relying
+> solely on Task Scheduler's last-run status.
 
 To trigger a manual refresh of the semantic model outside the 6:00 AM schedule:
 

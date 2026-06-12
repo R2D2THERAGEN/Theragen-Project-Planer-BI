@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "c207fef075e65e55aee0",
   "position": {
     "x": 574,
     "y": 88,
     "z": 1000,
-    "width": 380,
-    "height": 190
+    "height": 190,
+    "width": 380
   },
   "visual": {
     "visualType": "multiRowCard",
@@ -31,7 +31,21 @@
         }
       }
     },
-    "drillFilterOtherVisuals": true,
+    "objects": {
+      "categoryLabels": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
     "visualContainerObjects": {
       "title": [
         {
@@ -53,6 +67,25 @@
           }
         }
       ]
-    }
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "6b58d8144d43d75b186e",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "_Measures"
+              }
+            },
+            "Property": "Business Value (Selected)"
+          }
+        },
+        "type": "Advanced"
+      }
+    ]
   }
 }

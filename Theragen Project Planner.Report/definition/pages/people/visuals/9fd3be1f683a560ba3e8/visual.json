@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "9fd3be1f683a560ba3e8",
   "position": {
     "x": 658,
     "y": 116,
     "z": 1000,
-    "width": 614,
-    "height": 240
+    "height": 240,
+    "width": 614
   },
   "visual": {
     "visualType": "barChart",
@@ -25,24 +25,8 @@
                   "Property": "Department"
                 }
               },
-              "queryRef": "Department.Department"
-            }
-          ]
-        },
-        "Y": {
-          "projections": [
-            {
-              "field": {
-                "Measure": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "_Measures"
-                    }
-                  },
-                  "Property": "Stakeholders"
-                }
-              },
-              "queryRef": "_Measures.Stakeholders"
+              "queryRef": "Department.Department",
+              "active": true
             }
           ]
         },
@@ -62,10 +46,26 @@
               "queryRef": "Stakeholder.Engagement"
             }
           ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Stakeholders"
+                }
+              },
+              "queryRef": "_Measures.Stakeholders"
+            }
+          ]
         }
       }
     },
-    "drillFilterOtherVisuals": true,
     "visualContainerObjects": {
       "title": [
         {
@@ -87,6 +87,7 @@
           }
         }
       ]
-    }
+    },
+    "drillFilterOtherVisuals": true
   }
 }

@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "e39289ccff2d592aa95a",
   "position": {
-    "x": 8,
-    "y": 454,
+    "x": 8.1306715063520869,
+    "y": 454.15607985480943,
     "z": 1000,
-    "width": 1264,
-    "height": 128
+    "height": 127.76769509981851,
+    "width": 945.480943738657
   },
   "visual": {
     "visualType": "tableEx",
@@ -101,34 +101,29 @@
         "isDefaultSort": true
       }
     },
-    "drillFilterOtherVisuals": true,
     "objects": {
       "values": [
         {
-          "selector": {
-            "metadata": "_Measures.Workstream Status"
-          },
           "properties": {
             "fontColorPrimary": {
               "solid": {
                 "color": {
                   "expr": {
-                    "FillRule": {
-                      "Input": {
-                        "Measure": {
-                          "Expression": {
-                            "SourceRef": {
-                              "Entity": "_Measures"
-                            }
-                          },
-                          "Property": "Workstream Status Color"
+                    "Measure": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "_Measures"
                         }
-                      }
+                      },
+                      "Property": "Workstream Status Color"
                     }
                   }
                 }
               }
             }
+          },
+          "selector": {
+            "metadata": "_Measures.Workstream Status"
           }
         }
       ]
@@ -154,6 +149,81 @@
           }
         }
       ]
-    }
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "31bd49d8ca6072c7420d",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "WBS Element"
+              }
+            },
+            "Property": "Deliverable"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "6aec3b69b59e0a11d770",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "_Measures"
+              }
+            },
+            "Property": "Workstream Start"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "40b6e8d636046c768911",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "_Measures"
+              }
+            },
+            "Property": "Workstream Target"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "9623a8e0cc8d20100010",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "_Measures"
+              }
+            },
+            "Property": "Pct Complete (Duration Weighted)"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "af62d4c214cd728042d8",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "_Measures"
+              }
+            },
+            "Property": "Workstream Status"
+          }
+        },
+        "type": "Advanced"
+      }
+    ]
   }
 }

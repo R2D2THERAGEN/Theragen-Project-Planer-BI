@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "b0706b11c4675d1ea17e",
   "position": {
     "x": 236,
     "y": 8,
     "z": 1000,
-    "width": 280,
-    "height": 72
+    "height": 72,
+    "width": 280
   },
   "visual": {
     "visualType": "card",
@@ -31,7 +31,6 @@
         }
       }
     },
-    "drillFilterOtherVisuals": true,
     "objects": {
       "labels": [
         {
@@ -40,6 +39,19 @@
               "expr": {
                 "Literal": {
                   "Value": "14D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "categoryLabels": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
                 }
               }
             }
@@ -68,6 +80,25 @@
           }
         }
       ]
-    }
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "c14ce610e2ba9209a88d",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "_Measures"
+              }
+            },
+            "Property": "Theragen Project Name"
+          }
+        },
+        "type": "Advanced"
+      }
+    ]
   }
 }

@@ -1,5 +1,5 @@
 /// Fact - risk register (PMBOK P14). 5x5 likelihood x impact scoring.
-table 'Risk'
+table Risk
 	lineageTag: a2df0eeb-9b9b-5b4c-ad79-aa6aa62118ab
 
 	column 'Risk ID'
@@ -52,7 +52,7 @@ table 'Risk'
 
 		annotation SummarizationSetBy = User
 
-	column 'Likelihood'
+	column Likelihood
 		dataType: int64
 		formatString: #,0
 		lineageTag: bd35f583-6313-531a-bdb5-721d8443efac
@@ -61,7 +61,7 @@ table 'Risk'
 
 		annotation SummarizationSetBy = User
 
-	column 'Impact'
+	column Impact
 		dataType: int64
 		formatString: #,0
 		lineageTag: b948501a-bb1c-544f-a2df-d8784954dec4
@@ -96,7 +96,7 @@ table 'Risk'
 
 		annotation SummarizationSetBy = User
 
-	column 'Owner'
+	column Owner
 		dataType: string
 		lineageTag: dbc0f95f-a869-56a4-8eac-616bc037d27e
 		summarizeBy: none
@@ -104,7 +104,7 @@ table 'Risk'
 
 		annotation SummarizationSetBy = User
 
-	column 'Department'
+	column Department
 		dataType: string
 		lineageTag: 9b4884d5-0fce-5ba6-af1d-61d229b17533
 		summarizeBy: none
@@ -147,7 +147,7 @@ table 'Risk'
 		annotation SummarizationSetBy = User
 
 	/// Banding of Risk Score on the 5x5 matrix: >=20 Critical, >=12 High, >=6 Medium.
-	column 'Severity' = SWITCH(TRUE(), 'Risk'[Risk Score] >= 20, "Critical", 'Risk'[Risk Score] >= 12, "High", 'Risk'[Risk Score] >= 6, "Medium", "Low")
+	column Severity = SWITCH(TRUE(), 'Risk'[Risk Score] >= 20, "Critical", 'Risk'[Risk Score] >= 12, "High", 'Risk'[Risk Score] >= 6, "Medium", "Low")
 		dataType: string
 		lineageTag: c777e9c3-a482-50c2-9c3e-4c0b73724d59
 		summarizeBy: none
@@ -162,7 +162,7 @@ table 'Risk'
 
 		annotation SummarizationSetBy = User
 
-	partition 'Risk' = m
+	partition Risk = m
 		mode: import
 		source =
 				let
@@ -176,3 +176,4 @@ table 'Risk'
 				    Renamed
 
 	annotation PBI_ResultType = Table
+

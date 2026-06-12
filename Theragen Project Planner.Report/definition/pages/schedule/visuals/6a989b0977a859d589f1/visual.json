@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "6a989b0977a859d589f1",
   "position": {
     "x": 270,
     "y": 116,
     "z": 1000,
-    "width": 500,
-    "height": 280
+    "height": 280,
+    "width": 500
   },
   "visual": {
     "visualType": "clusteredBarChart",
@@ -25,7 +25,8 @@
                   "Property": "Deliverable"
                 }
               },
-              "queryRef": "WBS Element.Deliverable"
+              "queryRef": "WBS Element.Deliverable",
+              "active": true
             }
           ]
         },
@@ -48,7 +49,6 @@
         }
       }
     },
-    "drillFilterOtherVisuals": true,
     "visualContainerObjects": {
       "title": [
         {
@@ -70,6 +70,7 @@
           }
         }
       ]
-    }
+    },
+    "drillFilterOtherVisuals": true
   }
 }

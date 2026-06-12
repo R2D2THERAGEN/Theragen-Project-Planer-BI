@@ -1,0 +1,204 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "name": "768dfb755a1acd076b27",
+  "position": {
+    "x": 961.74228675136112,
+    "y": 285.73502722323047,
+    "z": 1001,
+    "height": 296.18874773139743,
+    "width": 310.12704174228674,
+    "tabOrder": 1
+  },
+  "visual": {
+    "visualType": "codexZoneGaugeF1E2D3C4B5A6F7E8D9C0B1A2F3E4D5C6",
+    "query": {
+      "queryState": {
+        "value": {
+          "projections": [
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "Risk"
+                        }
+                      },
+                      "Property": "Risk Score"
+                    }
+                  },
+                  "Function": 5
+                }
+              },
+              "queryRef": "CountNonNull(Risk.Risk Score)",
+              "nativeQueryRef": "Count of Risk Score"
+            }
+          ]
+        },
+        "maximum": {
+          "projections": [
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "Risk"
+                        }
+                      },
+                      "Property": "Impact"
+                    }
+                  },
+                  "Function": 5
+                }
+              },
+              "queryRef": "CountNonNull(Risk.Impact)",
+              "nativeQueryRef": "Count of Impact"
+            }
+          ]
+        },
+        "comparison": {
+          "projections": [
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "Risk"
+                        }
+                      },
+                      "Property": "Likelihood"
+                    }
+                  },
+                  "Function": 5
+                }
+              },
+              "queryRef": "CountNonNull(Risk.Likelihood)",
+              "nativeQueryRef": "Count of Likelihood"
+            }
+          ]
+        },
+        "category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Risk"
+                    }
+                  },
+                  "Property": "Risk Category"
+                }
+              },
+              "queryRef": "Risk.Risk Category",
+              "nativeQueryRef": "Risk Category"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Aggregation": {
+                "Expression": {
+                  "Column": {
+                    "Expression": {
+                      "SourceRef": {
+                        "Entity": "Risk"
+                      }
+                    },
+                    "Property": "Risk Score"
+                  }
+                },
+                "Function": 5
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    }
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "b018c3a10d0007b63c00",
+        "field": {
+          "Aggregation": {
+            "Expression": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Risk"
+                  }
+                },
+                "Property": "Risk Score"
+              }
+            },
+            "Function": 5
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "f49e4071aa36a095d063",
+        "field": {
+          "Aggregation": {
+            "Expression": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Risk"
+                  }
+                },
+                "Property": "Impact"
+              }
+            },
+            "Function": 5
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "2593cac0b36db49e2c77",
+        "field": {
+          "Aggregation": {
+            "Expression": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Risk"
+                  }
+                },
+                "Property": "Likelihood"
+              }
+            },
+            "Function": 5
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "51f044d4156b7980b913",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Risk"
+              }
+            },
+            "Property": "Risk Category"
+          }
+        },
+        "type": "Categorical"
+      }
+    ]
+  }
+}

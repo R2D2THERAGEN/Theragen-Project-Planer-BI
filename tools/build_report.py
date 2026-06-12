@@ -134,9 +134,8 @@ def table_vis(page, key, fields, x, y, wd, ht, vtitle="", sort=None, font_cf=Non
         objects = {"values": [
             {"selector": {"metadata": qref},
              "properties": {"fontColorPrimary": {"solid": {"color": {"expr": {
-                 "FillRule": {"Input": {"Measure": {
-                     "Expression": {"SourceRef": {"Entity": MEAS}},
-                     "Property": color_measure}}}}}}}}}
+                 "Measure": {"Expression": {"SourceRef": {"Entity": MEAS}},
+                             "Property": color_measure}}}}}}}
             for qref, color_measure in font_cf.items()]}
     return visual(vid(page, key), "tableEx", pos(x, y, wd, ht), qs, vtitle=vtitle,
                   sort=sort, objects=objects)

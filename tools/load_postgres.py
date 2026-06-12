@@ -54,7 +54,10 @@ def main():
     if "--reseed" not in sys.argv:
         sys.exit("Refusing to run: this is a destructive reseed. "
                  "Pass --reseed and confirm interactively.")
-    typed = input(f"Type the database name ({CFG['database']}) to confirm wipe: ")
+    try:
+        typed = input(f"Type the database name ({CFG['database']}) to confirm wipe: ")
+    except EOFError:
+        sys.exit("Non-interactive stdin - refusing destructive reseed.")
     if typed.strip() != CFG["database"]:
         sys.exit("Confirmation mismatch - aborting.")
 

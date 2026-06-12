@@ -8,6 +8,7 @@ prints a device-code prompt once; subsequent runs are silent.
 import atexit
 import json
 import os
+import sys
 
 import msal
 import requests
@@ -39,6 +40,11 @@ def get_token():
     accounts = app.get_accounts()
     result = app.acquire_token_silent(SCOPES, account=accounts[0]) if accounts else None
     if not result:
+        if not sys.stdin.isatty():
+            raise SystemExit(
+                "Graph token expired and no console available for device-code "
+                "sign-in. Run 'python tools/sync_intake.py --dry-run' once in a "
+                "terminal to re-authenticate.")
         flow = app.initiate_device_flow(scopes=SCOPES)
         print(flow["message"])  # user completes sign-in once
         result = app.acquire_token_by_device_flow(flow)

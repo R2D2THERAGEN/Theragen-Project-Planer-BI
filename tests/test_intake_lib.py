@@ -13,6 +13,16 @@ def test_derive_envelope_buckets():
     assert il.derive_envelope(2_000_000) == ">$1M"
 
 
+def test_derive_envelope_boundary_one_million():
+    # 1_000_000 is NOT < 1_000_000, so it falls through all ENVELOPES entries -> ">$1M"
+    assert il.derive_envelope(1_000_000) == ">$1M"
+
+
+def test_derive_envelope_boundary_zero():
+    # 0 is < 25_000, the first ENVELOPES entry -> "$0-25k"
+    assert il.derive_envelope(0) == "$0-25k"
+
+
 def test_next_intake_id_first_of_year():
     assert il.next_intake_id(["INT-2025-0117"], 2026) == "INT-2026-0001"
 

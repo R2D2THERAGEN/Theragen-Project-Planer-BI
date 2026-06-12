@@ -241,6 +241,8 @@ $t.Settings.StopIfGoingOnBatteries = $false
 Set-ScheduledTask -InputObject $t
 ```
 
+Task Scheduler's default multiple-instances policy ("Do not start a new instance" / IgnoreNew) is relied on so a catch-up run and the 5:30 AM run never overlap; don't change that setting.
+
 ### Enable the task
 
 The `/F` flag above overwrites any existing task with the same name. To verify it is

@@ -290,10 +290,13 @@ def main():
 
         results = []
         for it in items:
-            if it["item_id"] not in synced:
-                results.append(process_new(conn, g, it, args.dry_run))
-            else:
-                results.append(process_triage(conn, g, it, args.dry_run))
+            try:
+                if it["item_id"] not in synced:
+                    results.append(process_new(conn, g, it, args.dry_run))
+                else:
+                    results.append(process_triage(conn, g, it, args.dry_run))
+            except Exception as e:  # one item's Graph/DB hiccup must not kill the batch
+                results.append(f"ERROR item {it['item_id']}: {type(e).__name__}: {e}")
     for r in results:
         print(" ", r)
     bad = [r for r in results if r.startswith("ERROR")]

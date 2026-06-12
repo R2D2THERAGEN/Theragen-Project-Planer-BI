@@ -141,16 +141,111 @@ def normalize(item, g):
     }
 
 
-# TODO(Task 6): branch on `dry` - real writes land here; DRY prefix only when dry.
+def writeback(g, item_id, fields):
+    g.patch(f"/sites/{M365['site_id']}/lists/{M365['list_id']}/items/{item_id}/fields",
+            fields)
+
+
+def person_id_by_email(conn, email):
+    row = conn.execute("SELECT person_id FROM doc_mgmt.person WHERE lower(email)=%s",
+                       (email,)).fetchone()
+    return row[0] if row else None
+
+
 def process_new(conn, g, it, dry):
     errs = il.validate_item(it)
+    sponsor = person_id_by_email(conn, it["SponsorEmail"]) if it["SponsorEmail"] else None
+    pm = person_id_by_email(conn, it["ProjectManagerEmail"]) if it["ProjectManagerEmail"] else None
+    if it["SponsorEmail"] and not sponsor:
+        errs.append(f"Sponsor {it['SponsorEmail']} not in person directory")
+    if it["ProjectManagerEmail"] and not pm:
+        errs.append(f"PM {it['ProjectManagerEmail']} not in person directory")
     if errs:
-        return f"ERROR item {it['item_id']}: " + "; ".join(errs)
-    return f"DRY new item {it['item_id']}: would create intake+project ({it['Title']})"
+        msg = "; ".join(errs)
+        if not dry:
+            writeback(g, it["item_id"], {"SyncStatus": "Error", "SyncMessage": msg})
+        return f"ERROR item {it['item_id']}: {msg}"
+
+    year = datetime.date.today().year
+    existing_intakes = [r[0] for r in conn.execute(
+        "SELECT intake_id FROM doc_mgmt.intake_submission").fetchall()]
+    intake_id = il.next_intake_id(existing_intakes, year)
+    dept = conn.execute("SELECT department_id, code FROM doc_mgmt.department "
+                        "WHERE name=%s", (it["Department"],)).fetchone()
+    if not dept:
+        return f"ERROR item {it['item_id']}: unknown department {it['Department']}"
+    dept_id, dept_code = dept
+    existing_codes = [r[0] for r in conn.execute(
+        "SELECT project_code FROM pmbok.project").fetchall()]
+    project_code = il.next_project_code(dept_code, existing_codes)
+    project_id = str(uuid.uuid5(NS, f"thg/project/{project_code}"))
+
+    if dry:
+        return (f"DRY item {it['item_id']}: would create {intake_id} / "
+                f"{project_code} ({it['Title']})")
+
+    with conn.transaction():
+        conn.execute(
+            "INSERT INTO doc_mgmt.intake_submission (intake_submission_id, intake_id,"
+            " submitted_at, requester_person_id, requesting_department_id,"
+            " request_title, request_type, business_problem, desired_outcome,"
+            " effort, budget_envelope, phi_flag, cfr11_flag, clinical_flag,"
+            " vendor_flag, data_sharing_flag, external_ref)"
+            " VALUES (%s,%s,now(),%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+            (str(uuid.uuid5(NS, f"thg/intake/{intake_id}")), intake_id, sponsor,
+             dept_id, it["Title"][:200], it["RequestType"], it["BusinessProblem"],
+             it["DesiredOutcome"], it["EffortBucket"],
+             il.derive_envelope(it["EstimatedBudget"]),
+             it["Flags"]["PHIFlag"], it["Flags"]["CFR11Flag"],
+             it["Flags"]["ClinicalFlag"], it["Flags"]["VendorFlag"],
+             it["Flags"]["DataSharingFlag"], it["item_id"]))
+        conn.execute(
+            "INSERT INTO pmbok.project (project_id, project_code, intake_id, name,"
+            " description, sponsor_person_id, project_manager_id,"
+            " primary_department, approach, lifecycle_phase, status,"
+            " planned_start, planned_finish, budget_total, strategic_objective_ref)"
+            " VALUES (%s,%s,%s,%s,%s,%s,%s,%s,'predictive','Initiating','Proposed',"
+            " %s,%s,%s,%s)",
+            (project_id, project_code, intake_id, it["Title"][:200],
+             it["BusinessProblem"], sponsor, pm, it["Department"],
+             it["PlannedStart"], it["PlannedFinish"], it["EstimatedBudget"],
+             it["StrategicObjective"]))
+        conn.execute(
+            "INSERT INTO pmbok.project_charter (charter_id, project_id, doc_id,"
+            " business_case, high_level_in_scope, pm_authority_text)"
+            " VALUES (%s,%s,%s,%s,'Per approved scope baseline.',"
+            " 'Authority per the Theragen project charter standard.')",
+            (str(uuid.uuid5(NS, f"thg/charter/{project_code}")), project_id,
+             "THG-CHR-" + project_code[4:], it["DesiredOutcome"]))
+    writeback(g, it["item_id"], {"SyncStatus": "Synced", "SyncMessage": "",
+                                 "IntakeID": intake_id, "ProjectCode": project_code})
+    return f"OK new {intake_id} / {project_code} ({it['Title']})"
 
 
 def process_triage(conn, g, it, dry):
-    return f"DRY triage item {it['item_id']}: status {it['TriageStatus']}"
+    target = il.triage_to_status(it["TriageStatus"])
+    if target is None:
+        return f"ERROR item {it['item_id']}: unknown TriageStatus {it['TriageStatus']}"
+    row = conn.execute(
+        "SELECT p.project_id, p.status FROM pmbok.project p"
+        " JOIN doc_mgmt.intake_submission i ON i.intake_id = p.intake_id"
+        " WHERE i.external_ref = %s", (it["item_id"],)).fetchone()
+    if not row:
+        return f"ERROR item {it['item_id']}: synced intake has no project row"
+    project_id, current = row
+    if current == target:
+        return f"OK item {it['item_id']}: status already {current}"
+    if dry:
+        return f"DRY item {it['item_id']}: would move {current} -> {target}"
+    with conn.transaction():
+        conn.execute(
+            "UPDATE pmbok.project SET status=%s,"
+            " actual_start = CASE WHEN %s='Active' AND actual_start IS NULL"
+            " THEN CURRENT_DATE ELSE actual_start END WHERE project_id=%s",
+            (target, target, project_id))
+    writeback(g, it["item_id"], {"SyncStatus": "Synced",
+                                 "SyncMessage": f"Status -> {target}"})
+    return f"OK triage item {it['item_id']}: {current} -> {target}"
 
 
 def main():

@@ -1,0 +1,67 @@
+THERAGEN  |  PMBOK_ERD
+Text-based entity-relationship diagram. Each row shows a parent → child edge.
+—
+Parent	→	Child	Cardinality	Via FK
+project	→	project_charter	1:1	project_id
+project	→	stakeholder	1:N	project_id
+project	→	scope_statement	1:1	project_id
+scope_statement	→	scope_inclusion	1:N	scope_id
+scope_statement	→	scope_exclusion	1:N	scope_id
+scope_statement	→	acceptance_criterion	1:N	scope_id
+project	→	wbs_element	1:N	project_id
+wbs_element	→	wbs_element	1:N	parent_wbs_element_id
+wbs_element	→	wbs_dictionary_entry	1:1	wbs_element_id
+wbs_element	→	schedule_activity	1:N	wbs_element_id
+wbs_element	→	budget_line_item	1:N	wbs_element_id
+project	→	milestone	1:N	project_id
+schedule_activity	→	schedule_dependency	1:N	predecessor_activity_id
+schedule_activity	→	schedule_dependency	1:N	successor_activity_id
+project	→	risk	1:N	project_id
+risk	→	risk_response	1:N	risk_id
+project	→	communications_audience	1:N	project_id
+project	→	meeting_cadence	1:N	project_id
+project	→	quality_standard	1:N	project_id
+project	→	quality_activity	1:N	project_id
+project	→	quality_metric	1:N	project_id
+project	→	change_request	1:N	project_id
+change_request	→	change_impact_assessment	1:N	cr_id
+project	→	status_report	1:N	project_id
+status_report	→	status_report_area	1:N	report_id
+project	→	lesson_learned	1:N	project_id
+project	→	closure_checklist_item	1:N	project_id
+project	→	assumption	1:N	project_id
+project	→	constraint	1:N	project_id
+project	→	decision	1:N	project_id
+project	→	project_team_member	1:N	project_id
+project	→	approval	1:N	artifact_doc_id (via doc_id)
+Hierarchy view rooted at project
+project
+├── project_charter
+├── stakeholder (N)
+├── scope_statement
+│   ├── scope_inclusion (N)
+│   ├── scope_exclusion (N)
+│   └── acceptance_criterion (N)
+├── wbs_element (N, hierarchical)
+│   ├── wbs_dictionary_entry (1:1)
+│   ├── schedule_activity (N)
+│   │   └── schedule_dependency (N predecessor/successor)
+│   └── budget_line_item (N)
+├── milestone (N)
+├── risk (N)
+│   └── risk_response (N)
+├── communications_audience (N)
+├── meeting_cadence (N)
+├── quality_standard (N)
+├── quality_activity (N)
+├── quality_metric (N)
+├── change_request (N)
+│   └── change_impact_assessment (N)
+├── status_report (N, recurring)
+│   └── status_report_area (N per report)
+├── lesson_learned (N)
+├── closure_checklist_item (N)
+├── assumption (N)
+├── constraint (N)
+├── decision (N)
+└── project_team_member (N)

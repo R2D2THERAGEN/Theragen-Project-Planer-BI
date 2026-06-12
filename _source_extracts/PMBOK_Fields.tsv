@@ -1,0 +1,275 @@
+THERAGEN  |  PMBOK_Fields
+All 271 fields across the 31 PMBOK entities.
+—
+Entity ID	Field	Type	Length / Precision	Required	Key	FK reference	Default	Description	Enum	Example
+P01	project_id	UUID		Y	PK		gen_random_uuid()	Surrogate primary key.		8e3f...c2
+P01	project_code	VARCHAR	32	Y	UK			Human-readable project code (e.g. THG-CLN-001).		THG-CLN-014
+P01	intake_id	VARCHAR	16	Y		intake_submission.intake_id		Originating Intake ID. Propagates traceability from DM schema.		INT-2026-0042
+P01	name	VARCHAR	200	Y				Project name.		Cardio Device Feasibility Study
+P01	description	TEXT		N				One-paragraph project description.
+P01	sponsor_person_id	UUID		Y		person.person_id		Project Sponsor.
+P01	project_manager_id	UUID		Y		person.person_id		Assigned Project Manager.
+P01	primary_department	ENUM		Y				Owning department.	department_code	Clinical / Medical Affairs
+P01	approach	ENUM		Y			predictive	Delivery approach.	approach_type	predictive
+P01	lifecycle_phase	ENUM		Y			Initiating	Current PMI process group.	lifecycle_phase	Planning
+P01	status	ENUM		Y			Active	Project lifecycle state.	project_status	Active
+P01	planned_start	DATE		N				Baseline start date.		2026-06-01
+P01	planned_finish	DATE		N				Baseline finish date.		2026-12-31
+P01	actual_start	DATE		N				Actual start.
+P01	actual_finish	DATE		N				Actual finish.
+P01	budget_total	NUMERIC	12,2	N				Approved budget total (USD).		725000.00
+P01	strategic_objective_ref	VARCHAR	100	N				Linked strategic objective.		FY26-O2
+P01	created_at	TIMESTAMPTZ		Y			now()	Row created timestamp.
+P01	updated_at	TIMESTAMPTZ		Y			now()	Row updated timestamp.
+P02	charter_id	UUID		Y	PK		gen_random_uuid()	Surrogate PK.
+P02	project_id	UUID		Y	FK	project.project_id		Parent project.
+P02	doc_id	VARCHAR	20	Y	UK	document.doc_id		DM-side document identifier.		THG-CLN-CHR-014
+P02	business_case	TEXT		Y				Why now; expected benefit; strategic linkage.
+P02	high_level_in_scope	TEXT		Y				Bulleted in-scope summary.
+P02	high_level_out_scope	TEXT		N				Bulleted out-of-scope summary.
+P02	budget_estimate_low	NUMERIC	12,2	N				Order-of-magnitude low.
+P02	budget_estimate_high	NUMERIC	12,2	N				Order-of-magnitude high.
+P02	pm_authority_text	TEXT		Y				Authority granted to the PM.
+P02	approved_by_person_id	UUID		N		person.person_id		Sponsor who approved.
+P02	approved_at	TIMESTAMPTZ		N				Approval timestamp.
+P02	status	ENUM		Y			DRAFT	Doc lifecycle status.	doc_status	BASELINE
+P02	version	VARCHAR	10	Y			0.1	Charter version.		1.0
+P03	stakeholder_id	UUID		Y	PK		gen_random_uuid()	Surrogate PK.
+P03	project_id	UUID		Y	FK	project.project_id		Parent project.
+P03	stk_code	VARCHAR	8	Y				S-NNN persistent ID.		S-005
+P03	person_id	UUID		N	FK	person.person_id		Linked person (optional if group).
+P03	group_name	VARCHAR	100	N				Group name when not a person.		Cardio Device Steering Committee
+P03	role	VARCHAR	100	Y				Role in the project context.		Medical Director
+P03	department	ENUM		Y				Department.	department_code	Clinical / Medical Affairs
+P03	engagement	ENUM		Y			C	RACI engagement on the project.	raci_role	C
+P03	interest	ENUM		Y			Medium	Interest level.	hml	High
+P03	influence	ENUM		Y			Medium	Influence level.	hml	Medium
+P03	expectations	TEXT		N				Stakeholder expectations.
+P03	communication_preference	ENUM		N				Preferred channel.	comm_channel	Email
+P03	engagement_strategy	TEXT		N				Engagement plan summary.
+P04	scope_id	UUID		Y	PK
+P04	project_id	UUID		Y	FK	project.project_id		Parent project.
+P04	doc_id	VARCHAR	20	Y	UK	document.doc_id		DM-side doc ID.		THG-CLN-SCP-014
+P04	product_description	TEXT		Y				Description of deliverable / outcome.
+P04	status	ENUM		Y			DRAFT	Doc lifecycle status.	doc_status	BASELINE
+P04	version	VARCHAR	10	Y			0.1	Version.		1.0
+P05	inclusion_id	UUID		Y	PK
+P05	scope_id	UUID		Y	FK	scope_statement.scope_id		Parent scope doc.
+P05	sequence	SMALLINT		Y				Display order.		1
+P05	item	TEXT		Y				Inclusion text.
+P05	owning_department	ENUM		N				Owning department.	department_code
+P06	exclusion_id	UUID		Y	PK
+P06	scope_id	UUID		Y	FK	scope_statement.scope_id		Parent scope doc.
+P06	sequence	SMALLINT		Y				Display order.
+P06	item	TEXT		Y				Exclusion text.
+P06	reason	TEXT		N				Reason it's out of scope.
+P07	criterion_id	UUID		Y	PK
+P07	scope_id	UUID		Y	FK	scope_statement.scope_id		Parent scope doc.
+P07	sequence	SMALLINT		Y				Display order.
+P07	criterion	TEXT		Y				Criterion statement.
+P07	verification_method	ENUM		Y			Test	Method.	verification_method	Test
+P07	owner_role	VARCHAR	100	Y				Role accountable for verification.
+P07	status	ENUM		Y			Open	Verification state.	verification_status	Open
+P08	wbs_element_id	UUID		Y	PK
+P08	project_id	UUID		Y	FK	project.project_id		Parent project.
+P08	wbs_code	VARCHAR	20	Y				Dotted ID like 1.3.2. Unique within project.		1.3.1
+P08	parent_wbs_element_id	UUID		N	FK	wbs_element.wbs_element_id		Self-reference for hierarchy.
+P08	level	SMALLINT		Y				Depth in tree (1 = top).		3
+P08	name	VARCHAR	200	Y				Deliverable / work package name.		Site activation
+P08	owning_department	ENUM		Y				Department owning this WP.	department_code	Clinical / Medical Affairs
+P08	owner_role	VARCHAR	100	Y				Owning role.
+P08	estimated_effort_hrs	NUMERIC	9,2	N				Effort estimate.		240
+P08	estimated_cost	NUMERIC	12,2	N				Cost estimate.		48000.00
+P08	accepted_by_person_id	UUID		N	FK	person.person_id		Who accepted the deliverable.
+P09	wbsd_id	UUID		Y	PK
+P09	wbs_element_id	UUID		Y	FK	wbs_element.wbs_element_id		Linked WBS element.
+P09	description	TEXT		Y				Detailed scope of the work package.
+P09	deliverables	TEXT		Y				List of deliverables.
+P09	acceptance_criteria	TEXT		Y				Acceptance criteria summary.
+P09	predecessors	VARCHAR	100	N				Comma-list of predecessor WBS codes.		1.2.x
+P10	activity_id	UUID		Y	PK
+P10	wbs_element_id	UUID		Y	FK	wbs_element.wbs_element_id		Linked WBS element.
+P10	activity_code	VARCHAR	20	Y				Activity code.		1.3.1-A1
+P10	name	VARCHAR	200	Y				Task name.		Recruit 3 trial sites
+P10	start_planned	DATE		Y				Planned start.		2026-07-01
+P10	finish_planned	DATE		Y				Planned finish.		2026-08-15
+P10	start_actual	DATE		N				Actual start.
+P10	finish_actual	DATE		N				Actual finish.
+P10	duration_days	INTEGER		Y				Working days duration.		31
+P10	owner_person_id	UUID		Y	FK	person.person_id		Assigned owner.
+P10	department	ENUM		Y				Executing department.	department_code
+P10	status	ENUM		Y			Not started	Activity state.	activity_status	In progress
+P10	pct_complete	NUMERIC	5,2	Y			0	Percent complete (0-100).		45.00
+P11	milestone_id	UUID		Y	PK
+P11	project_id	UUID		Y	FK	project.project_id		Parent project.
+P11	name	VARCHAR	200	Y				Milestone name.		First Patient In
+P11	baseline_date	DATE		Y				Baseline target date.		2026-09-01
+P11	forecast_date	DATE		N				Current forecast.		2026-09-08
+P11	actual_date	DATE		N				Actual date achieved.
+P11	status	ENUM		Y			On track	State.	milestone_status	At risk
+P11	owner_role	VARCHAR	100	Y				Accountable role.
+P12	dependency_id	UUID		Y	PK
+P12	predecessor_activity_id	UUID		Y	FK	schedule_activity.activity_id		Predecessor.
+P12	successor_activity_id	UUID		Y	FK	schedule_activity.activity_id		Successor.
+P12	relationship	ENUM		Y			FS	Dependency type.	dep_relationship	FS
+P12	lag_days	INTEGER		N			0	Lag (or lead if negative).		0
+P13	budget_line_id	UUID		Y	PK
+P13	wbs_element_id	UUID		Y	FK	wbs_element.wbs_element_id		Linked WP.
+P13	category	ENUM		Y				Cost category.	cost_category	Labor
+P13	labor_amount	NUMERIC	12,2	N			0	Labor cost.		120000.00
+P13	materials_amount	NUMERIC	12,2	N			0	Materials cost.
+P13	vendor_amount	NUMERIC	12,2	N			0	Vendor / contractor cost.
+P13	other_amount	NUMERIC	12,2	N			0	Other cost.
+P13	subtotal	NUMERIC	12,2	Y				Sum of components.
+P13	contingency_pct	NUMERIC	5,2	Y			10.00	Contingency percent.		10.00
+P13	total	NUMERIC	12,2	Y				Subtotal * (1 + contingency).		132000.00
+P13	funding_source	ENUM		Y				Funding source.	funding_source	OpEx
+P14	risk_id	UUID		Y	PK
+P14	project_id	UUID		Y	FK	project.project_id		Parent project.
+P14	risk_code	VARCHAR	8	Y				R-NNN, monotonic.		R-014
+P14	category	ENUM		Y				Risk category.	risk_category	Regulatory
+P14	description	TEXT		Y				Risk statement.
+P14	trigger	TEXT		N				What would have to happen.
+P14	likelihood	SMALLINT		Y				1-5.		3
+P14	impact	SMALLINT		Y				1-5.		4
+P14	score	SMALLINT		Y				likelihood * impact (computed).		12
+P14	response_type	ENUM		Y				Response strategy.	risk_response_type	Mitigate
+P14	owner_person_id	UUID		Y	FK	person.person_id		Risk owner.
+P14	department	ENUM		Y				Owning department.	department_code
+P14	due_date	DATE		N				Target mitigation date.
+P14	status	ENUM		Y			Open	Risk state.	risk_status	Mitigating
+P14	residual_score	SMALLINT		N				Score after mitigation.		6
+P14	compliance_flag	ENUM		N				Applicable compliance frame.	compliance_frame	FDA 21 CFR Part 11
+P15	response_id	UUID		Y	PK
+P15	risk_id	UUID		Y	FK	risk.risk_id		Parent risk.
+P15	action_type	ENUM		Y				Action category.	response_action_type	Mitigation
+P15	description	TEXT		Y				Action description.
+P15	owner_person_id	UUID		Y	FK	person.person_id		Action owner.
+P15	due_date	DATE		N				Target date.
+P15	status	ENUM		Y			Open	Action state.	action_status	Open
+P16	comm_audience_id	UUID		Y	PK
+P16	project_id	UUID		Y	FK	project.project_id		Parent project.
+P16	audience	VARCHAR	100	Y				Audience name.		Steering Committee
+P16	department	ENUM		N				Department, if applicable.	department_code
+P16	information	TEXT		Y				Information communicated.		Status, risks, decisions
+P16	format	ENUM		Y				Format.	comm_format	Meeting
+P16	channel	ENUM		Y				Channel.	comm_channel	Teams
+P16	cadence	ENUM		Y				Frequency.	cadence	Monthly
+P16	owner_role	VARCHAR	100	Y				Owner role.		Project Sponsor
+P17	cadence_id	UUID		Y	PK
+P17	project_id	UUID		Y	FK	project.project_id		Parent project.
+P17	meeting	VARCHAR	100	Y				Meeting name.		Daily standup
+P17	attendees	TEXT		Y				Audience description.
+P17	cadence	ENUM		Y				Frequency.	cadence	Daily
+P17	duration_min	SMALLINT		Y			30	Length in minutes.		15
+P17	owner_role	VARCHAR	100	Y				Meeting owner.		Project Manager
+P18	standard_id	UUID		Y	PK
+P18	project_id	UUID		Y	FK	project.project_id		Parent project.
+P18	frame	ENUM		Y				Compliance frame.	compliance_frame	FDA 21 CFR Part 11
+P18	applicability	TEXT		Y				Where this standard applies.
+P18	evidence_requirement	TEXT		Y				Required audit evidence.
+P19	activity_id	UUID		Y	PK
+P19	project_id	UUID		Y	FK	project.project_id		Parent project.
+P19	activity_type	ENUM		Y				QA or QC.	quality_activity_type	QC
+P19	deliverable	VARCHAR	200	Y				Target deliverable / process.
+P19	method	ENUM		Y				Method.	verification_method	Review
+P19	owner_role	VARCHAR	100	Y				Activity owner.
+P19	cadence	ENUM		Y				Frequency.	cadence	Per release
+P20	metric_id	UUID		Y	PK
+P20	project_id	UUID		Y	FK	project.project_id		Parent project.
+P20	metric	VARCHAR	200	Y				KPI name.		Defect escape rate
+P20	target	VARCHAR	100	Y				Target value.		<2%
+P20	method	VARCHAR	100	Y				Collection method.		QA review
+P20	cadence	ENUM		Y				Reporting cadence.	cadence	Monthly
+P20	owner_role	VARCHAR	100	Y				Owner role.		Quality Lead
+P21	cr_id	UUID		Y	PK
+P21	project_id	UUID		Y	FK	project.project_id		Parent project.
+P21	cr_code	VARCHAR	8	Y	UK			C-NNN.		C-007
+P21	intake_id	VARCHAR	16	N	FK	intake_submission.intake_id		Linked intake.
+P21	requested_at	DATE		Y				Submission date.
+P21	requested_by_person_id	UUID		Y	FK	person.person_id		Requester.
+P21	cr_class	ENUM		Y				Class A/B/C/Emergency.	cr_class	B - Substantive
+P21	change_types	TEXT		Y				JSON array of types.	cr_type	["Scope"]
+P21	affected_artifacts	TEXT		Y				Doc IDs and WBS codes.
+P21	description	TEXT		Y				Change requested.
+P21	reason	TEXT		Y				Driver / rationale.
+P21	impact_scope	TEXT		N				Scope impact.
+P21	impact_schedule_days	INTEGER		N			0	Schedule delta in days.		5
+P21	impact_cost	NUMERIC	12,2	N			0	Cost delta.		15000.00
+P21	impact_quality	TEXT		N				Quality / compliance impact.
+P21	decision	ENUM		Y			Pending	Decision.	cr_decision	Approved
+P21	decided_by_person_id	UUID		N	FK	person.person_id		Approver.
+P21	decided_at	DATE		N				Decision date.
+P21	implementation_verified	BOOLEAN		N			FALSE	Verified flag.		TRUE
+P21	linked_artifacts_updated	BOOLEAN		N			FALSE	Linked artifacts updated.		TRUE
+P21	status	ENUM		Y			Open	CR lifecycle state.	cr_status	Closed
+P22	impact_id	UUID		Y	PK
+P22	cr_id	UUID		Y	FK	change_request.cr_id		Parent CR.
+P22	department	ENUM		Y				Assessing department.	department_code
+P22	scope_impact	TEXT		N				Scope impact statement.
+P22	schedule_impact_days	INTEGER		N				Schedule delta.
+P22	cost_impact	NUMERIC	12,2	N				Cost delta.
+P22	quality_impact	TEXT		N				Quality / compliance impact.
+P22	submitted_by_person_id	UUID		Y	FK	person.person_id		Assessor.
+P22	submitted_at	DATE		Y				Assessment date.
+P23	report_id	UUID		Y	PK
+P23	project_id	UUID		Y	FK	project.project_id		Parent project.
+P23	period_start	DATE		Y				Reporting period start.		2026-07-01
+P23	period_end	DATE		Y				Reporting period end.		2026-07-15
+P23	overall_status	ENUM		Y			Green	G/Y/R.	gyr	Yellow
+P23	trend	ENUM		Y			Steady	Trend.	trend	Worsening
+P23	executive_summary	TEXT		Y				3-5 sentence narrative.
+P23	decisions_needed	TEXT		N				Decisions list.
+P23	submitted_by_person_id	UUID		Y	FK	person.person_id		PM submitting.
+P23	submitted_at	TIMESTAMPTZ		Y				Submission timestamp.
+P24	area_id	UUID		Y	PK
+P24	report_id	UUID		Y	FK	status_report.report_id		Parent report.
+P24	knowledge_area	ENUM		Y				KA.	knowledge_area	Schedule
+P24	status	ENUM		Y			Green	G/Y/R.	gyr	Red
+P24	commentary	TEXT		N				Commentary for the area.
+P25	lesson_id	UUID		Y	PK
+P25	project_id	UUID		Y	FK	project.project_id		Parent project.
+P25	category	ENUM		Y				Lesson category.	lesson_category	Process
+P25	departments	TEXT		N				Comma-list of departments.
+P25	lesson	VARCHAR	300	Y				1-sentence lesson.
+P25	what_happened	TEXT		Y				What / when / who.
+P25	recommendation	TEXT		Y				Action for next time.
+P25	followup_owner_role	VARCHAR	100	N				Follow-up owner.
+P25	status	ENUM		Y			Open	Lesson state.	lesson_status	Open
+P26	closure_item_id	UUID		Y	PK
+P26	project_id	UUID		Y	FK	project.project_id		Parent project.
+P26	item	VARCHAR	300	Y				Checklist item text.
+P26	owner_role	VARCHAR	100	Y				Owner role.
+P26	done	BOOLEAN		Y			FALSE	Done flag.		TRUE
+P26	evidence	TEXT		N				Evidence path/system.
+P27	assumption_id	UUID		Y	PK
+P27	project_id	UUID		Y	FK	project.project_id		Parent project.
+P27	code	VARCHAR	8	Y				A-NNN.		A-002
+P27	description	TEXT		Y				Assumption statement.
+P27	verified	BOOLEAN		Y			FALSE	Verified flag.
+P28	constraint_id	UUID		Y	PK
+P28	project_id	UUID		Y	FK	project.project_id		Parent project.
+P28	code	VARCHAR	8	Y				CN-NNN.		CN-001
+P28	constraint_type	ENUM		Y				Type.	constraint_type	Budget
+P28	description	TEXT		Y				Constraint statement.
+P29	decision_id	UUID		Y	PK
+P29	project_id	UUID		Y	FK	project.project_id		Parent project.
+P29	code	VARCHAR	8	Y				D-NNN.		D-007
+P29	decision	TEXT		Y				Decision statement.
+P29	rationale	TEXT		Y				Rationale.
+P29	decided_by_person_id	UUID		Y	FK	person.person_id		Decider.
+P29	decided_at	DATE		Y				Decision date.
+P30	approval_id	UUID		Y	PK
+P30	artifact_doc_id	VARCHAR	30	Y	FK	document.doc_id		DM-side doc the approval applies to.
+P30	approver_person_id	UUID		Y	FK	person.person_id		Approver.
+P30	signature_meaning	ENUM		Y				21 CFR §11.50 meaning.	signature_meaning	Approval
+P30	signed_at	TIMESTAMPTZ		Y				Signature timestamp.
+P30	esig_hash	VARCHAR	128	N				E-signature hash.
+P31	team_member_id	UUID		Y	PK
+P31	project_id	UUID		Y	FK	project.project_id		Parent project.
+P31	person_id	UUID		Y	FK	person.person_id		Person.
+P31	role	VARCHAR	100	Y				Role on the team.		Clinical Lead
+P31	department	ENUM		Y				Person's department.	department_code
+P31	allocation_pct	NUMERIC	5,2	Y			100	Allocation 0-100.		50.00
+P31	start_date	DATE		Y				On-team start.
+P31	end_date	DATE		N				Off-team date.

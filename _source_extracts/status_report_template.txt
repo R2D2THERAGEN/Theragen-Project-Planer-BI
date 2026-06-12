@@ -1,0 +1,248 @@
+THG-OPS-STA-NNN  ·  Monitoring &amp; Controlling
+Project Status Report
+Recurring report on project health across all PMBOK knowledge areas and engaged departments.
+A.  Document Control
+Document ID
+THG-OPS-STA-NNN
+Version
+1.0
+Status
+DRAFT
+Effective Date
+YYYY-MM-DD
+Document Owner
+Project Manager
+Approver / Signatory
+Project Sponsor
+Review Cycle
+Annual
+Classification
+Confidential – Internal
+B.  Intake Linkage
+Links this document to the originating cross-departmental request. Maintains traceability from intake to closure.
+Intake ID
+«auto-assigned at intake»
+Originating Request
+«linked Intake Form ID»
+Triggering Department
+«primary requesting department»
+Lifecycle Phase
+Monitoring &amp; Controlling
+Linked Charter / Workstream
+«Project / Program / Workstream reference»
+C.  Cross-Functional RACI Footprint
+How each department engages with this document. R = Responsible, A = Accountable, C = Consulted, I = Informed. Leave blank if not engaged.
+Department
+Role
+Specific Touchpoint
+Clinical / Medical Affairs
+I
+«activity, decision, or artifact»
+Regulatory / Quality
+I
+«activity, decision, or artifact»
+R&amp;D / Engineering
+I
+«activity, decision, or artifact»
+Operations / PMO
+A
+«activity, decision, or artifact»
+Finance / Procurement
+I
+«activity, decision, or artifact»
+Commercial / Marketing
+I
+«activity, decision, or artifact»
+IT / Data / Security
+I
+«activity, decision, or artifact»
+HR / People
+I
+«activity, decision, or artifact»
+D.  Compliance &amp; Traceability
+Regulatory and methodological frames that govern this artifact. Cite specific clauses where they apply.
+Frame
+Applies To
+Evidence / Reference
+FDA 21 CFR Part 11
+«which sections of this doc»
+«audit evidence, SOP, link»
+HIPAA
+«which sections of this doc»
+«audit evidence, SOP, link»
+PMBOK 7th Ed.
+«which sections of this doc»
+«audit evidence, SOP, link»
+1.  Reporting period
+Period
+YYYY-MM-DD to YYYY-MM-DD
+Project
+«Project name and Charter ID»
+Intake ID
+INT-YYYY-NNNN
+Overall status
+GREEN / YELLOW / RED
+Trend
+↑ improving / → steady / ↓ worsening
+2.  Executive summary
+3–5 sentence narrative for the steering committee — what happened, what mattered, what's next.
+3.  Health by knowledge area
+Area
+Status
+Commentary
+Scope
+G / Y / R
+«…»
+Schedule
+G / Y / R
+«…»
+Cost
+G / Y / R
+«…»
+Quality
+G / Y / R
+«…»
+Risk
+G / Y / R
+«…»
+Stakeholders
+G / Y / R
+«…»
+Compliance
+G / Y / R
+«…»
+4.  Cross-department status
+Department
+Status
+What they delivered this period
+What they need next period
+Clinical / Medical Affairs
+G / Y / R
+«…»
+«…»
+Regulatory / Quality
+G / Y / R
+«…»
+«…»
+R&amp;D / Engineering
+G / Y / R
+«…»
+«…»
+Operations / PMO
+G / Y / R
+«…»
+«…»
+Finance / Procurement
+G / Y / R
+«…»
+«…»
+Commercial / Marketing
+G / Y / R
+«…»
+«…»
+IT / Data / Security
+G / Y / R
+«…»
+«…»
+HR / People
+G / Y / R
+«…»
+«…»
+5.  Milestones
+Milestone
+Baseline date
+Forecast date
+Status
+«…»
+YYYY-MM-DD
+YYYY-MM-DD
+On track / At risk / Slipped
+«…»
+YYYY-MM-DD
+YYYY-MM-DD
+On track / At risk / Slipped
+«…»
+YYYY-MM-DD
+YYYY-MM-DD
+On track / At risk / Slipped
+«…»
+YYYY-MM-DD
+YYYY-MM-DD
+On track / At risk / Slipped
+«…»
+YYYY-MM-DD
+YYYY-MM-DD
+On track / At risk / Slipped
+6.  Risks &amp; issues
+ID
+Risk / Issue
+Severity
+Owner
+Mitigation / Action
+R-001
+«…»
+L / M / H
+«…»
+«…»
+R-002
+«…»
+L / M / H
+«…»
+«…»
+R-003
+«…»
+L / M / H
+«…»
+«…»
+R-004
+«…»
+L / M / H
+«…»
+«…»
+7.  Change activity
+Change ID
+Description
+Impact
+Decision
+C-001
+«…»
+«scope/sched/cost»
+Approved / Rejected / Pending
+C-002
+«…»
+«scope/sched/cost»
+Approved / Rejected / Pending
+C-003
+«…»
+«scope/sched/cost»
+Approved / Rejected / Pending
+8.  Decisions needed
+«decision 1 — owner — by date»
+«decision 2 — owner — by date»
+Z-1.  Handoffs &amp; Downstream Artifacts
+Predecessors and successors in the integrated document lifecycle.
+Receives input from
+Project Management Plan, Risk Register, Change Log, Schedule, Budget
+Feeds into
+Steering Committee record
+Lessons Learned (closure)
+Z-2.  Approval Signatures
+Role
+Name
+Signature
+Date
+Project Manager
+Z-3.  Revision History
+Version
+Date
+Author
+Summary of Change
+Approved By
+0.1
+YYYY-MM-DD
+«author»
+Initial draft
+1.0
+YYYY-MM-DD
+«author»
+Approved baseline

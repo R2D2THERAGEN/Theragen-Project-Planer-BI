@@ -1,0 +1,21 @@
+THERAGEN  |  Schema Overview
+Both schemas at a glance. PMBOK on the left, Document Management on the right.
+—
+PMBOK Schema			Document Management Schema
+Lifecycle phase	Entities		Lifecycle phase	Entities
+Closing	2		Closing	0
+Cross-Lifecycle	6		Cross-Lifecycle	18
+Executing	2		Executing	2
+Initiating	2		Initiating	0
+Intake	0		Intake	3
+Monitoring	2		Monitoring	0
+Planning	17		Planning	0
+Reference	0		Reference	8
+TOTAL	31		TOTAL	31
+Bridge points between schemas
+Identifier	Source (DM)	Target (PMBOK)	Purpose
+intake_id (VARCHAR 16)	DM.intake_submission	PMBOK.project, PMBOK.change_request, PMBOK.* (via project)	Forms the spine of cross-system traceability. Assigned at triage in DM, propagates into every PMBOK row.
+doc_id (VARCHAR 30)	DM.document	PMBOK.project_charter, PMBOK.scope_statement, PMBOK.approval	Identifies the controlled document in DM. PMBOK references it for any artifact that becomes a controlled doc.
+person_id (UUID)	DM.person	PMBOK.stakeholder, PMBOK.approval, PMBOK.* (owner / approver columns)	Person directory lives in DM and is referenced from PMBOK rows.
+department_id (UUID)	DM.department	PMBOK.* (department columns via enum)	Department lookup lives in DM; PMBOK uses an enum mirror of department codes.
+frame_id (UUID)	DM.compliance_frame	PMBOK.quality_standard, PMBOK.risk.compliance_flag	Compliance frame catalog lives in DM.

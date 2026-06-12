@@ -1,0 +1,127 @@
+/// Work breakdown structure dimension (PMBOK P08). Two-level hierarchy: deliverable > work package.
+table 'WBS Element'
+	lineageTag: 8c55977c-f927-51e5-8318-e4024a92cc19
+
+	column 'WBS ID'
+		dataType: string
+		isHidden
+		lineageTag: 92e6baae-e7e6-50b3-9bf1-65a9babaa67e
+		summarizeBy: none
+		sourceColumn: WBS ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project ID'
+		dataType: string
+		isHidden
+		lineageTag: ae920770-9216-584e-ba68-fca57d1d4010
+		summarizeBy: none
+		sourceColumn: Project ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project Code'
+		dataType: string
+		lineageTag: 9c4b2e82-8fa2-5609-bb1b-b9c2f81005d5
+		summarizeBy: none
+		sourceColumn: Project Code
+
+		annotation SummarizationSetBy = User
+
+	column 'WBS Code'
+		dataType: string
+		lineageTag: 5bfb6a67-4aef-5360-b24e-4ccee1cce1b8
+		summarizeBy: none
+		sourceColumn: WBS Code
+
+		annotation SummarizationSetBy = User
+
+	column 'Parent WBS ID'
+		dataType: string
+		isHidden
+		lineageTag: cac2e0ae-fbb3-5575-9174-5934deaca1f6
+		summarizeBy: none
+		sourceColumn: Parent WBS ID
+
+		annotation SummarizationSetBy = User
+
+	column 'WBS Level'
+		dataType: int64
+		formatString: #,0
+		lineageTag: 84af39c6-ac00-54e5-9e41-86579ce8a833
+		summarizeBy: none
+		sourceColumn: WBS Level
+
+		annotation SummarizationSetBy = User
+
+	column 'WBS Name'
+		dataType: string
+		lineageTag: 91f9522f-42b9-5af2-a07f-0f135c063a12
+		summarizeBy: none
+		sourceColumn: WBS Name
+
+		annotation SummarizationSetBy = User
+
+	column 'Owning Department'
+		dataType: string
+		lineageTag: f40747e6-71de-57a7-839a-c5f69d28f4d0
+		summarizeBy: none
+		sourceColumn: Owning Department
+
+		annotation SummarizationSetBy = User
+
+	column 'Owner Role'
+		dataType: string
+		lineageTag: a71c8eed-a000-586c-a27a-24851b93b1aa
+		summarizeBy: none
+		sourceColumn: Owner Role
+
+		annotation SummarizationSetBy = User
+
+	column 'Estimated Effort Hrs'
+		dataType: double
+		formatString: #,0
+		lineageTag: 0d368023-297a-5725-86ae-f7a1984286a9
+		summarizeBy: none
+		sourceColumn: Estimated Effort Hrs
+
+		annotation SummarizationSetBy = User
+
+	column 'Estimated Cost'
+		dataType: double
+		formatString: \$#,##0;(\$#,##0);\$0
+		lineageTag: 84caaaa2-d57d-5243-9173-6afc4d02b2e3
+		summarizeBy: none
+		sourceColumn: Estimated Cost
+
+		annotation SummarizationSetBy = User
+
+	/// Level-1 deliverable this node rolls up to.
+	column Deliverable = IF('WBS Element'[WBS Level] = 1, 'WBS Element'[WBS Name], LOOKUPVALUE('WBS Element'[WBS Name], 'WBS Element'[WBS ID], 'WBS Element'[Parent WBS ID]))
+		dataType: string
+		lineageTag: efd8b700-a804-5fcd-8ab5-da5b9ad52bf8
+		summarizeBy: none
+
+		annotation SummarizationSetBy = User
+
+	/// Code + name for axis labels.
+	column 'WBS Label' = 'WBS Element'[WBS Code] & "  " & 'WBS Element'[WBS Name]
+		dataType: string
+		lineageTag: e8138cdb-08c3-5749-9dd4-d2239b93d84c
+		summarizeBy: none
+
+		annotation SummarizationSetBy = User
+
+	partition 'WBS Element' = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "wbs_element"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"wbs_element_id", "project_id", "project_code", "wbs_code", "parent_wbs_element_id", "level", "name", "owning_department", "owner_role", "estimated_effort_hrs", "estimated_cost"}),
+				    Renamed = Table.RenameColumns(Selected, {{"wbs_element_id", "WBS ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"wbs_code", "WBS Code"}, {"parent_wbs_element_id", "Parent WBS ID"}, {"level", "WBS Level"}, {"name", "WBS Name"}, {"owning_department", "Owning Department"}, {"owner_role", "Owner Role"}, {"estimated_effort_hrs", "Estimated Effort Hrs"}, {"estimated_cost", "Estimated Cost"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table
+

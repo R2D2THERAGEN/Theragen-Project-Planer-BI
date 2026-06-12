@@ -1,0 +1,163 @@
+/// Fact - schedule activities (PMBOK P10). One row per activity with planned/actual dates and percent complete.
+table 'Schedule Activity'
+	lineageTag: 5394fa66-9c73-5d8f-88a1-3b789a66b3d2
+
+	column 'Activity ID'
+		dataType: string
+		isHidden
+		lineageTag: 4e40dd94-2dd6-5fd3-8cb7-dc399a3138ba
+		summarizeBy: none
+		sourceColumn: Activity ID
+
+		annotation SummarizationSetBy = User
+
+	column 'WBS ID'
+		dataType: string
+		isHidden
+		lineageTag: 60f3ba57-f10a-5ff0-aa86-47637d6e4ee3
+		summarizeBy: none
+		sourceColumn: WBS ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project ID'
+		dataType: string
+		isHidden
+		lineageTag: 9915eedf-cee5-5c92-8328-c9f819716cf0
+		summarizeBy: none
+		sourceColumn: Project ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project Code'
+		dataType: string
+		lineageTag: 3adc63e1-7152-5e20-be71-ce0ce99d1c4d
+		summarizeBy: none
+		sourceColumn: Project Code
+
+		annotation SummarizationSetBy = User
+
+	column 'Activity Code'
+		dataType: string
+		lineageTag: ba63c603-12b5-54fe-b526-389a069cfecd
+		summarizeBy: none
+		sourceColumn: Activity Code
+
+		annotation SummarizationSetBy = User
+
+	column 'Activity Name'
+		dataType: string
+		lineageTag: a4a7ea63-bd8b-5995-8ffb-51b0a806e92a
+		summarizeBy: none
+		sourceColumn: Activity Name
+
+		annotation SummarizationSetBy = User
+
+	column 'Planned Start'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 5cd16d8e-3509-5ac5-8b6b-f1554dc869cc
+		summarizeBy: none
+		sourceColumn: Planned Start
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Planned Finish'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 5fd95e46-099a-5241-bd7e-c109c26824d6
+		summarizeBy: none
+		sourceColumn: Planned Finish
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Actual Start'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 1c6f41cd-3ce1-588e-9e20-36803393cb4f
+		summarizeBy: none
+		sourceColumn: Actual Start
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Actual Finish'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 6546ea82-818b-52c2-95d2-dd9e3a728376
+		summarizeBy: none
+		sourceColumn: Actual Finish
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Duration Days'
+		dataType: int64
+		formatString: #,0
+		lineageTag: 058efff5-7d86-5ee8-9df9-5b2cca23bdbc
+		summarizeBy: none
+		sourceColumn: Duration Days
+
+		annotation SummarizationSetBy = User
+
+	column 'Owner ID'
+		dataType: string
+		isHidden
+		lineageTag: 45ca1852-2a5e-577a-a725-7281fb5ede27
+		summarizeBy: none
+		sourceColumn: Owner ID
+
+		annotation SummarizationSetBy = User
+
+	column Owner
+		dataType: string
+		lineageTag: e5a447d2-3250-5807-93ef-238a8ed39bfe
+		summarizeBy: none
+		sourceColumn: Owner
+
+		annotation SummarizationSetBy = User
+
+	column Department
+		dataType: string
+		lineageTag: 1ca4cedf-ab3e-5b1b-bfea-aeddc3186585
+		summarizeBy: none
+		sourceColumn: Department
+
+		annotation SummarizationSetBy = User
+
+	column 'Activity Status'
+		dataType: string
+		lineageTag: 32935506-c675-5eaa-ab4d-d289e76df31c
+		summarizeBy: none
+		sourceColumn: Activity Status
+
+		annotation SummarizationSetBy = User
+
+	column 'Pct Complete'
+		dataType: double
+		formatString: 0\%
+		lineageTag: 10297a6c-202b-5daf-907c-a53c751ebcc7
+		summarizeBy: none
+		sourceColumn: Pct Complete
+
+		annotation SummarizationSetBy = User
+
+	partition 'Schedule Activity' = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "schedule_activity"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"activity_id", "wbs_element_id", "project_id", "project_code", "activity_code", "name", "start_planned", "finish_planned", "start_actual", "finish_actual", "duration_days", "owner_person_id", "owner_name", "department", "status", "pct_complete"}),
+				    Renamed = Table.RenameColumns(Selected, {{"activity_id", "Activity ID"}, {"wbs_element_id", "WBS ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"activity_code", "Activity Code"}, {"name", "Activity Name"}, {"start_planned", "Planned Start"}, {"finish_planned", "Planned Finish"}, {"start_actual", "Actual Start"}, {"finish_actual", "Actual Finish"}, {"duration_days", "Duration Days"}, {"owner_person_id", "Owner ID"}, {"owner_name", "Owner"}, {"department", "Department"}, {"status", "Activity Status"}, {"pct_complete", "Pct Complete"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table
+

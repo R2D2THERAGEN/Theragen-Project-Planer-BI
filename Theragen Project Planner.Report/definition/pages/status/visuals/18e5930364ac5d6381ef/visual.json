@@ -1,0 +1,102 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "18e5930364ac5d6381ef",
+  "position": {
+    "x": 8,
+    "y": 590,
+    "z": 1000,
+    "width": 626,
+    "height": 88
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Recent Accomplishment"
+                    }
+                  },
+                  "Property": "Accomplishment"
+                }
+              },
+              "queryRef": "Recent Accomplishment.Accomplishment"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Recent Accomplishment"
+                    }
+                  },
+                  "Property": "Source"
+                }
+              },
+              "queryRef": "Recent Accomplishment.Source"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Recent Accomplishment"
+                    }
+                  },
+                  "Property": "Completed Date"
+                }
+              },
+              "queryRef": "Recent Accomplishment.Completed Date"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Recent Accomplishment"
+                  }
+                },
+                "Property": "Completed Date"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Accomplishments'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

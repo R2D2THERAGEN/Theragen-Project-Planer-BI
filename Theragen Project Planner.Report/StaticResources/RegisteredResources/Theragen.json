@@ -1,0 +1,106 @@
+{
+  "name": "Theragen",
+  "dataColors": [
+    "#219A80",
+    "#44546A",
+    "#6EBDAC",
+    "#C19C00",
+    "#5B9BD5",
+    "#A5A5A5",
+    "#C0392B",
+    "#70AD47"
+  ],
+  "good": "#107C10",
+  "neutral": "#C19C00",
+  "bad": "#C0392B",
+  "background": "#FFFFFF",
+  "foreground": "#252423",
+  "tableAccent": "#219A80",
+  "textClasses": {
+    "title": {
+      "fontFace": "Segoe UI Semibold",
+      "fontSize": 12,
+      "color": "#252423"
+    },
+    "label": {
+      "fontFace": "Segoe UI",
+      "fontSize": 10,
+      "color": "#252423"
+    },
+    "callout": {
+      "fontFace": "Segoe UI",
+      "fontSize": 28,
+      "color": "#219A80"
+    }
+  },
+  "visualStyles": {
+    "*": {
+      "*": {
+        "title": [
+          {
+            "show": true,
+            "fontSize": 10,
+            "bold": true,
+            "alignment": "left",
+            "fontColor": {
+              "solid": {
+                "color": "#FFFFFF"
+              }
+            },
+            "background": {
+              "solid": {
+                "color": "#219A80"
+              }
+            }
+          }
+        ],
+        "background": [
+          {
+            "show": true,
+            "color": {
+              "solid": {
+                "color": "#FFFFFF"
+              }
+            },
+            "transparency": 0
+          }
+        ],
+        "border": [
+          {
+            "show": true,
+            "color": {
+              "solid": {
+                "color": "#DCE4E3"
+              }
+            },
+            "radius": 4
+          }
+        ]
+      }
+    },
+    "page": {
+      "*": {
+        "background": [
+          {
+            "color": {
+              "solid": {
+                "color": "#F2F7F6"
+              }
+            },
+            "transparency": 0
+          }
+        ],
+        "outspace": [
+          {
+            "color": {
+              "solid": {
+                "color": "#E2ECE9"
+              }
+            },
+            "transparency": 0
+          }
+        ]
+      }
+    }
+  }
+}

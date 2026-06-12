@@ -1,0 +1,21 @@
+﻿closure_item_id,project_id,project_code,item,owner_role,done,evidence
+909027b6-f658-5a05-a3cc-6c3fc6c6844f,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,All deliverables accepted by sponsor,Project Manager,FALSE,
+aa8adadd-7e95-5870-8005-0fcc811380ea,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,Final budget reconciliation complete,Project Manager,FALSE,
+912434e1-248b-5f86-a425-baf6dcbf017d,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,Vendor contracts closed out,Project Manager,FALSE,
+7f310b2c-bfc0-532f-9151-4c51b3cb5dce,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,Project documentation baselined in DM system,Project Manager,FALSE,
+062651e3-cc96-57dd-8c20-d287fa8285e8,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,Lessons learned captured and filed,Project Manager,FALSE,
+b39fbea7-c4c6-5979-8d6d-0c436f910802,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,Team members released and reassigned,Project Manager,FALSE,
+d4efa8b7-db66-5458-aa77-8ca3e272576a,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,Audit evidence pack assembled,Project Manager,FALSE,
+0a93599a-4734-531a-95a8-acb9f1f06861,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,Final status report issued,Project Manager,TRUE,DM document link
+b0927d8b-69ab-5f24-9ce2-504c308147b9,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,Closure approval signatures obtained,Project Manager,FALSE,
+41042d6e-b15c-5ff3-80d6-bea32af63c20,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,Records retention schedule applied,Project Manager,FALSE,
+663b5637-b314-5a3a-8e25-32e71650cf10,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,All deliverables accepted by sponsor,Project Manager,FALSE,
+9329d04e-02a7-5d54-bc4d-d901b99f93a2,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,Final budget reconciliation complete,Project Manager,TRUE,DM document link
+e998fe82-a738-5319-9f4a-25e0e2c5c54b,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,Vendor contracts closed out,Project Manager,TRUE,DM document link
+b284eb9e-beb6-552f-9808-5d0fe18aa4f9,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,Project documentation baselined in DM system,Project Manager,TRUE,DM document link
+37670b4a-bb2d-5669-99c6-785afd21b4ce,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,Lessons learned captured and filed,Project Manager,TRUE,DM document link
+16c4da3f-80a7-5a27-b62d-23012343f094,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,Team members released and reassigned,Project Manager,TRUE,DM document link
+b46daa86-86e7-5810-a9b6-130017b38620,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,Audit evidence pack assembled,Project Manager,TRUE,DM document link
+e18ec3c9-303a-564c-8086-2d8c7aa18ac6,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,Final status report issued,Project Manager,TRUE,DM document link
+50b48a78-0dfc-5537-b241-f9fd1bae0955,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,Closure approval signatures obtained,Project Manager,FALSE,
+f2ae42b6-1904-5717-bcf1-3a1315a73135,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,Records retention schedule applied,Project Manager,FALSE,

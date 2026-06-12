@@ -1,0 +1,23 @@
+THERAGEN  |  Cross_Schema_References
+How identifiers and records flow between PMBOK and DM.
+—
+Bridge identifiers
+Identifier	Type	Example	Source table (DM)	Target columns (PMBOK)	Propagation rules
+intake_id	VARCHAR(16)	INT-2026-0042	DM.intake_submission.intake_id	PMBOK.project.intake_id; PMBOK.change_request.intake_id (optional); referenced in every PMBOK row indirectly via project_id	Assigned at triage in DM. Propagates to PMBOK on charter creation. Persists for life of project.
+doc_id	VARCHAR(30)	THG-CLN-CHR-014	DM.document.doc_id	PMBOK.project_charter.doc_id; PMBOK.scope_statement.doc_id; PMBOK.approval.artifact_doc_id	Theragen Doc ID — the human-readable controlled-doc identifier. PMBOK references it when an artifact also lives in DM.
+person_id	UUID	8e3f...c2	DM.person.person_id	PMBOK.stakeholder.person_id; PMBOK.project.sponsor_person_id, project_manager_id; PMBOK.* (owner / approver columns); PMBOK.approval.approver_person_id	Person directory lives in DM. PMBOK never duplicates person data.
+department_id	UUID + ENUM mirror	—	DM.department.department_id (canonical) AND ENUM('Clinical / Medical Affairs',...)	PMBOK.* (department columns use ENUM mirror for query speed)	Department list lives in DM. PMBOK uses an enum mirror for performance; values must stay in sync.
+frame_id / frame name	UUID + ENUM mirror	—	DM.compliance_frame.frame_id	PMBOK.quality_standard.frame; PMBOK.risk.compliance_flag	Compliance frame catalog lives in DM. PMBOK references frames as enum values.
+cr linkage	UUID + code	CHG-014 ↔ C-007	DM.change_request_gov.cr_gov_id	PMBOK.change_request — distinct entity (project CR vs governance CR)	Project-level CRs (PMBOK) and document-governance CRs (DM) are separate. If a project CR triggers a doc change, the DM CR references the PMBOK CR via affected_artifacts text field.
+End-to-end data flow
+Step	Action	Schema impact
+1	Requester creates intake_submission in DM	Intake ID generated (INT-YYYY-NNNN)
+2	Compliance reviewers create intake_compliance_prescreen rows	Per-frame attestations
+3	PMO Director writes intake_decision in DM	Routing decision; primary_department_id set
+4	PMBOK.project row inserted on approval	project.intake_id = the assigned Intake ID
+5	PMBOK.project_charter inserted	project_charter.doc_id minted; DM.document row inserted in parallel; document.intake_id set
+6	Subsequent PMBOK rows inserted (scope, WBS, etc.)	All inherit project_id, transitively linked to intake
+7	Status reports written periodically in PMBOK	No DM impact unless a controlled status doc is published — then DM.document row created
+8	Change requests raised	Project-scope changes → PMBOK.change_request; document-control changes → DM.change_request_gov
+9	Closure: PMBOK.lessons_learned + closure_checklist_item complete	DM.document for the closure record published; intake_submission.status = Complete
+10	All controlled docs retained per DM.records_retention_policy	Audit packs assembled from DM.audit_evidence_pack referencing both schemas

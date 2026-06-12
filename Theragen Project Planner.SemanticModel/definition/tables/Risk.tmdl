@@ -1,0 +1,179 @@
+/// Fact - risk register (PMBOK P14). 5x5 likelihood x impact scoring.
+table Risk
+	lineageTag: a2df0eeb-9b9b-5b4c-ad79-aa6aa62118ab
+
+	column 'Risk ID'
+		dataType: string
+		isHidden
+		lineageTag: 8ebbe894-b46f-57c0-b21e-f2828754fc7f
+		summarizeBy: none
+		sourceColumn: Risk ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project ID'
+		dataType: string
+		isHidden
+		lineageTag: 691cc557-e3d6-54f5-a5d5-0bbc7e8e3067
+		summarizeBy: none
+		sourceColumn: Project ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project Code'
+		dataType: string
+		lineageTag: 907c0178-76e5-5a9a-899d-fef0aa98d13c
+		summarizeBy: none
+		sourceColumn: Project Code
+
+		annotation SummarizationSetBy = User
+
+	column 'Risk Code'
+		dataType: string
+		lineageTag: 5c134f32-2637-5c14-be7d-24a8d24c5eb4
+		summarizeBy: none
+		sourceColumn: Risk Code
+
+		annotation SummarizationSetBy = User
+
+	column 'Risk Category'
+		dataType: string
+		lineageTag: 7fa38c59-9fb9-56f7-b146-6c1cda8f4bba
+		summarizeBy: none
+		sourceColumn: Risk Category
+
+		annotation SummarizationSetBy = User
+
+	column 'Risk Description'
+		dataType: string
+		lineageTag: a11c04d4-0267-5247-bf94-b8e3f3ddc062
+		summarizeBy: none
+		sourceColumn: Risk Description
+
+		annotation SummarizationSetBy = User
+
+	column Likelihood
+		dataType: int64
+		formatString: #,0
+		lineageTag: bd35f583-6313-531a-bdb5-721d8443efac
+		summarizeBy: none
+		sourceColumn: Likelihood
+
+		annotation SummarizationSetBy = User
+
+	column Impact
+		dataType: int64
+		formatString: #,0
+		lineageTag: b948501a-bb1c-544f-a2df-d8784954dec4
+		summarizeBy: none
+		sourceColumn: Impact
+
+		annotation SummarizationSetBy = User
+
+	column 'Risk Score'
+		dataType: int64
+		formatString: #,0
+		lineageTag: 1b5cb1f4-b55f-5ec8-acea-78f4885821e3
+		summarizeBy: none
+		sourceColumn: Risk Score
+
+		annotation SummarizationSetBy = User
+
+	column 'Response Type'
+		dataType: string
+		lineageTag: a8942d8a-c82f-553d-890c-e6a0b3fc91ce
+		summarizeBy: none
+		sourceColumn: Response Type
+
+		annotation SummarizationSetBy = User
+
+	column 'Owner ID'
+		dataType: string
+		isHidden
+		lineageTag: 1e779715-7606-579b-b88b-1fcf77b4ffd6
+		summarizeBy: none
+		sourceColumn: Owner ID
+
+		annotation SummarizationSetBy = User
+
+	column Owner
+		dataType: string
+		lineageTag: dbc0f95f-a869-56a4-8eac-616bc037d27e
+		summarizeBy: none
+		sourceColumn: Owner
+
+		annotation SummarizationSetBy = User
+
+	column Department
+		dataType: string
+		lineageTag: 9b4884d5-0fce-5ba6-af1d-61d229b17533
+		summarizeBy: none
+		sourceColumn: Department
+
+		annotation SummarizationSetBy = User
+
+	column 'Due Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 30688c82-463c-5a52-842c-db784142b0d4
+		summarizeBy: none
+		sourceColumn: Due Date
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Risk Status'
+		dataType: string
+		lineageTag: a4e48868-6fa0-5af2-ae90-71814abda89a
+		summarizeBy: none
+		sourceColumn: Risk Status
+
+		annotation SummarizationSetBy = User
+
+	column 'Residual Score'
+		dataType: int64
+		formatString: #,0
+		lineageTag: 16839494-78b4-5645-a38a-ef0d626fc787
+		summarizeBy: none
+		sourceColumn: Residual Score
+
+		annotation SummarizationSetBy = User
+
+	column 'Compliance Frame'
+		dataType: string
+		lineageTag: 609146b4-5da0-57c5-b4ea-19b1c6710522
+		summarizeBy: none
+		sourceColumn: Compliance Frame
+
+		annotation SummarizationSetBy = User
+
+	/// Banding of Risk Score on the 5x5 matrix: >=20 Critical, >=12 High, >=6 Medium.
+	column Severity = SWITCH(TRUE(), 'Risk'[Risk Score] >= 20, "Critical", 'Risk'[Risk Score] >= 12, "High", 'Risk'[Risk Score] >= 6, "Medium", "Low")
+		dataType: string
+		lineageTag: c777e9c3-a482-50c2-9c3e-4c0b73724d59
+		summarizeBy: none
+
+		annotation SummarizationSetBy = User
+
+	/// RAID classification: a realized risk is reported as an Issue.
+	column 'RAID Type' = IF('Risk'[Risk Status] = "Realized", "Issue", "Risk")
+		dataType: string
+		lineageTag: 0eabe0b0-0d70-5da4-8452-92de61318179
+		summarizeBy: none
+
+		annotation SummarizationSetBy = User
+
+	partition Risk = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "risk"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"risk_id", "project_id", "project_code", "risk_code", "category", "description", "likelihood", "impact", "score", "response_type", "owner_person_id", "owner_name", "department", "due_date", "status", "residual_score", "compliance_flag"}),
+				    Renamed = Table.RenameColumns(Selected, {{"risk_id", "Risk ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"risk_code", "Risk Code"}, {"category", "Risk Category"}, {"description", "Risk Description"}, {"likelihood", "Likelihood"}, {"impact", "Impact"}, {"score", "Risk Score"}, {"response_type", "Response Type"}, {"owner_person_id", "Owner ID"}, {"owner_name", "Owner"}, {"department", "Department"}, {"due_date", "Due Date"}, {"status", "Risk Status"}, {"residual_score", "Residual Score"}, {"compliance_flag", "Compliance Frame"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table
+

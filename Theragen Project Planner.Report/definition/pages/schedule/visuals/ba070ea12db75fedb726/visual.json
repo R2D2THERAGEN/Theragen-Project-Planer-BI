@@ -1,0 +1,128 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "ba070ea12db75fedb726",
+  "position": {
+    "x": 716,
+    "y": 404,
+    "z": 1000,
+    "width": 556,
+    "height": 304
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Milestone"
+                    }
+                  },
+                  "Property": "Milestone"
+                }
+              },
+              "queryRef": "Milestone.Milestone"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Milestone"
+                    }
+                  },
+                  "Property": "Baseline Date"
+                }
+              },
+              "queryRef": "Milestone.Baseline Date"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Milestone"
+                    }
+                  },
+                  "Property": "Forecast Date"
+                }
+              },
+              "queryRef": "Milestone.Forecast Date"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Milestone"
+                    }
+                  },
+                  "Property": "Milestone Status"
+                }
+              },
+              "queryRef": "Milestone.Milestone Status"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Milestone"
+                    }
+                  },
+                  "Property": "Slip Days"
+                }
+              },
+              "queryRef": "Milestone.Slip Days"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Milestone"
+                  }
+                },
+                "Property": "Baseline Date"
+              }
+            },
+            "direction": "Ascending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Milestones - baseline vs forecast'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

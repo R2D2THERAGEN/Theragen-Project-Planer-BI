@@ -1,0 +1,154 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "name": "94583e8490df56c59e7a",
+  "position": {
+    "x": 8.0798004987531176,
+    "y": 286.38403990024938,
+    "z": 1000,
+    "height": 159.80049875311721,
+    "width": 945.33665835411466
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Risk"
+                    }
+                  },
+                  "Property": "RAID Type"
+                }
+              },
+              "queryRef": "Risk.RAID Type"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Risk"
+                    }
+                  },
+                  "Property": "Risk Description"
+                }
+              },
+              "queryRef": "Risk.Risk Description"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Risk"
+                    }
+                  },
+                  "Property": "Owner"
+                }
+              },
+              "queryRef": "Risk.Owner"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Risk"
+                    }
+                  },
+                  "Property": "Due Date"
+                }
+              },
+              "queryRef": "Risk.Due Date"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Risk"
+                    }
+                  },
+                  "Property": "Risk Score"
+                }
+              },
+              "queryRef": "Risk.Risk Score"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Risk"
+                    }
+                  },
+                  "Property": "Severity"
+                }
+              },
+              "queryRef": "Risk.Severity"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Risk"
+                    }
+                  },
+                  "Property": "Risk Status"
+                }
+              },
+              "queryRef": "Risk.Risk Status"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Risk"
+                  }
+                },
+                "Property": "Risk Score"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Updates / Key Issues / Risks / Decisions / Dependencies'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

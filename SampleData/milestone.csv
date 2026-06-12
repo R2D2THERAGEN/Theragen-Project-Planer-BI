@@ -1,0 +1,25 @@
+﻿milestone_id,project_id,project_code,name,baseline_date,forecast_date,actual_date,status,owner_role
+36291366-2c52-5731-baf9-972f36e6066e,2ee385b2-99f4-5b3a-b6f1-a4fd637f6485,THG-CLN-014,Protocol approved,2026-03-13,2026-03-15,2026-03-15,Achieved,Project Manager
+c73494c6-2aa4-531c-8450-7271e1e8d19c,2ee385b2-99f4-5b3a-b6f1-a4fd637f6485,THG-CLN-014,All sites activated,2026-06-05,2026-06-07,2026-06-07,Achieved,Project Manager
+8b3be9c2-313e-5a35-b6d4-62d745effb2a,2ee385b2-99f4-5b3a-b6f1-a4fd637f6485,THG-CLN-014,First Patient In,2026-09-01,2026-09-10,,At risk,Project Manager
+a68c532e-8693-527a-bc0c-d5ef90115af9,2ee385b2-99f4-5b3a-b6f1-a4fd637f6485,THG-CLN-014,Enrollment complete,2026-10-30,2026-10-30,,On track,Project Manager
+e52f56c9-eece-57b9-963d-949533d58308,2ee385b2-99f4-5b3a-b6f1-a4fd637f6485,THG-CLN-014,Final report issued,2026-12-11,2026-12-11,,On track,Project Manager
+ec404705-126b-571f-a075-9ccc522cd09b,777ea2a7-20e0-5b0d-a53b-ba290af326fc,THG-RND-007,Architecture baselined,2025-11-14,2025-11-15,2025-11-15,Achieved,Project Manager
+a7107625-1ced-565f-976c-1334e3492a4e,777ea2a7-20e0-5b0d-a53b-ba290af326fc,THG-RND-007,Core firmware feature-complete,2026-04-24,2026-05-16,,Slipped,Project Manager
+6ebc4a9b-c3d3-5c14-b646-72524816eddb,777ea2a7-20e0-5b0d-a53b-ba290af326fc,THG-RND-007,HIL verification complete,2026-07-17,2026-07-22,,At risk,Project Manager
+edc4a710-1585-51fe-adbc-601d595d92f1,777ea2a7-20e0-5b0d-a53b-ba290af326fc,THG-RND-007,Design freeze,2026-08-21,2026-08-21,,On track,Project Manager
+effd8467-4bea-5357-9865-6c55e63c9efa,5e8efc63-4e18-5155-a82f-8e3539c74478,THG-IT-003,Landing zone accepted,2026-06-26,2026-06-26,,On track,Project Manager
+a79eb3e7-cba3-56cf-969d-5f508666b8fe,5e8efc63-4e18-5155-a82f-8e3539c74478,THG-IT-003,Pipeline MVP,2026-09-04,2026-09-04,,On track,Project Manager
+ced71912-cad3-5e76-afb0-0520a9bd4c28,5e8efc63-4e18-5155-a82f-8e3539c74478,THG-IT-003,PHI validation sign-off,2026-11-20,2026-11-20,,On track,Project Manager
+5084b684-ca9a-5d3d-b477-20117c26d004,5e8efc63-4e18-5155-a82f-8e3539c74478,THG-IT-003,Cutover complete,2027-01-15,2027-01-15,,On track,Project Manager
+fbe92565-b9f1-589b-b4cc-5ee98aa89bf6,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,Templates published,2026-03-06,2026-03-06,2026-03-06,Achieved,Project Manager
+5abee136-57d4-5369-b6c2-8b405b0a4f93,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,Pilot departments live,2026-05-01,2026-05-01,2026-05-01,Achieved,Project Manager
+7cfa210b-ad9d-55cc-9305-9c169b64f368,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,All departments onboarded,2026-07-31,2026-08-08,,At risk,Project Manager
+5110200c-a1be-55e0-9b36-34ae41d9be42,b30b6540-32d7-52cb-b101-bf086d4dc18d,THG-OPS-009,Adoption audit passed,2026-09-18,2026-09-18,,On track,Project Manager
+80b94783-0b1d-5c72-87df-51e2a405e707,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,Gap assessment complete,2025-10-03,2025-10-04,2025-10-04,Achieved,Project Manager
+80d9bbbe-7fbc-5788-b3ce-77049065c748,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,Remediation complete,2026-02-27,2026-03-03,2026-03-03,Achieved,Project Manager
+7d1b532b-b24c-5bb5-9a9c-faafecb55157,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,Stage 2 audit passed,2026-05-15,2026-05-17,2026-05-17,Achieved,Project Manager
+aa2df4e9-66b3-5f5a-a785-49293a98d11b,c95418d9-fdc3-5832-bd7f-dc24031e37e3,THG-REG-005,Certificate issued,2026-06-26,2026-06-26,,On track,Project Manager
+40ffbb0e-3c6c-5562-b386-e5bd1aabc4d6,c9fb69ea-3e4b-53c4-8707-6697185b54c3,THG-COM-002,Market analysis approved,2026-10-02,2026-10-02,,On track,Project Manager
+d298eeb4-8cff-549f-8805-f2f021ea80ff,c9fb69ea-3e4b-53c4-8707-6697185b54c3,THG-COM-002,CE pathway confirmed,2026-12-18,2026-12-18,,On track,Project Manager
+13f3c5c2-471c-503b-a74d-984b102f88f0,c9fb69ea-3e4b-53c4-8707-6697185b54c3,THG-COM-002,Launch go/no-go,2027-03-26,2027-03-26,,On track,Project Manager

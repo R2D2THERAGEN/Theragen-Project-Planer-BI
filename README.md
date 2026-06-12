@@ -1,1 +1,129 @@
-# Theragen-Project-Planer-BI
+# Theragen Project Planner BI
+
+Power BI semantic model and report for the Theragen **PMBOK Integrated Documentation
+System**, modeled directly from `THG-ENT-DBS-001_Database_Schema_Specification_v1.0`
+(PMBOK project-management schema) and the 14 PMBOK template documents.
+
+The project is stored in **PBIP format** (TMDL semantic model + PBIR report) so every
+table, measure, relationship and visual is plain text, diff-able, and reviewable in git.
+
+## Quick start
+
+1. Install [Power BI Desktop](https://aka.ms/pbidesktop) (any 2024+ release; PBIP/PBIR are GA).
+2. Open `Theragen Project Planner.pbip`.
+3. If the sample data folder is not at the default location, update the **DataFolder**
+   parameter (Transform data → Edit parameters) to point at `SampleData/` in this repo.
+4. Refresh. All 17 source tables load from the seeded sample CSVs.
+
+## What's inside
+
+```
+Theragen Project Planner.pbip            Project pointer (open this)
+Theragen Project Planner.SemanticModel/  TMDL model: 21 tables, 94 measures, 36 relationships
+Theragen Project Planner.Report/         PBIR report: 8 pages, 85 visuals
+SampleData/                              Seeded 6-project portfolio (17 CSVs, schema-faithful)
+paginated/                               Constant-layout .rdl status report (DAX on the model)
+docs/MODEL_DESIGN.md                     Star-schema design decisions and source mapping
+_source_extracts/                        Schema spec sheets extracted to TSV (reference)
+tools/                                   Bootstrap generators + PBIR schema validator
+```
+
+## Semantic model
+
+Star schema reshaped from the OLTP PMBOK schema (31 entities → 18 model tables):
+
+- **Dimensions:** Date (marked, 2025–2027), Project, Department, Person, WBS Element,
+  Knowledge Area
+- **Facts:** Schedule Activity, Milestone, Budget Line, Risk, Risk Response,
+  Change Request, Status Report, Status Report Area, Stakeholder, Team Member,
+  Lesson Learned, Closure Item
+- **`_Measures`** hosts 78 documented measures in folders: Portfolio, Schedule, EVM,
+  Milestones, Cost, Risk, Change, Health, Stakeholders, Team, Closing
+
+Conventions: single-direction filtering only; `Project` reaches activities/budget through
+`WBS Element` (no ambiguous paths); inactive Date relationships for secondary dates
+(actuals, forecasts, decisions) ready for `USERELATIONSHIP`; UUID keys hidden; every
+table, measure and calculated column carries a description.
+
+Full design rationale: [docs/MODEL_DESIGN.md](docs/MODEL_DESIGN.md)
+
+## Report pages
+
+| Page | Mirrors PMBOK artifact |
+|---|---|
+| Portfolio Overview | Executive roll-up across all projects |
+| Project Status Report | The Theragen leadership one-pager (traffic light, health check, RAID, key project areas, accomplishments, next steps) + Template 13 |
+| Schedule & Milestones | Template 06 — Schedule (activities, % complete, slip) |
+| Cost & Budget | Template 07 — Cost Budget Estimate (+ EVM: PV/EV/SV/SPI) |
+| Risk Management | Template 09 — Risk Register (5×5 heat map, exposure, responses) |
+| Change Control | Template 12 — Change Request Log (pipeline, cycle time, impact) |
+| Stakeholders & Team | Template 02 — Stakeholder Register + RACI (interest × influence) |
+| Lessons & Closure | Template 14 — Lessons Learned & Closure checklist |
+
+## Production database
+
+The model loads from **Azure PostgreSQL Flexible Server**
+(`psql-theragen-pmbok.postgres.database.azure.com`, database `theragen_pmbok`). The
+spec's DDL lives in `db/` (`doc_mgmt` + `pmbok` schemas, FKs hoisted to
+`04_foreign_keys.sql`), and a `bi` schema of views re-shapes the OLTP tables to the
+original CSV contracts so every model partition navigates to `bi.*` with unchanged
+column names. `tools/load_postgres.py` seeds it from `SampleData/` — **destructive**:
+it drops all three schemas and requires `--reseed` plus a typed database-name
+confirmation. The `DataFolder` parameter remains for offline dev/test fixtures.
+`Approval`, `Decision`, `Assumption/Constraint`, scope detail and the DM governance
+schema are deliberate Phase-2 additions (see MODEL_DESIGN.md §1).
+
+## Project ingestion
+
+New projects enter through **Microsoft Forms → Power Automate → SharePoint List →
+nightly sync**:
+
+- Form submissions land on the **Project Intake** SharePoint List as
+  `TriageStatus = Submitted`, `SyncStatus = Pending`, with people pickers resolved
+  from the M365 directory.
+- `tools/sync_intake.py` runs daily at **5:30 AM** (Task Scheduler job
+  `Theragen\SyncIntake` → `tools/run_intake_sync.cmd`, log in `logs/intake_sync.log`).
+  New items become `doc_mgmt.intake_submission` + `pmbok.project` (status
+  **Proposed**) + a charter row in one transaction; afterwards, `TriageStatus` edits
+  on the List drive transitions (Approved → Active, Rejected → Cancelled,
+  On Hold → Paused).
+- Results are written back onto each List item (`SyncStatus`, `IntakeID`,
+  `ProjectCode`, error messages), so the List is the PMO's triage surface; the sync
+  is idempotent via `intake_submission.external_ref` = List item id.
+- The 6:00 AM semantic-model refresh picks the new rows up into the reports.
+
+Setup recipe (Form questions, Flow steps, schedule, smoke test):
+[docs/intake-setup.md](docs/intake-setup.md). Design rationale:
+[docs/superpowers/specs/2026-06-12-project-ingestion-design.md](docs/superpowers/specs/2026-06-12-project-ingestion-design.md).
+
+**EVM note:** the v1.0 schema has no cost-actuals entity, so AC/CPI/EAC are intentionally
+absent; SPI/SV/EV/PV derive from WBS estimates and activity percent-complete. Add an
+actuals feed (ERP extract) in Phase 2 to complete the EVM family.
+
+## Validation
+
+- TMDL compiles via **Tabular Editor 2** CLI (also used for the Best Practice Analyzer —
+  currently zero violations):
+  `TabularEditor.exe "Theragen Project Planner.SemanticModel/definition" -A`
+- Every PBIR JSON validates against Microsoft's published Fabric schemas:
+  `python tools/validate_pbir.py`
+
+## Regenerating from scratch
+
+The `tools/` scripts are bootstrap generators — after initial generation, the TMDL/PBIR
+files are the maintained artifacts (edit in Power BI Desktop or Tabular Editor):
+
+```
+python tools/generate_sample_data.py    # reseed SampleData/*.csv
+python tools/build_semantic_model.py    # rewrite SemanticModel TMDL
+python tools/build_report.py            # rewrite Report PBIR pages
+```
+
+## Source documents
+
+Modeled from `C:\Users\Allen\OneDrive - Neurotech NA\Org Deployment Optimization`:
+- `THG-ENT-DBS-001_Database_Schema_Specification_v1.0.xlsx` — authoritative schema
+  (PMBOK + Document Management, bridge keys `intake_id`/`doc_id`/`person_id`)
+- Templates 01–14 (Charter → Lessons Learned) — define the report page requirements
+- `DEVELOPMENT_files/` — documentation lifecycle framework (governance track feeds
+  the status-report and document-control analytics)

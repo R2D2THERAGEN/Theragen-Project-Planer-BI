@@ -1,0 +1,123 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "a268787d4ae458769963",
+  "position": {
+    "x": 8,
+    "y": 364,
+    "z": 1000,
+    "width": 700,
+    "height": 344
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Stakeholder"
+                    }
+                  },
+                  "Property": "Stakeholder"
+                }
+              },
+              "queryRef": "Stakeholder.Stakeholder"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Stakeholder"
+                    }
+                  },
+                  "Property": "Stakeholder Role"
+                }
+              },
+              "queryRef": "Stakeholder.Stakeholder Role"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Stakeholder"
+                    }
+                  },
+                  "Property": "Department"
+                }
+              },
+              "queryRef": "Stakeholder.Department"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Stakeholder"
+                    }
+                  },
+                  "Property": "Engagement"
+                }
+              },
+              "queryRef": "Stakeholder.Engagement"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Stakeholder"
+                    }
+                  },
+                  "Property": "Interest"
+                }
+              },
+              "queryRef": "Stakeholder.Interest"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Stakeholder"
+                    }
+                  },
+                  "Property": "Influence"
+                }
+              },
+              "queryRef": "Stakeholder.Influence"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Stakeholder register'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

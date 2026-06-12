@@ -1,0 +1,35 @@
+THERAGEN  |  PMBOK_Entities
+31 entities making up the project-management schema.
+—
+ID	Table name	Plain name	Lifecycle phase	Owner role	Description
+P01	project	Project	Cross-Lifecycle	Project Manager	Top-level project record. The container all other PMBOK rows belong to.
+P02	project_charter	Project Charter	Initiating	Project Manager	Authorization document. One per Project.
+P03	stakeholder	Stakeholder Register Entry	Initiating	Project Manager	Person or group with interest or influence in the project.
+P04	scope_statement	Project Scope Statement	Planning	Project Manager	Approved scope document. One per Project.
+P05	scope_inclusion	Scope Inclusion	Planning	Project Manager	Item explicitly in scope.
+P06	scope_exclusion	Scope Exclusion	Planning	Project Manager	Item explicitly out of scope.
+P07	acceptance_criterion	Acceptance Criterion	Planning	Project Manager	Verification condition the deliverable must meet.
+P08	wbs_element	WBS Element	Planning	Project Manager	Hierarchical work breakdown node. Self-referencing parent.
+P09	wbs_dictionary_entry	WBS Dictionary Entry	Planning	Project Manager	Extended definition for a WBS Element. 1:1 with WBSElement.
+P10	schedule_activity	Schedule Activity	Planning	Project Manager	Time-phased task tied to a WBS Element.
+P11	milestone	Milestone	Planning	Project Manager	Zero-duration schedule marker.
+P12	schedule_dependency	Schedule Dependency	Planning	Project Manager	Predecessor/successor link between schedule activities.
+P13	budget_line_item	Budget Line Item	Planning	Finance Lead	Cost estimate tied to a WBS Element.
+P14	risk	Risk	Planning	Risk Owner	Identified risk with L×I scoring.
+P15	risk_response	Risk Response	Planning	Risk Owner	Mitigation, transfer, avoidance, or acceptance action.
+P16	communications_audience	Communications Audience	Planning	Project Manager	Audience entry in the Communications Matrix.
+P17	meeting_cadence	Meeting Cadence	Planning	Project Manager	Recurring meeting in the comms plan.
+P18	quality_standard	Quality Standard	Planning	Quality Lead	Standard or regulation governing project quality.
+P19	quality_activity	Quality Activity	Planning	Quality Lead	QA (process) or QC (product) activity.
+P20	quality_metric	Quality Metric	Planning	Quality Lead	Measurable quality KPI.
+P21	change_request	Change Request	Executing	Project Manager	Project-level CR against baselined scope/schedule/cost/quality.
+P22	change_impact_assessment	Change Impact Assessment	Executing	Project Manager	Per-department impact statement on a CR.
+P23	status_report	Status Report	Monitoring	Project Manager	Recurring snapshot of project health.
+P24	status_report_area	Status Report Knowledge-Area	Monitoring	Project Manager	Per-knowledge-area health entry within a status report.
+P25	lesson_learned	Lesson Learned	Closing	Project Manager	Captured learning from project execution.
+P26	closure_checklist_item	Closure Checklist Item	Closing	Project Manager	One item from the project closure checklist.
+P27	assumption	Assumption	Cross-Lifecycle	Project Manager	Project assumption.
+P28	constraint	Constraint	Cross-Lifecycle	Project Manager	Project constraint (budget, schedule, regulatory, etc.).
+P29	decision	Decision	Cross-Lifecycle	Project Manager	Logged project decision with rationale.
+P30	approval	Approval Signature	Cross-Lifecycle	Approver	Signature record for a baselined artifact under 21 CFR Part 11.
+P31	project_team_member	Project Team Member	Cross-Lifecycle	Project Manager	Person assigned to the project team.

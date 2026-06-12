@@ -1,0 +1,108 @@
+/// Fact - milestones (PMBOK P11). Baseline vs forecast vs actual dates.
+table Milestone
+	lineageTag: 1f186523-e114-5d40-871a-a58126c5bd94
+
+	column 'Milestone ID'
+		dataType: string
+		isHidden
+		lineageTag: 0ab265c3-300e-5cd9-9786-bb55afd6e735
+		summarizeBy: none
+		sourceColumn: Milestone ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project ID'
+		dataType: string
+		isHidden
+		lineageTag: 8f9e2a12-4e62-56a5-b38a-0f5163133187
+		summarizeBy: none
+		sourceColumn: Project ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project Code'
+		dataType: string
+		lineageTag: ec33523f-d3f5-552d-a21d-1410b11815b6
+		summarizeBy: none
+		sourceColumn: Project Code
+
+		annotation SummarizationSetBy = User
+
+	column Milestone
+		dataType: string
+		lineageTag: 52e77264-cf70-53f7-920e-9bf6f2fcf960
+		summarizeBy: none
+		sourceColumn: Milestone
+
+		annotation SummarizationSetBy = User
+
+	column 'Baseline Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 40d9bb96-e39f-5a4d-a6ae-3e9ab5bf949d
+		summarizeBy: none
+		sourceColumn: Baseline Date
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Forecast Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 65e187df-ba02-5a21-b63d-dc56e2dbd896
+		summarizeBy: none
+		sourceColumn: Forecast Date
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Actual Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 16519c86-7804-5e72-83e0-258fc22b0680
+		summarizeBy: none
+		sourceColumn: Actual Date
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Milestone Status'
+		dataType: string
+		lineageTag: ad41f878-1949-586e-8e37-9c6a87d5ebaa
+		summarizeBy: none
+		sourceColumn: Milestone Status
+
+		annotation SummarizationSetBy = User
+
+	column 'Owner Role'
+		dataType: string
+		lineageTag: ac6db575-5c50-5fbe-a805-e37570fc3b28
+		summarizeBy: none
+		sourceColumn: Owner Role
+
+		annotation SummarizationSetBy = User
+
+	/// Days between baseline and actual (or forecast) date. Positive = slip.
+	column 'Slip Days' = DATEDIFF('Milestone'[Baseline Date], COALESCE('Milestone'[Actual Date], 'Milestone'[Forecast Date], 'Milestone'[Baseline Date]), DAY)
+		dataType: int64
+		lineageTag: b844da01-da71-5a91-b6d6-1f07ca6974cf
+		summarizeBy: none
+
+		annotation SummarizationSetBy = User
+
+	partition Milestone = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "milestone"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"milestone_id", "project_id", "project_code", "name", "baseline_date", "forecast_date", "actual_date", "status", "owner_role"}),
+				    Renamed = Table.RenameColumns(Selected, {{"milestone_id", "Milestone ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"name", "Milestone"}, {"baseline_date", "Baseline Date"}, {"forecast_date", "Forecast Date"}, {"actual_date", "Actual Date"}, {"status", "Milestone Status"}, {"owner_role", "Owner Role"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table
+

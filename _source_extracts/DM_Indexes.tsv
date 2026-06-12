@@ -1,0 +1,17 @@
+THERAGEN  |  DM_Indexes
+Recommended indexes and uniqueness constraints.
+—
+Entity	Index name	Columns	Type	Purpose
+document	ix_doc_status	status, primary_department_id	BTREE	Active-docs-by-dept queries.
+document	ix_doc_next_review	next_review_due	BTREE	Overdue-review scans.
+document	uk_doc_id	doc_id	UNIQUE	Theragen Doc ID uniqueness.
+document_version	uk_doc_version	document_id, version	UNIQUE	No duplicate versions.
+intake_submission	uk_intake_id	intake_id	UNIQUE	INT-YYYY-NNNN uniqueness.
+intake_submission	ix_intake_status	status, submitted_at	BTREE	Pending-triage queue.
+raci_assignment	uk_raci	document_id, department_id, valid_from	UNIQUE	Avoid duplicate active RACI.
+training_assignment	ix_assignment_status	person_id, status	BTREE	Per-person training queue.
+training_attestation	ix_attestation_person	person_id, attested_at DESC	BTREE	Latest attestations.
+audit_trail_entry	ix_trail_entity	entity_type, entity_id, occurred_at DESC	BTREE	Entity audit history.
+audit_trail_entry	ix_trail_actor	actor_person_id, occurred_at DESC	BTREE	Actor history.
+change_request_gov	uk_cr_gov_code	cr_code	UNIQUE	CR code uniqueness.
+access_grant	ix_grant_principal	principal_type, principal_id	BTREE	Effective-permissions queries.

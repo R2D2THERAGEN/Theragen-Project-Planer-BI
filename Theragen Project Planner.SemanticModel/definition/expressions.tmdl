@@ -1,0 +1,12 @@
+/// Azure Database for PostgreSQL host serving THG-ENT-DBS-001 (schemas doc_mgmt / pmbok / bi).
+expression PgServer = "psql-theragen-pmbok.postgres.database.azure.com" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]
+	lineageTag: d84018c3-75fb-5182-8f16-0ee908a5f3ce
+
+	annotation PBI_ResultType = Text
+
+/// Database name on the PostgreSQL server.
+expression PgDatabase = "theragen_pmbok" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]
+	lineageTag: 9d9b7cee-f647-53d1-b760-82fa8c8ca83d
+
+	annotation PBI_ResultType = Text
+

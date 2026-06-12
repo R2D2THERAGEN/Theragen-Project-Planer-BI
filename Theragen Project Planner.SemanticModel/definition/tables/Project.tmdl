@@ -1,0 +1,175 @@
+/// Project dimension - one row per project (PMBOK P01 project, charter fields denormalized).
+table Project
+	lineageTag: 43886340-21d5-5420-bcc8-b7ae039e2aec
+
+	column 'Project ID'
+		dataType: string
+		isHidden
+		lineageTag: 05476636-f92a-59ba-9f8d-8172bbf27ee5
+		summarizeBy: none
+		sourceColumn: Project ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project Code'
+		dataType: string
+		lineageTag: ef558d42-572c-5322-809b-4cb647aadaac
+		summarizeBy: none
+		sourceColumn: Project Code
+
+		annotation SummarizationSetBy = User
+
+	column 'Intake ID'
+		dataType: string
+		lineageTag: 86075b8a-dc6d-503f-98c6-e1ac88bbf31f
+		summarizeBy: none
+		sourceColumn: Intake ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project Name'
+		dataType: string
+		lineageTag: 84b03655-62d8-596b-a4d2-6c5421b7e187
+		summarizeBy: none
+		sourceColumn: Project Name
+
+		annotation SummarizationSetBy = User
+
+	column 'Project Description'
+		dataType: string
+		lineageTag: 9ef7e9aa-2f58-51ee-b2f3-a508bd5bf684
+		summarizeBy: none
+		sourceColumn: Project Description
+
+		annotation SummarizationSetBy = User
+
+	column 'Business Value'
+		dataType: string
+		lineageTag: 744badde-bc80-5ca9-8e2c-bec374390f8a
+		summarizeBy: none
+		sourceColumn: Business Value
+
+		annotation SummarizationSetBy = User
+
+	column Sponsor
+		dataType: string
+		lineageTag: e5e0390c-719f-57ba-81af-0cd7d8d2df5e
+		summarizeBy: none
+		sourceColumn: Sponsor
+
+		annotation SummarizationSetBy = User
+
+	column 'Project Manager'
+		dataType: string
+		lineageTag: d308128e-cb7c-512a-9c21-3abfca9f4de3
+		summarizeBy: none
+		sourceColumn: Project Manager
+
+		annotation SummarizationSetBy = User
+
+	column 'Primary Department'
+		dataType: string
+		lineageTag: 6995b93d-b0b0-594a-a9f4-8ab94792e4ad
+		summarizeBy: none
+		sourceColumn: Primary Department
+
+		annotation SummarizationSetBy = User
+
+	column Approach
+		dataType: string
+		lineageTag: f7c2692b-ae11-59a2-a491-17dd3d11afd6
+		summarizeBy: none
+		sourceColumn: Approach
+
+		annotation SummarizationSetBy = User
+
+	column 'Lifecycle Phase'
+		dataType: string
+		lineageTag: b6c2ae74-5168-5ae2-8cd1-db21e8111c1c
+		summarizeBy: none
+		sourceColumn: Lifecycle Phase
+
+		annotation SummarizationSetBy = User
+
+	column 'Project Status'
+		dataType: string
+		lineageTag: 61c2e390-e069-5712-9f8c-cce076b436f8
+		summarizeBy: none
+		sourceColumn: Project Status
+
+		annotation SummarizationSetBy = User
+
+	column 'Planned Start'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 1ad6322c-3be7-57ae-96e2-933f814a4a8a
+		summarizeBy: none
+		sourceColumn: Planned Start
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Planned Finish'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 9c06d03f-6375-588d-b54d-963894ef7eab
+		summarizeBy: none
+		sourceColumn: Planned Finish
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Actual Start'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: e1686e5a-0be0-532c-8927-8e259b76bdc5
+		summarizeBy: none
+		sourceColumn: Actual Start
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Actual Finish'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 0a9b9975-9118-5cff-9ff0-cb6def2b9eb4
+		summarizeBy: none
+		sourceColumn: Actual Finish
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Charter Budget'
+		dataType: double
+		formatString: \$#,##0;(\$#,##0);\$0
+		lineageTag: 6ea48eb8-f17e-57e3-9e32-ebdd96c7e70b
+		summarizeBy: none
+		sourceColumn: Charter Budget
+
+		annotation SummarizationSetBy = User
+
+	column 'Strategic Objective'
+		dataType: string
+		lineageTag: 14dfe069-facd-5418-9624-9dec085782a3
+		summarizeBy: none
+		sourceColumn: Strategic Objective
+
+		annotation SummarizationSetBy = User
+
+	partition Project = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "project"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"project_id", "project_code", "intake_id", "name", "description", "business_value", "sponsor_name", "project_manager_name", "primary_department", "approach", "lifecycle_phase", "status", "planned_start", "planned_finish", "actual_start", "actual_finish", "budget_total", "strategic_objective_ref"}),
+				    Renamed = Table.RenameColumns(Selected, {{"project_id", "Project ID"}, {"project_code", "Project Code"}, {"intake_id", "Intake ID"}, {"name", "Project Name"}, {"description", "Project Description"}, {"business_value", "Business Value"}, {"sponsor_name", "Sponsor"}, {"project_manager_name", "Project Manager"}, {"primary_department", "Primary Department"}, {"approach", "Approach"}, {"lifecycle_phase", "Lifecycle Phase"}, {"status", "Project Status"}, {"planned_start", "Planned Start"}, {"planned_finish", "Planned Finish"}, {"actual_start", "Actual Start"}, {"actual_finish", "Actual Finish"}, {"budget_total", "Charter Budget"}, {"strategic_objective_ref", "Strategic Objective"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table
+

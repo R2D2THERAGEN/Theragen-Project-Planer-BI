@@ -1,0 +1,620 @@
+"""Emit the Theragen Status Report paginated report (.rdl).
+
+Pixel-perfect leadership one-pager mirroring the Sync 3.0 status deck,
+parameterized by @ProjectCode and bound to the published Power BI semantic
+model (all DAX datasets reuse the model's measures - no duplicated logic).
+
+Output: paginated/Theragen Status Report.rdl (RDL 2016, letter landscape).
+After the semantic model is published, open the .rdl in Power BI Report
+Builder, repoint the data source to the published model, and publish to the
+same workspace.
+"""
+import base64
+import os
+import uuid
+from xml.sax.saxutils import escape
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+OUT = os.path.join(ROOT, "paginated", "Theragen Status Report.rdl")
+LOGO = os.path.join(ROOT, "assets", "theragen-logo.jpeg")
+
+# Published semantic model in the Power BI service. Format verified against
+# Theragen's working Report Builder files (canonical PBIDATASET provider).
+# DATASET_GUID: open the model in the service; the URL contains
+# .../datasets/<guid>/details.
+TENANT_ID = "f0b72488-7082-488a-a7e8-eada97bd842d"
+WORKSPACE_NAME = "Playground"
+DATASET_NAME = "Theragen Project Planner"
+DATASET_GUID = "e3e1f151-0f7d-4bbe-8428-d74dcfa640d4"  # Playground / Theragen Project Planner
+
+TEAL = "#219A80"
+INK = "#252423"
+GRID = "#DCE4E3"
+LIGHT = "#F4F7F6"
+FONT = "Segoe UI"
+
+# Theragen status palette: muted, brand-aligned (replaces the deck's neon).
+DECK_GREEN, DECK_YELLOW, DECK_RED = "#107C10", "#C19C00", "#C0392B"
+DECK_DARKRED = "#8B1A1A"
+DECK_KEY_YELLOW, DECK_HOLD, DECK_CANCEL = "#C19C00", "#6B3FA0", "#2E86AB"
+
+AREA_COLOR = ('=Switch(Fields!AreaStatus.Value="Green","{g}",'
+              'Fields!AreaStatus.Value="Yellow","{y}",'
+              'Fields!AreaStatus.Value="Red","{r}",True,"#000000")').format(
+                  g=DECK_GREEN, y=DECK_YELLOW, r=DECK_RED)
+WS_COLOR = ('=Switch(Fields!WsStatus.Value="ON TRACK","{g}",'
+            'Fields!WsStatus.Value="AT RISK","{y}",True,"#000000")').format(
+                g=DECK_GREEN, y=DECK_YELLOW)
+SEV_COLOR = ('=Switch(Fields!Severity.Value="Critical","{c}",'
+             'Fields!Severity.Value="High","{r}",'
+             'Fields!Severity.Value="Medium","{y}",True,"#000000")').format(
+                 c=DECK_DARKRED, r=DECK_RED, y=DECK_YELLOW)
+
+# ---------------------------------------------------------------- datasets
+# Every output column is aliased through SELECTCOLUMNS/ROW so RDL field
+# DataField names are clean single tokens.
+DATASETS = {
+    "DsProjectList": dict(
+        dax=(
+            "EVALUATE SELECTCOLUMNS('Project', \"ProjectCode\", 'Project'[Project Code], "
+            "\"ProjectName\", 'Project'[Project Name]) ORDER BY [ProjectName]"
+        ),
+        fields=["ProjectCode", "ProjectName"], params=False),
+    "DsHeader": dict(
+        dax=(
+            "EVALUATE CALCULATETABLE(ROW("
+            "\"ProjectName\", SELECTEDVALUE('Project'[Project Name]), "
+            "\"ProjectManager\", [Project Manager (Selected)], "
+            "\"TargetDate\", [Target Date Completion], "
+            "\"Phase\", [Current Phase], "
+            "\"MainStatus\", [Main Status], "
+            "\"StatusColor\", [Status Color], "
+            "\"Description\", [Project Description (Selected)], "
+            "\"BusinessValue\", [Business Value (Selected)], "
+            "\"ReportDate\", [Report Date], "
+            "\"DecisionsNeeded\", [Decisions Needed (Latest)]), "
+            "TREATAS({@ProjectCode}, 'Project'[Project Code]))"
+        ),
+        fields=["ProjectName", "ProjectManager", "TargetDate", "Phase", "MainStatus",
+                "StatusColor", "Description", "BusinessValue", "ReportDate",
+                "DecisionsNeeded"], params=True),
+    "DsHealth": dict(
+        dax=(
+            "EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Knowledge Area'[Knowledge Area], "
+            "'Knowledge Area'[KA Sort], TREATAS({@ProjectCode}, 'Project'[Project Code]), "
+            "\"AreaStatusM\", [Latest Area Status]), "
+            "\"KnowledgeArea\", 'Knowledge Area'[Knowledge Area], "
+            "\"KASort\", 'Knowledge Area'[KA Sort], "
+            "\"AreaStatus\", [AreaStatusM]) ORDER BY [KASort]"
+        ),
+        fields=["KnowledgeArea", "KASort", "AreaStatus"], params=True),
+    "DsRaid": dict(
+        dax=(
+            "EVALUATE SELECTCOLUMNS(CALCULATETABLE('Risk', "
+            "TREATAS({@ProjectCode}, 'Project'[Project Code])), "
+            "\"RaidType\", 'Risk'[RAID Type], "
+            "\"Description\", 'Risk'[Risk Description], "
+            "\"Owner\", 'Risk'[Owner], "
+            "\"DueDate\", 'Risk'[Due Date], "
+            "\"Score\", 'Risk'[Risk Score], "
+            "\"Severity\", 'Risk'[Severity], "
+            "\"RiskStatus\", 'Risk'[Risk Status]) ORDER BY [Score] DESC"
+        ),
+        fields=["RaidType", "Description", "Owner", "DueDate", "Score", "Severity",
+                "RiskStatus"], params=True),
+    "DsWorkstreams": dict(
+        # [Workstream Status] returns "-" for empty workstreams, which defeats
+        # SUMMARIZECOLUMNS blank-row pruning - filter to rows with activities.
+        dax=(
+            "EVALUATE FILTER(SELECTCOLUMNS(SUMMARIZECOLUMNS('WBS Element'[Deliverable], "
+            "TREATAS({@ProjectCode}, 'Project'[Project Code]), "
+            "\"StartDateM\", [Workstream Start], "
+            "\"TargetDateM\", [Workstream Target], "
+            "\"PctCompleteM\", [Pct Complete (Duration Weighted)], "
+            "\"WsStatusM\", [Workstream Status]), "
+            "\"Deliverable\", 'WBS Element'[Deliverable], "
+            "\"StartDate\", [StartDateM], \"TargetDate\", [TargetDateM], "
+            "\"PctComplete\", [PctCompleteM], \"WsStatus\", [WsStatusM]), "
+            "NOT ISBLANK([StartDate])) "
+            "ORDER BY [StartDate]"
+        ),
+        fields=["Deliverable", "StartDate", "TargetDate", "PctComplete", "WsStatus"],
+        params=True),
+    "DsAccomplishments": dict(
+        dax=(
+            "EVALUATE SELECTCOLUMNS(CALCULATETABLE('Recent Accomplishment', "
+            "TREATAS({@ProjectCode}, 'Project'[Project Code])), "
+            "\"Accomplishment\", 'Recent Accomplishment'[Accomplishment], "
+            "\"Source\", 'Recent Accomplishment'[Source], "
+            "\"CompletedDate\", 'Recent Accomplishment'[Completed Date]) "
+            "ORDER BY [CompletedDate] DESC"
+        ),
+        fields=["Accomplishment", "Source", "CompletedDate"], params=True),
+    "DsGauge": dict(
+        dax=(
+            "EVALUATE CALCULATETABLE(ROW("
+            "\"AvgScore\", [Avg Risk Score (Open)], "
+            "\"RiskRating\", [Risk Rating], "
+            "\"RatingColor\", [Risk Rating Color]), "
+            "TREATAS({@ProjectCode}, 'Project'[Project Code]))"
+        ),
+        fields=["AvgScore", "RiskRating", "RatingColor"], params=True),
+    "DsNextSteps": dict(
+        dax=(
+            "EVALUATE SELECTCOLUMNS(CALCULATETABLE('Upcoming Next Step', "
+            "TREATAS({@ProjectCode}, 'Project'[Project Code])), "
+            "\"NextStep\", 'Upcoming Next Step'[Next Step], "
+            "\"Owner\", 'Upcoming Next Step'[Owner], "
+            "\"TargetDate\", 'Upcoming Next Step'[Target Date]) "
+            "ORDER BY [TargetDate]"
+        ),
+        fields=["NextStep", "Owner", "TargetDate"], params=True),
+}
+
+
+def textrun(value, *, size="8pt", bold=False, color=INK, italic=False):
+    style = [f"<FontFamily>{FONT}</FontFamily>", f"<FontSize>{size}</FontSize>",
+             f"<Color>{color}</Color>"]
+    if bold:
+        style.append("<FontWeight>Bold</FontWeight>")
+    if italic:
+        style.append("<FontStyle>Italic</FontStyle>")
+    return (f"<TextRun><Value>{value}</Value><Style>{''.join(style)}</Style></TextRun>")
+
+
+def textbox(name, runs_xml, left, top, width, height, *, bg=None, border=GRID,
+            align="Left", valign="Top", pad="2pt", grow=True):
+    if bg is None:
+        bg = "#FFFFFF"   # white card on the tinted frame background
+    border_xml = (f"<Border><Color>{border}</Color><Style>Solid</Style></Border>"
+                  if border else "<Border><Style>None</Style></Border>")
+    style = [border_xml,
+             f"<PaddingLeft>{pad}</PaddingLeft><PaddingRight>{pad}</PaddingRight>",
+             "<PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom>",
+             f"<VerticalAlign>{valign}</VerticalAlign>"]
+    if bg and bg != "none":
+        style.insert(1, f"<BackgroundColor>{bg}</BackgroundColor>")
+    return f"""<Textbox Name="{name}">
+  <CanGrow>{'true' if grow else 'false'}</CanGrow>
+  <KeepTogether>true</KeepTogether>
+  <Paragraphs>{runs_xml}</Paragraphs>
+  <Top>{top}in</Top><Left>{left}in</Left><Height>{height}in</Height><Width>{width}in</Width>
+  <Style>{''.join(style)}</Style>
+</Textbox>"""
+
+
+def para(runs, align="Left"):
+    return (f"<Paragraph><TextRuns>{runs}</TextRuns>"
+            f"<Style><TextAlign>{align}</TextAlign></Style></Paragraph>")
+
+
+def label_value_box(name, label, value_expr, left, top, width, height,
+                    *, vsize="10pt", vbold=True, vcolor=INK, align="Left"):
+    runs = (para(textrun(label, size="6.5pt", bold=True, color=TEAL), align) +
+            para(textrun(value_expr, size=vsize, bold=vbold, color=vcolor), align))
+    return textbox(name, runs, left, top, width, height, align=align)
+
+
+def tablix(name, dataset, columns, left, top, width, *, header_bg=TEAL,
+           detail_size="7.5pt", sort_field=None, sort_desc=False, design_h=0.42):
+    """columns: list of (header, field_expr, width_in, align[, format[, color[, bold]]])"""
+    total_w = sum(c[2] for c in columns)
+    scale = width / total_w
+    cols_xml = "".join(f"<TablixColumn><Width>{c[2]*scale:.3f}in</Width></TablixColumn>"
+                       for c in columns)
+    hdr_cells, det_cells = [], []
+    for i, c in enumerate(columns):
+        header, expr, _, align = c[0], c[1], c[2], c[3]
+        fmt = c[4] if len(c) > 4 else None
+        color = c[5] if len(c) > 5 else INK
+        bold = c[6] if len(c) > 6 else False
+        # Style-level <Format> is unreliable across renderers - format in the
+        # expression itself (and never print 12:00:00 AM on pure dates).
+        if fmt and expr.startswith("="):
+            expr = f'=Format({expr[1:]}, "{fmt}")'
+            fmt = None
+        hdr_cells.append(
+            "<TablixCell><CellContents>" + f"""<Textbox Name="{name}_h{i}">
+              <CanGrow>true</CanGrow>
+              <Paragraphs>{para(textrun(escape(header), size='7pt', bold=True, color='#FFFFFF'), align)}</Paragraphs>
+              <Style><Border><Color>{header_bg}</Color><Style>Solid</Style></Border>
+              <BackgroundColor>{header_bg}</BackgroundColor>
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom>
+              <VerticalAlign>Middle</VerticalAlign></Style>
+            </Textbox>""" + "</CellContents></TablixCell>")
+        style_fmt = f"<Format>{fmt}</Format>" if fmt else ""
+        det_cells.append(
+            "<TablixCell><CellContents>" + f"""<Textbox Name="{name}_d{i}">
+              <CanGrow>true</CanGrow>
+              <Paragraphs>{para(textrun(expr, size=detail_size, color=color, bold=bold), align)}</Paragraphs>
+              <Style><Border><Color>{GRID}</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
+              {style_fmt}
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+            </Textbox>""" + "</CellContents></TablixCell>")
+    sort_xml = ""
+    if sort_field:
+        direction = "<SortExpression><Value>=Fields!%s.Value</Value>%s</SortExpression>" % (
+            sort_field, "<Direction>Descending</Direction>" if sort_desc else "")
+        sort_xml = f"<SortExpressions>{direction}</SortExpressions>"
+    return f"""<Tablix Name="{name}">
+  <TablixBody>
+    <TablixColumns>{cols_xml}</TablixColumns>
+    <TablixRows>
+      <TablixRow><Height>0.22in</Height><TablixCells>{''.join(hdr_cells)}</TablixCells></TablixRow>
+      <TablixRow><Height>0.2in</Height><TablixCells>{''.join(det_cells)}</TablixCells></TablixRow>
+    </TablixRows>
+  </TablixBody>
+  <TablixColumnHierarchy><TablixMembers>{'<TablixMember />' * len(columns)}</TablixMembers></TablixColumnHierarchy>
+  <TablixRowHierarchy><TablixMembers>
+    <TablixMember><KeepWithGroup>After</KeepWithGroup></TablixMember>
+    <TablixMember><Group Name="{name}_Details" />{sort_xml}</TablixMember>
+  </TablixMembers></TablixRowHierarchy>
+  <DataSetName>{dataset}</DataSetName>
+  <NoRowsMessage>No rows for the selected Project parameter.</NoRowsMessage>
+  <Top>{top}in</Top><Left>{left}in</Left><Height>{design_h}in</Height><Width>{width:.3f}in</Width>
+  <Style><Border><Style>None</Style></Border></Style>
+</Tablix>"""
+
+
+def risk_gauge(left, top, width, height):
+    """Radial severity gauge: avg open-risk score on 0-25 with PMI band colors
+    (LOW <6, MODERATE <12, HIGH <20, CRITICAL <=25) and needle pointer.
+    Full explicit geometry - gauges with bare defaults render empty."""
+    bands = [("BandLow", 0, 6, DECK_GREEN), ("BandModerate", 6, 12, DECK_YELLOW),
+             ("BandHigh", 12, 20, DECK_RED), ("BandCritical", 20, 25, DECK_DARKRED)]
+    ranges = "".join(
+        f"""<ScaleRange Name="{n}">
+              <DistanceFromScale>10</DistanceFromScale>
+              <StartValue><Value>{a}</Value></StartValue>
+              <EndValue><Value>{b}</Value></EndValue>
+              <StartWidth>14</StartWidth><EndWidth>14</EndWidth>
+              <BackgroundGradientType>None</BackgroundGradientType>
+              <Style><Border><Style>None</Style></Border><BackgroundColor>{c}</BackgroundColor></Style>
+            </ScaleRange>""" for n, a, b, c in bands)
+    return f"""<GaugePanel Name="RiskGauge">
+  <RadialGauges>
+    <RadialGauge Name="RiskRadial">
+      <GaugeScales>
+        <RadialScale Name="RiskScale">
+          <GaugePointers>
+            <RadialPointer Name="RiskPointer">
+              <GaugeInputValue><Value>=First(Fields!AvgScore.Value)</Value></GaugeInputValue>
+              <Type>Needle</Type>
+              <NeedleStyle>Triangular</NeedleStyle>
+              <Placement>Cross</Placement>
+              <Width>4</Width>
+              <DistanceFromScale>-15</DistanceFromScale>
+              <Style><Border><Color>#404040</Color><Style>Solid</Style></Border><BackgroundColor>{INK}</BackgroundColor></Style>
+            </RadialPointer>
+          </GaugePointers>
+          <ScaleRanges>{ranges}</ScaleRanges>
+          <GaugeMajorTickMarks>
+            <Interval>5</Interval>
+            <Placement>Inside</Placement>
+            <Length>8</Length>
+            <Width>2</Width>
+            <Shape>Rectangle</Shape>
+            <Style><Border><Style>None</Style></Border><BackgroundColor>#666666</BackgroundColor></Style>
+          </GaugeMajorTickMarks>
+          <ScaleLabels>
+            <Placement>Inside</Placement>
+            <FontAngle>0</FontAngle>
+            <Style><Border><Style>None</Style></Border><FontFamily>{FONT}</FontFamily><FontSize>6pt</FontSize><Color>{INK}</Color></Style>
+          </ScaleLabels>
+          <MaximumValue><Value>25</Value></MaximumValue>
+          <MinimumValue><Value>0</Value></MinimumValue>
+          <Interval>5</Interval>
+          <Radius>38</Radius>
+          <StartAngle>30</StartAngle>
+          <SweepAngle>300</SweepAngle>
+          <Width>5</Width>
+          <Style><Border><Style>None</Style></Border><BackgroundColor>#B0B0B0</BackgroundColor></Style>
+        </RadialScale>
+      </GaugeScales>
+      <BackFrame>
+        <FrameStyle>None</FrameStyle>
+        <FrameShape>Circular</FrameShape>
+        <FrameBackground><Style><Border><Style>None</Style></Border></Style></FrameBackground>
+      </BackFrame>
+      <PivotX>50</PivotX>
+      <PivotY>50</PivotY>
+      <ClipContent>true</ClipContent>
+    </RadialGauge>
+  </RadialGauges>
+  <DataSetName>DsGauge</DataSetName>
+  <Top>{top}in</Top><Left>{left}in</Left><Height>{height}in</Height><Width>{width}in</Width>
+  <Style><Border><Color>{GRID}</Color><Style>Solid</Style></Border></Style>
+</GaugePanel>"""
+
+
+def severity_bar(left, top, width, height):
+    """Gauge replacement that cannot fail to render: a 25-segment band bar
+    (PMI colors) with a needle marker row driven by Avg Risk Score (Open)."""
+    n = 25
+    seg = width / n
+    def band(i):
+        if i < 6: return DECK_GREEN
+        if i < 12: return DECK_YELLOW
+        if i < 20: return DECK_RED
+        return DECK_DARKRED
+    cols = "".join(f"<TablixColumn><Width>{seg:.4f}in</Width></TablixColumn>" for _ in range(n))
+    marker_cells = "".join(
+        f"""<TablixCell><CellContents><Textbox Name="sevm{i}">
+          <CanGrow>false</CanGrow>
+          <Paragraphs>{para(textrun(
+              f'=IIF(Floor(First(Fields!AvgScore.Value)+0.5)={i},"▼","")',
+              size="6pt", bold=True, color=INK), "Center")}</Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell>""" for i in range(n))
+    band_cells = "".join(
+        f"""<TablixCell><CellContents><Textbox Name="sevb{i}">
+          <CanGrow>false</CanGrow>
+          <Paragraphs>{para(textrun(" ", size="2pt"), "Center")}</Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>{band(i)}</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell>""" for i in range(n))
+    return f"""<Tablix Name="SeverityBar">
+  <TablixBody>
+    <TablixColumns>{cols}</TablixColumns>
+    <TablixRows>
+      <TablixRow><Height>0.12in</Height><TablixCells>{marker_cells}</TablixCells></TablixRow>
+      <TablixRow><Height>0.13in</Height><TablixCells>{band_cells}</TablixCells></TablixRow>
+    </TablixRows>
+  </TablixBody>
+  <TablixColumnHierarchy><TablixMembers>{'<TablixMember />' * n}</TablixMembers></TablixColumnHierarchy>
+  <TablixRowHierarchy><TablixMembers><TablixMember /><TablixMember /></TablixMembers></TablixRowHierarchy>
+  <DataSetName>DsGauge</DataSetName>
+  <Top>{top}in</Top><Left>{left}in</Left><Height>0.25in</Height><Width>{width}in</Width>
+  <Style><Border><Style>None</Style></Border></Style>
+</Tablix>"""
+
+def dataset_xml(name, d):
+    qp = ("""<QueryParameters><QueryParameter Name="ProjectCode">
+            <Value>=Parameters!ProjectCode.Value</Value>
+          </QueryParameter></QueryParameters>""" if d["params"] else "")
+    # DAX flattened rowsets name aliased columns "[Alias]" (brackets included)
+    # - verified against Theragen production .rdls. Binding bare names leaves
+    # every field null: blank body and a disabled Required parameter.
+    types = {
+        "DueDate": "DateTime", "StartDate": "DateTime", "TargetDate": "DateTime",
+        "CompletedDate": "DateTime", "Score": "Int64", "KASort": "Int64",
+        "PctComplete": "Decimal", "AvgScore": "Decimal",
+    }
+    fields = "".join(
+        f'<Field Name="{f}"><rd:TypeName>System.{types.get(f, "String")}</rd:TypeName>'
+        f'<DataField>[{f}]</DataField></Field>' for f in d["fields"])
+    return f"""<DataSet Name="{name}">
+  <Query>
+    <DataSourceName>TheragenModel</DataSourceName>
+    {qp}
+    <CommandText>{escape(d["dax"])}</CommandText>
+  </Query>
+  <Fields>{fields}</Fields>
+</DataSet>"""
+
+
+def build():
+    # Inside a tablix, plain Fields! references resolve against the region's
+    # dataset. Standalone textboxes in a multi-dataset report MUST use a
+    # dataset-scoped aggregate or the service rejects the .rdl with
+    # rsFieldReferenceAmbiguous.
+    F = "=Fields!{}.Value".format
+    FH = '=First(Fields!{}.Value, "DsHeader")'.format
+    body_items = []
+
+    # --- Row A: logo + verify the project (top 0 .. 0.55) ------------------
+    body_items.append(
+        '<Image Name="LogoImg"><Source>Embedded</Source><Value>TheragenLogo</Value>'
+        '<Sizing>FitProportional</Sizing>'
+        '<Top>0.05in</Top><Left>0in</Left><Height>0.4in</Height><Width>1.5in</Width>'
+        '<Style><Border><Style>None</Style></Border></Style></Image>')
+    body_items.append(label_value_box("HdrName", "THERAGEN PROJECT NAME",
+                                      FH("ProjectName"), 1.58, 0, 2.7, 0.5, vsize="11pt"))
+    body_items.append(label_value_box("HdrPM", "PROJECT MANAGER",
+                                      FH("ProjectManager"), 4.36, 0, 1.6, 0.5))
+    body_items.append(label_value_box("HdrTarget", "TARGET DATE COMPLETION",
+                                      FH("TargetDate"), 6.04, 0, 1.45, 0.5))
+    body_items.append(label_value_box("HdrPhase", "CURRENT PHASE",
+                                      FH("Phase"), 7.57, 0, 1.3, 0.5))
+    body_items.append(label_value_box("HdrDate", "DATE OF REPORT",
+                                      FH("ReportDate"), 8.95, 0, 1.35, 0.5))
+
+    # --- Row B: main status / description / value / gauge / health (0.62..2.07)
+    # Deck style: big colored letter on white, not white-on-color.
+    runs = (para(textrun("MAIN STATUS", size="6.5pt", bold=True, color=TEAL), "Center") +
+            para(textrun(FH("MainStatus"), size="44pt", bold=True, color=FH("StatusColor")), "Center"))
+    body_items.append(textbox("MainStatus", runs, 0, 0.62, 1.2, 2.02,
+                              border=GRID, valign="Middle", grow=False))
+    runs = (para(textrun("PROJECT DESCRIPTION", size="6.5pt", bold=True, color=TEAL)) +
+            para(textrun(FH("Description"), size="8pt")))
+    body_items.append(textbox("Descr", runs, 1.28, 0.62, 2.5, 2.02, grow=False))
+    runs = (para(textrun("BUSINESS VALUE", size="6.5pt", bold=True, color=TEAL)) +
+            para(textrun(FH("BusinessValue"), size="8pt")))
+    body_items.append(textbox("Value", runs, 3.86, 0.62, 2.5, 2.02, grow=False))
+    # Severity gauge block, locked: a single Rectangle container holds the
+    # title, band bar, scale labels, score and rating, so neighboring tables
+    # can never push its pieces apart (child coordinates are container-local).
+    gauge_kids = []
+    gauge_kids.append(textbox("GaugeTitle",
+                              para(textrun("AVG RISK SCORE", size="6.5pt", bold=True, color=TEAL), "Center"),
+                              0.05, 0.06, 1.5, 0.14, border="", bg="none", grow=False))
+    gauge_kids.append(severity_bar(0.06, 0.24, 1.48, 0.25))
+    for frac, lab in [(0.0, "0"), (6/25, "6"), (12/25, "12"), (20/25, "20"), (0.89, "25")]:
+        gauge_kids.append(textbox(f"sevlab{lab}",
+                                  para(textrun(lab, size="5.5pt", color="#605E5C"), "Center"),
+                                  round(0.06 + frac * 1.33, 3), 0.51, 0.15, 0.1,
+                                  border="", bg="none", grow=False))
+    gauge_kids.append(textbox("AvgScoreBox",
+                              para(textrun('=Format(First(Fields!AvgScore.Value, "DsGauge"), "0.0") &amp; "  of 25"',
+                                           size="13pt", bold=True,
+                                           color='=First(Fields!RatingColor.Value, "DsGauge")'), "Center"),
+                              0.06, 0.66, 1.48, 0.3, border="", bg="none", valign="Middle", grow=False))
+    gauge_kids.append(textbox("RatingTitle",
+                              para(textrun("RISK RATING", size="6.5pt", bold=True, color=TEAL), "Center"),
+                              0.05, 1.18, 1.5, 0.14, border="", bg="none", grow=False))
+    gauge_kids.append(textbox("RatingValue",
+                              para(textrun('=First(Fields!RiskRating.Value, "DsGauge")',
+                                           size="13pt", bold=True,
+                                           color='=First(Fields!RatingColor.Value, "DsGauge")'), "Center"),
+                              0.06, 1.36, 1.48, 0.3, border="", bg="none", valign="Middle", grow=False))
+    body_items.append(
+        '<Rectangle Name="GaugeCard"><ReportItems>' + "".join(gauge_kids) +
+        '</ReportItems><KeepTogether>true</KeepTogether>'
+        '<Top>0.62in</Top><Left>6.44in</Left><Height>2.02in</Height><Width>1.6in</Width>'
+        f'<Style><Border><Color>{GRID}</Color><Style>Solid</Style></Border>'
+        '<BackgroundColor>#FFFFFF</BackgroundColor></Style></Rectangle>')
+    body_items.append(tablix("HealthCheck", "DsHealth", [
+        ("Health Check", F("KnowledgeArea"), 1.2, "Left"),
+        ("Status", F("AreaStatus"), 0.8, "Center", None, AREA_COLOR, True),
+    ], 8.12, 0.62, 2.18, design_h=2.02))
+
+    # --- Row C: RAID (2.2 ..) ---------------------------------------------
+    body_items.append(tablix("Raid", "DsRaid", [
+        ("Type", F("RaidType"), 0.7, "Left"),
+        ("Updates / Key Issues / Risks / Decisions / Dependencies",
+         F("Description"), 4.6, "Left"),
+        ("Owner", F("Owner"), 1.3, "Left"),
+        ("Target Date", F("DueDate"), 1.0, "Center", "yyyy-MM-dd"),
+        ("Score", F("Score"), 0.6, "Center"),
+        ("Severity", F("Severity"), 0.9, "Center", None, SEV_COLOR, True),
+        ("Status", F("RiskStatus"), 1.2, "Center"),
+    ], 0, 2.74, 10.3, sort_field="Score", sort_desc=True))
+
+    # --- Row D: key project areas -------------------------------------------
+    body_items.append(tablix("Workstreams", "DsWorkstreams", [
+        ("Key Project Areas", F("Deliverable"), 4.0, "Left"),
+        ("Start Date", F("StartDate"), 1.4, "Center", "yyyy-MM-dd"),
+        ("Target Implementation Date", F("TargetDate"), 1.8, "Center", "yyyy-MM-dd"),
+        ("% Complete", F("PctComplete"), 1.3, "Center", "0.0%"),
+        ("Current Status", F("WsStatus"), 1.8, "Center", None, WS_COLOR, True),
+    ], 0, 3.5, 10.3, sort_field="StartDate"))
+
+    # --- Row E: accomplishments + next steps ---------------------------------
+    body_items.append(tablix("Accomplishments", "DsAccomplishments", [
+        ("Accomplishments", F("Accomplishment"), 3.4, "Left"),
+        ("Source", F("Source"), 0.8, "Center"),
+        ("Completed Date", F("CompletedDate"), 1.0, "Center", "yyyy-MM-dd"),
+    ], 0, 4.6, 5.07, sort_field="CompletedDate", sort_desc=True))
+    body_items.append(tablix("NextSteps", "DsNextSteps", [
+        ("Next Steps", F("NextStep"), 3.2, "Left"),
+        ("Owner", F("Owner"), 1.1, "Left"),
+        ("Target Date", F("TargetDate"), 1.0, "Center", "yyyy-MM-dd"),
+    ], 5.23, 4.6, 5.07, sort_field="TargetDate"))
+
+    # --- Row F: keys (multi-colored runs exactly like the deck) --------------
+    key_runs = "".join([
+        textrun("Key:    ", size="7pt", bold=True, color=TEAL),
+        textrun("G – Green   ", size="7pt", bold=True, color=DECK_GREEN),
+        textrun("Y – Yellow   ", size="7pt", bold=True, color=DECK_KEY_YELLOW),
+        textrun("R – Off Track   ", size="7pt", bold=True, color=DECK_RED),
+        textrun("C – Completed   ", size="7pt", bold=True, color="#000000"),
+        textrun("NS - Not Started   ", size="7pt", bold=True, color="#000000"),
+        textrun("H – Hold   ", size="7pt", bold=True, color=DECK_HOLD),
+        textrun("CN – Cancelled        ", size="7pt", bold=True, color=DECK_CANCEL),
+        textrun("Phase:  Initiating, Planning, Executing, Monitoring, Closing",
+                size="7pt", color="#605E5C"),
+    ])
+    body_items.append(textbox("Keys", para(key_runs), 0, 6.25, 10.3, 0.25, bg=LIGHT))
+
+    datasets = "".join(dataset_xml(n, d) for n, d in DATASETS.items())
+    with open(LOGO, "rb") as f:
+        logo_b64 = base64.b64encode(f.read()).decode("ascii")
+
+    rdl = f"""<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition"
+        xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="TheragenModel">
+      <rd:SecurityType>None</rd:SecurityType>
+      <ConnectionProperties>
+        <DataProvider>PBIDATASET</DataProvider>
+        <ConnectString>Data Source=pbiazure://api.powerbi.com/;Identity Provider="https://login.microsoftonline.com/organizations, https://analysis.windows.net/powerbi/api, {TENANT_ID}";Initial Catalog=sobe_wowvirtualserver-{DATASET_GUID};Integrated Security=ClaimsToken</ConnectString>
+      </ConnectionProperties>
+      <rd:DataSourceID>{uuid.uuid5(uuid.NAMESPACE_URL, 'thg-bi/paginated/datasource')}</rd:DataSourceID>
+      <rd:PowerBIWorkspaceName>{WORKSPACE_NAME}</rd:PowerBIWorkspaceName>
+      <rd:PowerBIDatasetName>{DATASET_NAME}</rd:PowerBIDatasetName>
+    </DataSource>
+  </DataSources>
+  <DataSets>{datasets}</DataSets>
+  <EmbeddedImages>
+    <EmbeddedImage Name="TheragenLogo">
+      <MIMEType>image/jpeg</MIMEType>
+      <ImageData>{logo_b64}</ImageData>
+    </EmbeddedImage>
+  </EmbeddedImages>
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <ReportItems>
+          <Rectangle Name="Frame">
+            <ReportItems>{''.join(body_items)}</ReportItems>
+            <KeepTogether>true</KeepTogether>
+            <Top>0in</Top><Left>0in</Left><Height>6.6in</Height><Width>10.3in</Width>
+            <Style>
+              <Border><Color>{TEAL}</Color><Style>Solid</Style><Width>2pt</Width></Border>
+              <BackgroundColor>#F2F7F6</BackgroundColor>
+            </Style>
+          </Rectangle>
+        </ReportItems>
+        <Height>6.65in</Height>
+        <Style />
+      </Body>
+      <Width>10.3in</Width>
+      <Page>
+        <PageHeight>8.5in</PageHeight>
+        <PageWidth>11in</PageWidth>
+        <LeftMargin>0.35in</LeftMargin>
+        <RightMargin>0.35in</RightMargin>
+        <TopMargin>0.35in</TopMargin>
+        <BottomMargin>0.35in</BottomMargin>
+        <Style />
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="ProjectCode">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DsProjectList</DataSetName>
+          <ValueField>ProjectCode</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Project</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>DsProjectList</DataSetName>
+          <ValueField>ProjectCode</ValueField>
+          <LabelField>ProjectName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+    </ReportParameter>
+  </ReportParameters>
+  <ReportParametersLayout>
+    <GridLayoutDefinition>
+      <NumberOfColumns>4</NumberOfColumns>
+      <NumberOfRows>1</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>ProjectCode</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
+    </GridLayoutDefinition>
+  </ReportParametersLayout>
+  <rd:ReportUnitType>Inch</rd:ReportUnitType>
+  <rd:ReportID>{uuid.uuid5(uuid.NAMESPACE_URL, 'thg-bi/paginated/status-report')}</rd:ReportID>
+</Report>"""
+    os.makedirs(os.path.dirname(OUT), exist_ok=True)
+    with open(OUT, "w", encoding="utf-8") as f:
+        f.write(rdl)
+    print(os.path.relpath(OUT, ROOT))
+
+
+if __name__ == "__main__":
+    build()

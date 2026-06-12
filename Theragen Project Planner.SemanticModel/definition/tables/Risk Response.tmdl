@@ -1,0 +1,94 @@
+/// Fact - risk response actions (PMBOK P15).
+table 'Risk Response'
+	lineageTag: fee95c47-50ff-531e-b5e2-f9d6cf903251
+
+	column 'Response ID'
+		dataType: string
+		isHidden
+		lineageTag: ed0beb17-d884-522e-84e2-48fab17befec
+		summarizeBy: none
+		sourceColumn: Response ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Risk ID'
+		dataType: string
+		isHidden
+		lineageTag: 63d9eebd-bd2d-56b6-97c8-9ab0e0d825c4
+		summarizeBy: none
+		sourceColumn: Risk ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project Code'
+		dataType: string
+		lineageTag: 04161071-5ae3-5f93-bba0-3c10e8dede5f
+		summarizeBy: none
+		sourceColumn: Project Code
+
+		annotation SummarizationSetBy = User
+
+	column 'Risk Code'
+		dataType: string
+		lineageTag: 4376860b-14bb-5234-a798-a9868404542b
+		summarizeBy: none
+		sourceColumn: Risk Code
+
+		annotation SummarizationSetBy = User
+
+	column 'Action Type'
+		dataType: string
+		lineageTag: 4488730a-715d-517f-a257-054f982453bf
+		summarizeBy: none
+		sourceColumn: Action Type
+
+		annotation SummarizationSetBy = User
+
+	column 'Action Description'
+		dataType: string
+		lineageTag: ceaaf7ed-cec6-58f2-b1cb-c2667a5eb6df
+		summarizeBy: none
+		sourceColumn: Action Description
+
+		annotation SummarizationSetBy = User
+
+	column 'Action Owner'
+		dataType: string
+		lineageTag: 3620e144-45a2-5230-9876-e3ea174f079c
+		summarizeBy: none
+		sourceColumn: Action Owner
+
+		annotation SummarizationSetBy = User
+
+	column 'Action Due Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: d2d2410a-2b02-5254-84d5-083782fe7f91
+		summarizeBy: none
+		sourceColumn: Action Due Date
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Action Status'
+		dataType: string
+		lineageTag: d4aa0f7f-cc11-5ea9-bc63-865c09f80294
+		summarizeBy: none
+		sourceColumn: Action Status
+
+		annotation SummarizationSetBy = User
+
+	partition 'Risk Response' = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "risk_response"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"response_id", "risk_id", "project_code", "risk_code", "action_type", "description", "owner_name", "due_date", "status"}),
+				    Renamed = Table.RenameColumns(Selected, {{"response_id", "Response ID"}, {"risk_id", "Risk ID"}, {"project_code", "Project Code"}, {"risk_code", "Risk Code"}, {"action_type", "Action Type"}, {"description", "Action Description"}, {"owner_name", "Action Owner"}, {"due_date", "Action Due Date"}, {"status", "Action Status"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table
+

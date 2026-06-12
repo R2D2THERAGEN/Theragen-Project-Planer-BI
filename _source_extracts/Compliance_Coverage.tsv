@@ -1,0 +1,18 @@
+THERAGEN  |  Compliance_Coverage
+Which entities/fields support which compliance frames.
+—
+Compliance reference	Schema coverage	How requirement is met
+FDA 21 CFR Part 11 §11.10 (controls)	DM.audit_trail_entry; DM.document_approval; DM.access_grant; DM.document_version (immutable history)	Audit trail (a), access controls (d), unique e-signatures (j-k)
+FDA 21 CFR Part 11 §11.50 (signature manifestations)	DM.document_approval.signature_meaning; DM.training_attestation.attestation_meaning; PMBOK.approval.signature_meaning	Every signature carries explicit meaning (Approval / Review / Authorship / Training).
+FDA 21 CFR Part 11 §11.10(i) (training)	DM.training_assignment; DM.comprehension_check; DM.training_attestation; DM.training_curriculum	Personnel performing controlled work have documented training and competency.
+HIPAA Privacy Rule	DM.document.classification ('PHI – HIPAA'); DM.intake_submission.phi_flag; DM.access_grant	PHI records segregated and access-controlled; intake screening flags PHI early.
+HIPAA Security Rule	DM.audit_trail_entry; DM.access_grant; DM.document.storage_system ('HIPAA-controlled store')	Access logging, encryption-at-rest indicated by storage system, audit trail integrity.
+HIPAA §164.530(j) retention	DM.records_retention_policy (PHI-containing record class) with 6-yr minimum	Six-year minimum enforced via retention policy lookup.
+ISO 13485 §4.2.4 Control of Documents	DM.document; DM.document_version; DM.document_review; DM.document_approval; DM.document_retirement	Complete lifecycle from draft through retirement under controlled status transitions.
+ISO 13485 §4.2.5 Control of Records	DM.records_retention_policy; DM.records_disposition; DM.audit_evidence_pack	Retention rules, disposition tracking, audit-pack assembly.
+ISO 13485 §6.2 Competence	DM.training_curriculum; DM.training_assignment; DM.comprehension_check; DM.training_attestation	Documented competence requirements per role.
+ISO 13485 §7.3.9 Control of Design Changes	DM.change_request_gov; DM.change_assessment_gov; PMBOK.change_request; PMBOK.change_impact_assessment	Design changes go through CR with impact assessment and verification.
+PMBOK 7th Edition — Performance Domains	PMBOK.project (approach, lifecycle_phase); PMBOK.project_team_member; PMBOK.stakeholder; PMBOK.* (all KAs)	All eight performance domains have entity coverage.
+PMBOK 7th Edition — Tailoring	PMBOK.project_charter.business_case (records tailoring rationale); PMBOK.project.approach	Approach and tailoring rationale captured explicitly.
+SOC 2 — Logical & Physical Access Controls	DM.access_grant; DM.audit_trail_entry; DM.document.classification	Access reviews and audit-trail integrity.
+GxP — Data Integrity	DM.audit_trail_entry (append-only); DM.document_version (immutable); DM.records_retention_policy	ALCOA+ principles supported by audit trail and immutable version history.

@@ -1,0 +1,180 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "c787d2eca33f57d2b6cc",
+  "position": {
+    "x": 8,
+    "y": 404,
+    "z": 1000,
+    "width": 1264,
+    "height": 304
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Change Request"
+                    }
+                  },
+                  "Property": "CR Code"
+                }
+              },
+              "queryRef": "Change Request.CR Code"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Change Request"
+                    }
+                  },
+                  "Property": "Project Code"
+                }
+              },
+              "queryRef": "Change Request.Project Code"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Change Request"
+                    }
+                  },
+                  "Property": "Change Type"
+                }
+              },
+              "queryRef": "Change Request.Change Type"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Change Request"
+                    }
+                  },
+                  "Property": "CR Class"
+                }
+              },
+              "queryRef": "Change Request.CR Class"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Change Request"
+                    }
+                  },
+                  "Property": "Requested Date"
+                }
+              },
+              "queryRef": "Change Request.Requested Date"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Change Request"
+                    }
+                  },
+                  "Property": "Decision"
+                }
+              },
+              "queryRef": "Change Request.Decision"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Change Request"
+                    }
+                  },
+                  "Property": "Cycle Time Days"
+                }
+              },
+              "queryRef": "Change Request.Cycle Time Days"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Change Request"
+                    }
+                  },
+                  "Property": "Cost Impact"
+                }
+              },
+              "queryRef": "Change Request.Cost Impact"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Change Request"
+                    }
+                  },
+                  "Property": "Schedule Impact Days"
+                }
+              },
+              "queryRef": "Change Request.Schedule Impact Days"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Change Request"
+                  }
+                },
+                "Property": "Requested Date"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Change log'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

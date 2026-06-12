@@ -1,0 +1,59 @@
+/// Fact - per-knowledge-area health entries within each status report (PMBOK P24).
+table 'Status Report Area'
+	lineageTag: d3978997-ade8-5607-9dc2-c1c6bda75037
+
+	column 'Area ID'
+		dataType: string
+		isHidden
+		lineageTag: 493e11b0-9247-5126-9b41-b4bfabbd1bb2
+		summarizeBy: none
+		sourceColumn: Area ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Report ID'
+		dataType: string
+		isHidden
+		lineageTag: 750938ca-5500-5c81-b8f4-f31056997e68
+		summarizeBy: none
+		sourceColumn: Report ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project Code'
+		dataType: string
+		lineageTag: eb852233-6b5d-53b1-995e-e1131803b0f2
+		summarizeBy: none
+		sourceColumn: Project Code
+
+		annotation SummarizationSetBy = User
+
+	column 'Knowledge Area'
+		dataType: string
+		lineageTag: 220c3e95-4583-5d30-b8ce-1e7a08d301d0
+		summarizeBy: none
+		sourceColumn: Knowledge Area
+
+		annotation SummarizationSetBy = User
+
+	column 'Area Status'
+		dataType: string
+		lineageTag: 7a4e1cd4-c597-54c1-984f-be8ba4409ae8
+		summarizeBy: none
+		sourceColumn: Area Status
+
+		annotation SummarizationSetBy = User
+
+	partition 'Status Report Area' = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "status_report_area"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"area_id", "report_id", "project_code", "knowledge_area", "status"}),
+				    Renamed = Table.RenameColumns(Selected, {{"area_id", "Area ID"}, {"report_id", "Report ID"}, {"project_code", "Project Code"}, {"knowledge_area", "Knowledge Area"}, {"status", "Area Status"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table
+

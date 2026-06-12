@@ -1,0 +1,125 @@
+/// Fact - periodic status reports (PMBOK P23). Overall G/Y/R health and trend per period.
+table 'Status Report'
+	lineageTag: 83c4f3e2-ab15-570d-be74-0e02121abc7d
+
+	column 'Report ID'
+		dataType: string
+		isHidden
+		lineageTag: 92e4ed64-d069-5afd-adcd-35bb6d99d5c8
+		summarizeBy: none
+		sourceColumn: Report ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project ID'
+		dataType: string
+		isHidden
+		lineageTag: 188d630f-0b8f-5955-8120-61b807a9766f
+		summarizeBy: none
+		sourceColumn: Project ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project Code'
+		dataType: string
+		lineageTag: 1386c874-518f-5efc-84d3-19bd10f9f006
+		summarizeBy: none
+		sourceColumn: Project Code
+
+		annotation SummarizationSetBy = User
+
+	column 'Report Number'
+		dataType: int64
+		formatString: #,0
+		lineageTag: 2d64f0fa-2cd3-58aa-ba5a-92a47f9e98ea
+		summarizeBy: none
+		sourceColumn: Report Number
+
+		annotation SummarizationSetBy = User
+
+	column 'Period Start'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 1de1a8af-7acb-5a15-bf99-f81cdb42c426
+		summarizeBy: none
+		sourceColumn: Period Start
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Period End'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: f683dd05-b53c-5209-8b3b-e520b2171249
+		summarizeBy: none
+		sourceColumn: Period End
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Overall Status'
+		dataType: string
+		lineageTag: cbac3a55-f9e6-5e4a-86b3-5aa2cee12c8c
+		summarizeBy: none
+		sourceColumn: Overall Status
+
+		annotation SummarizationSetBy = User
+
+	column Trend
+		dataType: string
+		lineageTag: cb4433e0-b732-5087-9e0b-19687d3f3d9a
+		summarizeBy: none
+		sourceColumn: Trend
+
+		annotation SummarizationSetBy = User
+
+	column 'Executive Summary'
+		dataType: string
+		lineageTag: 6b74483e-7dd9-572e-abda-cddb03303a2f
+		summarizeBy: none
+		sourceColumn: Executive Summary
+
+		annotation SummarizationSetBy = User
+
+	column 'Decisions Needed'
+		dataType: string
+		lineageTag: 8f6f23b4-fcfc-5a92-bb27-8dda32fbf98c
+		summarizeBy: none
+		sourceColumn: Decisions Needed
+
+		annotation SummarizationSetBy = User
+
+	column 'Submitted By'
+		dataType: string
+		lineageTag: 29fa6f88-34b6-5972-ae4b-89c31cede74f
+		summarizeBy: none
+		sourceColumn: Submitted By
+
+		annotation SummarizationSetBy = User
+
+	column 'Submitted Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 6c7f7b96-1726-5b33-961d-d3d9397f6161
+		summarizeBy: none
+		sourceColumn: Submitted Date
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition 'Status Report' = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "status_report"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"report_id", "project_id", "project_code", "report_number", "period_start", "period_end", "overall_status", "trend", "executive_summary", "decisions_needed", "submitted_by_name", "submitted_at"}),
+				    Renamed = Table.RenameColumns(Selected, {{"report_id", "Report ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"report_number", "Report Number"}, {"period_start", "Period Start"}, {"period_end", "Period End"}, {"overall_status", "Overall Status"}, {"trend", "Trend"}, {"executive_summary", "Executive Summary"}, {"decisions_needed", "Decisions Needed"}, {"submitted_by_name", "Submitted By"}, {"submitted_at", "Submitted Date"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,19 @@
+THERAGEN  |  Glossary
+Terms used throughout the workbook.
+—
+Term	Definition
+Artifact	Any document, register, workbook, or record produced under the Theragen documentation standard.
+Baseline	An approved version of an artifact; subsequent changes require a Change Request.
+BIGSERIAL	PostgreSQL auto-incrementing 8-byte integer used for monotonic IDs (audit trails).
+CAPA	Corrective and Preventive Action — formal record opened in response to deviation or finding.
+Doc ID	Theragen-controlled human-readable identifier (e.g. THG-OPS-CHR-014).
+ENUM	PostgreSQL enumerated type. Values listed on the Enumerations sheets.
+Frame	A compliance frame — a regulation or standard that governs records.
+Intake ID	INT-YYYY-NNNN — issued by triage; propagates downstream into every artifact.
+INET	PostgreSQL type for IP addresses, used in audit-trail and access records.
+JSONB	PostgreSQL binary JSON type. Used for multi-select stores and audit before/after states.
+PHI	Protected Health Information under HIPAA.
+RACI	Responsible, Accountable, Consulted, Informed.
+Soft delete	Marking a row inactive (e.g. via active=FALSE) rather than DELETE'ing it. Preferred for audit-bearing entities.
+UUID	Universally unique identifier (v4). Used as surrogate primary key throughout.
+WBS	Work Breakdown Structure — hierarchical decomposition of project work.

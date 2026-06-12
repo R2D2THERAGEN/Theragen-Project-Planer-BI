@@ -1,0 +1,908 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition"
+        xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="TheragenModel">
+      <rd:SecurityType>None</rd:SecurityType>
+      <ConnectionProperties>
+        <DataProvider>PBIDATASET</DataProvider>
+        <ConnectString>Data Source=pbiazure://api.powerbi.com/;Identity Provider="https://login.microsoftonline.com/organizations, https://analysis.windows.net/powerbi/api, f0b72488-7082-488a-a7e8-eada97bd842d";Initial Catalog=sobe_wowvirtualserver-e3e1f151-0f7d-4bbe-8428-d74dcfa640d4;Integrated Security=ClaimsToken</ConnectString>
+      </ConnectionProperties>
+      <rd:DataSourceID>493bf767-e040-579e-97ca-1cfe78fd24eb</rd:DataSourceID>
+      <rd:PowerBIWorkspaceName>Playground</rd:PowerBIWorkspaceName>
+      <rd:PowerBIDatasetName>Theragen Project Planner</rd:PowerBIDatasetName>
+    </DataSource>
+  </DataSources>
+  <DataSets><DataSet Name="DsProjectList">
+  <Query>
+    <DataSourceName>TheragenModel</DataSourceName>
+    
+    <CommandText>EVALUATE SELECTCOLUMNS('Project', "ProjectCode", 'Project'[Project Code], "ProjectName", 'Project'[Project Name]) ORDER BY [ProjectName]</CommandText>
+  </Query>
+  <Fields><Field Name="ProjectCode"><rd:TypeName>System.String</rd:TypeName><DataField>[ProjectCode]</DataField></Field><Field Name="ProjectName"><rd:TypeName>System.String</rd:TypeName><DataField>[ProjectName]</DataField></Field></Fields>
+</DataSet><DataSet Name="DsHeader">
+  <Query>
+    <DataSourceName>TheragenModel</DataSourceName>
+    <QueryParameters><QueryParameter Name="ProjectCode">
+            <Value>=Parameters!ProjectCode.Value</Value>
+          </QueryParameter></QueryParameters>
+    <CommandText>EVALUATE CALCULATETABLE(ROW("ProjectName", SELECTEDVALUE('Project'[Project Name]), "ProjectManager", [Project Manager (Selected)], "TargetDate", [Target Date Completion], "Phase", [Current Phase], "MainStatus", [Main Status], "StatusColor", [Status Color], "Description", [Project Description (Selected)], "BusinessValue", [Business Value (Selected)], "ReportDate", [Report Date], "DecisionsNeeded", [Decisions Needed (Latest)]), TREATAS({@ProjectCode}, 'Project'[Project Code]))</CommandText>
+  </Query>
+  <Fields><Field Name="ProjectName"><rd:TypeName>System.String</rd:TypeName><DataField>[ProjectName]</DataField></Field><Field Name="ProjectManager"><rd:TypeName>System.String</rd:TypeName><DataField>[ProjectManager]</DataField></Field><Field Name="TargetDate"><rd:TypeName>System.DateTime</rd:TypeName><DataField>[TargetDate]</DataField></Field><Field Name="Phase"><rd:TypeName>System.String</rd:TypeName><DataField>[Phase]</DataField></Field><Field Name="MainStatus"><rd:TypeName>System.String</rd:TypeName><DataField>[MainStatus]</DataField></Field><Field Name="StatusColor"><rd:TypeName>System.String</rd:TypeName><DataField>[StatusColor]</DataField></Field><Field Name="Description"><rd:TypeName>System.String</rd:TypeName><DataField>[Description]</DataField></Field><Field Name="BusinessValue"><rd:TypeName>System.String</rd:TypeName><DataField>[BusinessValue]</DataField></Field><Field Name="ReportDate"><rd:TypeName>System.String</rd:TypeName><DataField>[ReportDate]</DataField></Field><Field Name="DecisionsNeeded"><rd:TypeName>System.String</rd:TypeName><DataField>[DecisionsNeeded]</DataField></Field></Fields>
+</DataSet><DataSet Name="DsHealth">
+  <Query>
+    <DataSourceName>TheragenModel</DataSourceName>
+    <QueryParameters><QueryParameter Name="ProjectCode">
+            <Value>=Parameters!ProjectCode.Value</Value>
+          </QueryParameter></QueryParameters>
+    <CommandText>EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Knowledge Area'[Knowledge Area], 'Knowledge Area'[KA Sort], TREATAS({@ProjectCode}, 'Project'[Project Code]), "AreaStatusM", [Latest Area Status]), "KnowledgeArea", 'Knowledge Area'[Knowledge Area], "KASort", 'Knowledge Area'[KA Sort], "AreaStatus", [AreaStatusM]) ORDER BY [KASort]</CommandText>
+  </Query>
+  <Fields><Field Name="KnowledgeArea"><rd:TypeName>System.String</rd:TypeName><DataField>[KnowledgeArea]</DataField></Field><Field Name="KASort"><rd:TypeName>System.Int64</rd:TypeName><DataField>[KASort]</DataField></Field><Field Name="AreaStatus"><rd:TypeName>System.String</rd:TypeName><DataField>[AreaStatus]</DataField></Field></Fields>
+</DataSet><DataSet Name="DsRaid">
+  <Query>
+    <DataSourceName>TheragenModel</DataSourceName>
+    <QueryParameters><QueryParameter Name="ProjectCode">
+            <Value>=Parameters!ProjectCode.Value</Value>
+          </QueryParameter></QueryParameters>
+    <CommandText>EVALUATE SELECTCOLUMNS(CALCULATETABLE('Risk', TREATAS({@ProjectCode}, 'Project'[Project Code])), "RaidType", 'Risk'[RAID Type], "Description", 'Risk'[Risk Description], "Owner", 'Risk'[Owner], "DueDate", 'Risk'[Due Date], "Score", 'Risk'[Risk Score], "Severity", 'Risk'[Severity], "RiskStatus", 'Risk'[Risk Status]) ORDER BY [Score] DESC</CommandText>
+  </Query>
+  <Fields><Field Name="RaidType"><rd:TypeName>System.String</rd:TypeName><DataField>[RaidType]</DataField></Field><Field Name="Description"><rd:TypeName>System.String</rd:TypeName><DataField>[Description]</DataField></Field><Field Name="Owner"><rd:TypeName>System.String</rd:TypeName><DataField>[Owner]</DataField></Field><Field Name="DueDate"><rd:TypeName>System.DateTime</rd:TypeName><DataField>[DueDate]</DataField></Field><Field Name="Score"><rd:TypeName>System.Int64</rd:TypeName><DataField>[Score]</DataField></Field><Field Name="Severity"><rd:TypeName>System.String</rd:TypeName><DataField>[Severity]</DataField></Field><Field Name="RiskStatus"><rd:TypeName>System.String</rd:TypeName><DataField>[RiskStatus]</DataField></Field></Fields>
+</DataSet><DataSet Name="DsWorkstreams">
+  <Query>
+    <DataSourceName>TheragenModel</DataSourceName>
+    <QueryParameters><QueryParameter Name="ProjectCode">
+            <Value>=Parameters!ProjectCode.Value</Value>
+          </QueryParameter></QueryParameters>
+    <CommandText>EVALUATE FILTER(SELECTCOLUMNS(SUMMARIZECOLUMNS('WBS Element'[Deliverable], TREATAS({@ProjectCode}, 'Project'[Project Code]), "StartDateM", [Workstream Start], "TargetDateM", [Workstream Target], "PctCompleteM", [Pct Complete (Duration Weighted)], "WsStatusM", [Workstream Status]), "Deliverable", 'WBS Element'[Deliverable], "StartDate", [StartDateM], "TargetDate", [TargetDateM], "PctComplete", [PctCompleteM], "WsStatus", [WsStatusM]), NOT ISBLANK([StartDate])) ORDER BY [StartDate]</CommandText>
+  </Query>
+  <Fields><Field Name="Deliverable"><rd:TypeName>System.String</rd:TypeName><DataField>[Deliverable]</DataField></Field><Field Name="StartDate"><rd:TypeName>System.DateTime</rd:TypeName><DataField>[StartDate]</DataField></Field><Field Name="TargetDate"><rd:TypeName>System.DateTime</rd:TypeName><DataField>[TargetDate]</DataField></Field><Field Name="PctComplete"><rd:TypeName>System.Decimal</rd:TypeName><DataField>[PctComplete]</DataField></Field><Field Name="WsStatus"><rd:TypeName>System.String</rd:TypeName><DataField>[WsStatus]</DataField></Field></Fields>
+</DataSet><DataSet Name="DsAccomplishments">
+  <Query>
+    <DataSourceName>TheragenModel</DataSourceName>
+    <QueryParameters><QueryParameter Name="ProjectCode">
+            <Value>=Parameters!ProjectCode.Value</Value>
+          </QueryParameter></QueryParameters>
+    <CommandText>EVALUATE SELECTCOLUMNS(CALCULATETABLE('Recent Accomplishment', TREATAS({@ProjectCode}, 'Project'[Project Code])), "Accomplishment", 'Recent Accomplishment'[Accomplishment], "Source", 'Recent Accomplishment'[Source], "CompletedDate", 'Recent Accomplishment'[Completed Date]) ORDER BY [CompletedDate] DESC</CommandText>
+  </Query>
+  <Fields><Field Name="Accomplishment"><rd:TypeName>System.String</rd:TypeName><DataField>[Accomplishment]</DataField></Field><Field Name="Source"><rd:TypeName>System.String</rd:TypeName><DataField>[Source]</DataField></Field><Field Name="CompletedDate"><rd:TypeName>System.DateTime</rd:TypeName><DataField>[CompletedDate]</DataField></Field></Fields>
+</DataSet><DataSet Name="DsGauge">
+  <Query>
+    <DataSourceName>TheragenModel</DataSourceName>
+    <QueryParameters><QueryParameter Name="ProjectCode">
+            <Value>=Parameters!ProjectCode.Value</Value>
+          </QueryParameter></QueryParameters>
+    <CommandText>EVALUATE CALCULATETABLE(ROW("AvgScore", [Avg Risk Score (Open)], "RiskRating", [Risk Rating], "RatingColor", [Risk Rating Color]), TREATAS({@ProjectCode}, 'Project'[Project Code]))</CommandText>
+  </Query>
+  <Fields><Field Name="AvgScore"><rd:TypeName>System.Decimal</rd:TypeName><DataField>[AvgScore]</DataField></Field><Field Name="RiskRating"><rd:TypeName>System.String</rd:TypeName><DataField>[RiskRating]</DataField></Field><Field Name="RatingColor"><rd:TypeName>System.String</rd:TypeName><DataField>[RatingColor]</DataField></Field></Fields>
+</DataSet><DataSet Name="DsNextSteps">
+  <Query>
+    <DataSourceName>TheragenModel</DataSourceName>
+    <QueryParameters><QueryParameter Name="ProjectCode">
+            <Value>=Parameters!ProjectCode.Value</Value>
+          </QueryParameter></QueryParameters>
+    <CommandText>EVALUATE SELECTCOLUMNS(CALCULATETABLE('Upcoming Next Step', TREATAS({@ProjectCode}, 'Project'[Project Code])), "NextStep", 'Upcoming Next Step'[Next Step], "Owner", 'Upcoming Next Step'[Owner], "TargetDate", 'Upcoming Next Step'[Target Date]) ORDER BY [TargetDate]</CommandText>
+  </Query>
+  <Fields><Field Name="NextStep"><rd:TypeName>System.String</rd:TypeName><DataField>[NextStep]</DataField></Field><Field Name="Owner"><rd:TypeName>System.String</rd:TypeName><DataField>[Owner]</DataField></Field><Field Name="TargetDate"><rd:TypeName>System.DateTime</rd:TypeName><DataField>[TargetDate]</DataField></Field></Fields>
+</DataSet></DataSets>
+  <EmbeddedImages>
+    <EmbeddedImage Name="TheragenLogo">
+      <MIMEType>image/jpeg</MIMEType>
+      <ImageData>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UUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFeWfE39m28+NurXEfinxnrr+GHYiPQdH/wCJZbzJjG24lVmmm68gOi5A+Uc59TorahiKlGXPTdn30uvTs/NanFjsvw+Mp+xxMeaPVXaT8pJNKS8ndeRy3wx+CXhH4MaYLTwr4c0jQodu1zaWypJLwBl3+85O0ZLEk4FdTRRUVKk6knObbb6vU3w+GpUKao0IqMVskkkvRLQKKKKg2CiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKAP/Z</ImageData>
+    </EmbeddedImage>
+  </EmbeddedImages>
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <ReportItems>
+          <Rectangle Name="Frame">
+            <ReportItems><Image Name="LogoImg"><Source>Embedded</Source><Value>TheragenLogo</Value><Sizing>FitProportional</Sizing><Top>0.05in</Top><Left>0in</Left><Height>0.4in</Height><Width>1.5in</Width><Style><Border><Style>None</Style></Border></Style></Image><Textbox Name="HdrName">
+  <CanGrow>true</CanGrow>
+  <KeepTogether>true</KeepTogether>
+  <Paragraphs><Paragraph><TextRuns><TextRun><Value>THERAGEN PROJECT NAME</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6.5pt</FontSize><Color>#219A80</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value>=First(Fields!ProjectName.Value, "DsHeader")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>11pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
+  <Top>0in</Top><Left>1.58in</Left><Height>0.5in</Height><Width>2.7in</Width>
+  <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><BackgroundColor>#FFFFFF</BackgroundColor><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+</Textbox><Textbox Name="HdrPM">
+  <CanGrow>true</CanGrow>
+  <KeepTogether>true</KeepTogether>
+  <Paragraphs><Paragraph><TextRuns><TextRun><Value>PROJECT MANAGER</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6.5pt</FontSize><Color>#219A80</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value>=First(Fields!ProjectManager.Value, "DsHeader")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>10pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
+  <Top>0in</Top><Left>4.36in</Left><Height>0.5in</Height><Width>1.6in</Width>
+  <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><BackgroundColor>#FFFFFF</BackgroundColor><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+</Textbox><Textbox Name="HdrTarget">
+  <CanGrow>true</CanGrow>
+  <KeepTogether>true</KeepTogether>
+  <Paragraphs><Paragraph><TextRuns><TextRun><Value>TARGET DATE COMPLETION</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6.5pt</FontSize><Color>#219A80</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value>=First(Fields!TargetDate.Value, "DsHeader")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>10pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
+  <Top>0in</Top><Left>6.04in</Left><Height>0.5in</Height><Width>1.45in</Width>
+  <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><BackgroundColor>#FFFFFF</BackgroundColor><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+</Textbox><Textbox Name="HdrPhase">
+  <CanGrow>true</CanGrow>
+  <KeepTogether>true</KeepTogether>
+  <Paragraphs><Paragraph><TextRuns><TextRun><Value>CURRENT PHASE</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6.5pt</FontSize><Color>#219A80</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value>=First(Fields!Phase.Value, "DsHeader")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>10pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
+  <Top>0in</Top><Left>7.57in</Left><Height>0.5in</Height><Width>1.3in</Width>
+  <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><BackgroundColor>#FFFFFF</BackgroundColor><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+</Textbox><Textbox Name="HdrDate">
+  <CanGrow>true</CanGrow>
+  <KeepTogether>true</KeepTogether>
+  <Paragraphs><Paragraph><TextRuns><TextRun><Value>DATE OF REPORT</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6.5pt</FontSize><Color>#219A80</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value>=First(Fields!ReportDate.Value, "DsHeader")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>10pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
+  <Top>0in</Top><Left>8.95in</Left><Height>0.5in</Height><Width>1.35in</Width>
+  <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><BackgroundColor>#FFFFFF</BackgroundColor><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+</Textbox><Textbox Name="MainStatus">
+  <CanGrow>false</CanGrow>
+  <KeepTogether>true</KeepTogether>
+  <Paragraphs><Paragraph><TextRuns><TextRun><Value>MAIN STATUS</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6.5pt</FontSize><Color>#219A80</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value>=First(Fields!MainStatus.Value, "DsHeader")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>44pt</FontSize><Color>=First(Fields!StatusColor.Value, "DsHeader")</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+  <Top>0.62in</Top><Left>0in</Left><Height>2.02in</Height><Width>1.2in</Width>
+  <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><BackgroundColor>#FFFFFF</BackgroundColor><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Middle</VerticalAlign></Style>
+</Textbox><Textbox Name="Descr">
+  <CanGrow>false</CanGrow>
+  <KeepTogether>true</KeepTogether>
+  <Paragraphs><Paragraph><TextRuns><TextRun><Value>PROJECT DESCRIPTION</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6.5pt</FontSize><Color>#219A80</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value>=First(Fields!Description.Value, "DsHeader")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>8pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
+  <Top>0.62in</Top><Left>1.28in</Left><Height>2.02in</Height><Width>2.5in</Width>
+  <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><BackgroundColor>#FFFFFF</BackgroundColor><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+</Textbox><Textbox Name="Value">
+  <CanGrow>false</CanGrow>
+  <KeepTogether>true</KeepTogether>
+  <Paragraphs><Paragraph><TextRuns><TextRun><Value>BUSINESS VALUE</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6.5pt</FontSize><Color>#219A80</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value>=First(Fields!BusinessValue.Value, "DsHeader")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>8pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
+  <Top>0.62in</Top><Left>3.86in</Left><Height>2.02in</Height><Width>2.5in</Width>
+  <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><BackgroundColor>#FFFFFF</BackgroundColor><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+</Textbox><Rectangle Name="GaugeCard"><ReportItems><Textbox Name="GaugeTitle">
+  <CanGrow>false</CanGrow>
+  <KeepTogether>true</KeepTogether>
+  <Paragraphs><Paragraph><TextRuns><TextRun><Value>AVG RISK SCORE</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6.5pt</FontSize><Color>#219A80</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+  <Top>0.06in</Top><Left>0.05in</Left><Height>0.14in</Height><Width>1.5in</Width>
+  <Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+</Textbox><Tablix Name="SeverityBar">
+  <TablixBody>
+    <TablixColumns><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn></TablixColumns>
+    <TablixRows>
+      <TablixRow><Height>0.12in</Height><TablixCells><TablixCell><CellContents><Textbox Name="sevm0">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=0,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm1">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=1,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm2">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=2,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm3">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=3,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm4">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=4,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm5">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=5,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm6">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=6,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm7">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=7,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm8">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=8,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm9">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=9,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm10">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=10,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm11">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=11,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm12">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=12,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm13">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=13,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm14">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=14,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm15">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=15,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm16">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=16,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm17">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=17,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm18">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=18,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm19">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=19,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm20">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=20,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm21">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=21,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm22">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=22,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm23">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=23,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm24">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=24,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell></TablixCells></TablixRow>
+      <TablixRow><Height>0.13in</Height><TablixCells><TablixCell><CellContents><Textbox Name="sevb0">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#107C10</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb1">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#107C10</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb2">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#107C10</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb3">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#107C10</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb4">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#107C10</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb5">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#107C10</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb6">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#C19C00</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb7">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#C19C00</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb8">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#C19C00</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb9">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#C19C00</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb10">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#C19C00</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb11">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#C19C00</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb12">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#C0392B</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb13">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#C0392B</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb14">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#C0392B</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb15">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#C0392B</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb16">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#C0392B</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb17">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#C0392B</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb18">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#C0392B</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb19">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#C0392B</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb20">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#8B1A1A</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb21">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#8B1A1A</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb22">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#8B1A1A</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb23">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#8B1A1A</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb24">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#8B1A1A</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell></TablixCells></TablixRow>
+    </TablixRows>
+  </TablixBody>
+  <TablixColumnHierarchy><TablixMembers><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /></TablixMembers></TablixColumnHierarchy>
+  <TablixRowHierarchy><TablixMembers><TablixMember /><TablixMember /></TablixMembers></TablixRowHierarchy>
+  <DataSetName>DsGauge</DataSetName>
+  <Top>0.24in</Top><Left>0.06in</Left><Height>0.25in</Height><Width>1.48in</Width>
+  <Style><Border><Style>None</Style></Border></Style>
+</Tablix><Textbox Name="sevlab0">
+  <CanGrow>false</CanGrow>
+  <KeepTogether>true</KeepTogether>
+  <Paragraphs><Paragraph><TextRuns><TextRun><Value>0</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>5.5pt</FontSize><Color>#605E5C</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+  <Top>0.51in</Top><Left>0.06in</Left><Height>0.1in</Height><Width>0.15in</Width>
+  <Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+</Textbox><Textbox Name="sevlab6">
+  <CanGrow>false</CanGrow>
+  <KeepTogether>true</KeepTogether>
+  <Paragraphs><Paragraph><TextRuns><TextRun><Value>6</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>5.5pt</FontSize><Color>#605E5C</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+  <Top>0.51in</Top><Left>0.379in</Left><Height>0.1in</Height><Width>0.15in</Width>
+  <Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+</Textbox><Textbox Name="sevlab12">
+  <CanGrow>false</CanGrow>
+  <KeepTogether>true</KeepTogether>
+  <Paragraphs><Paragraph><TextRuns><TextRun><Value>12</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>5.5pt</FontSize><Color>#605E5C</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+  <Top>0.51in</Top><Left>0.698in</Left><Height>0.1in</Height><Width>0.15in</Width>
+  <Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+</Textbox><Textbox Name="sevlab20">
+  <CanGrow>false</CanGrow>
+  <KeepTogether>true</KeepTogether>
+  <Paragraphs><Paragraph><TextRuns><TextRun><Value>20</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>5.5pt</FontSize><Color>#605E5C</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+  <Top>0.51in</Top><Left>1.124in</Left><Height>0.1in</Height><Width>0.15in</Width>
+  <Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+</Textbox><Textbox Name="sevlab25">
+  <CanGrow>false</CanGrow>
+  <KeepTogether>true</KeepTogether>
+  <Paragraphs><Paragraph><TextRuns><TextRun><Value>25</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>5.5pt</FontSize><Color>#605E5C</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+  <Top>0.51in</Top><Left>1.244in</Left><Height>0.1in</Height><Width>0.15in</Width>
+  <Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+</Textbox><Textbox Name="AvgScoreBox">
+  <CanGrow>false</CanGrow>
+  <KeepTogether>true</KeepTogether>
+  <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Format(First(Fields!AvgScore.Value, "DsGauge"), "0.0") &amp; "  of 25"</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>13pt</FontSize><Color>=First(Fields!RatingColor.Value, "DsGauge")</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+  <Top>0.66in</Top><Left>0.06in</Left><Height>0.3in</Height><Width>1.48in</Width>
+  <Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Middle</VerticalAlign></Style>
+</Textbox><Textbox Name="RatingTitle">
+  <CanGrow>false</CanGrow>
+  <KeepTogether>true</KeepTogether>
+  <Paragraphs><Paragraph><TextRuns><TextRun><Value>RISK RATING</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6.5pt</FontSize><Color>#219A80</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+  <Top>1.18in</Top><Left>0.05in</Left><Height>0.14in</Height><Width>1.5in</Width>
+  <Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+</Textbox><Textbox Name="RatingValue">
+  <CanGrow>false</CanGrow>
+  <KeepTogether>true</KeepTogether>
+  <Paragraphs><Paragraph><TextRuns><TextRun><Value>=First(Fields!RiskRating.Value, "DsGauge")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>13pt</FontSize><Color>=First(Fields!RatingColor.Value, "DsGauge")</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+  <Top>1.36in</Top><Left>0.06in</Left><Height>0.3in</Height><Width>1.48in</Width>
+  <Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Middle</VerticalAlign></Style>
+</Textbox></ReportItems><KeepTogether>true</KeepTogether><Top>0.62in</Top><Left>6.44in</Left><Height>2.02in</Height><Width>1.6in</Width><Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><BackgroundColor>#FFFFFF</BackgroundColor></Style></Rectangle><Tablix Name="HealthCheck">
+  <TablixBody>
+    <TablixColumns><TablixColumn><Width>1.308in</Width></TablixColumn><TablixColumn><Width>0.872in</Width></TablixColumn></TablixColumns>
+    <TablixRows>
+      <TablixRow><Height>0.22in</Height><TablixCells><TablixCell><CellContents><Textbox Name="HealthCheck_h0">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>Health Check</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#FFFFFF</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#219A80</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#219A80</BackgroundColor>
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom>
+              <VerticalAlign>Middle</VerticalAlign></Style>
+            </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="HealthCheck_h1">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>Status</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#FFFFFF</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#219A80</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#219A80</BackgroundColor>
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom>
+              <VerticalAlign>Middle</VerticalAlign></Style>
+            </Textbox></CellContents></TablixCell></TablixCells></TablixRow>
+      <TablixRow><Height>0.2in</Height><TablixCells><TablixCell><CellContents><Textbox Name="HealthCheck_d0">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!KnowledgeArea.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
+              
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+            </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="HealthCheck_d1">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!AreaStatus.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>=Switch(Fields!AreaStatus.Value="Green","#107C10",Fields!AreaStatus.Value="Yellow","#C19C00",Fields!AreaStatus.Value="Red","#C0392B",True,"#000000")</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
+              
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+            </Textbox></CellContents></TablixCell></TablixCells></TablixRow>
+    </TablixRows>
+  </TablixBody>
+  <TablixColumnHierarchy><TablixMembers><TablixMember /><TablixMember /></TablixMembers></TablixColumnHierarchy>
+  <TablixRowHierarchy><TablixMembers>
+    <TablixMember><KeepWithGroup>After</KeepWithGroup></TablixMember>
+    <TablixMember><Group Name="HealthCheck_Details" /></TablixMember>
+  </TablixMembers></TablixRowHierarchy>
+  <DataSetName>DsHealth</DataSetName>
+  <NoRowsMessage>No rows for the selected Project parameter.</NoRowsMessage>
+  <Top>0.62in</Top><Left>8.12in</Left><Height>2.02in</Height><Width>2.180in</Width>
+  <Style><Border><Style>None</Style></Border></Style>
+</Tablix><Tablix Name="Raid">
+  <TablixBody>
+    <TablixColumns><TablixColumn><Width>0.700in</Width></TablixColumn><TablixColumn><Width>4.600in</Width></TablixColumn><TablixColumn><Width>1.300in</Width></TablixColumn><TablixColumn><Width>1.000in</Width></TablixColumn><TablixColumn><Width>0.600in</Width></TablixColumn><TablixColumn><Width>0.900in</Width></TablixColumn><TablixColumn><Width>1.200in</Width></TablixColumn></TablixColumns>
+    <TablixRows>
+      <TablixRow><Height>0.22in</Height><TablixCells><TablixCell><CellContents><Textbox Name="Raid_h0">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>Type</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#FFFFFF</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#219A80</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#219A80</BackgroundColor>
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom>
+              <VerticalAlign>Middle</VerticalAlign></Style>
+            </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Raid_h1">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>Updates / Key Issues / Risks / Decisions / Dependencies</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#FFFFFF</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#219A80</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#219A80</BackgroundColor>
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom>
+              <VerticalAlign>Middle</VerticalAlign></Style>
+            </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Raid_h2">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>Owner</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#FFFFFF</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#219A80</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#219A80</BackgroundColor>
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom>
+              <VerticalAlign>Middle</VerticalAlign></Style>
+            </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Raid_h3">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>Target Date</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#FFFFFF</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#219A80</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#219A80</BackgroundColor>
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom>
+              <VerticalAlign>Middle</VerticalAlign></Style>
+            </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Raid_h4">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>Score</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#FFFFFF</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#219A80</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#219A80</BackgroundColor>
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom>
+              <VerticalAlign>Middle</VerticalAlign></Style>
+            </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Raid_h5">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>Severity</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#FFFFFF</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#219A80</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#219A80</BackgroundColor>
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom>
+              <VerticalAlign>Middle</VerticalAlign></Style>
+            </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Raid_h6">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>Status</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#FFFFFF</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#219A80</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#219A80</BackgroundColor>
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom>
+              <VerticalAlign>Middle</VerticalAlign></Style>
+            </Textbox></CellContents></TablixCell></TablixCells></TablixRow>
+      <TablixRow><Height>0.2in</Height><TablixCells><TablixCell><CellContents><Textbox Name="Raid_d0">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!RaidType.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
+              
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+            </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Raid_d1">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!Description.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
+              
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+            </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Raid_d2">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!Owner.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
+              
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+            </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Raid_d3">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Format(Fields!DueDate.Value, "yyyy-MM-dd")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
+              
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+            </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Raid_d4">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!Score.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
+              
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+            </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Raid_d5">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!Severity.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>=Switch(Fields!Severity.Value="Critical","#8B1A1A",Fields!Severity.Value="High","#C0392B",Fields!Severity.Value="Medium","#C19C00",True,"#000000")</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
+              
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+            </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Raid_d6">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!RiskStatus.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
+              
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+            </Textbox></CellContents></TablixCell></TablixCells></TablixRow>
+    </TablixRows>
+  </TablixBody>
+  <TablixColumnHierarchy><TablixMembers><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /></TablixMembers></TablixColumnHierarchy>
+  <TablixRowHierarchy><TablixMembers>
+    <TablixMember><KeepWithGroup>After</KeepWithGroup></TablixMember>
+    <TablixMember><Group Name="Raid_Details" /><SortExpressions><SortExpression><Value>=Fields!Score.Value</Value><Direction>Descending</Direction></SortExpression></SortExpressions></TablixMember>
+  </TablixMembers></TablixRowHierarchy>
+  <DataSetName>DsRaid</DataSetName>
+  <NoRowsMessage>No rows for the selected Project parameter.</NoRowsMessage>
+  <Top>2.74in</Top><Left>0in</Left><Height>0.42in</Height><Width>10.300in</Width>
+  <Style><Border><Style>None</Style></Border></Style>
+</Tablix><Tablix Name="Workstreams">
+  <TablixBody>
+    <TablixColumns><TablixColumn><Width>4.000in</Width></TablixColumn><TablixColumn><Width>1.400in</Width></TablixColumn><TablixColumn><Width>1.800in</Width></TablixColumn><TablixColumn><Width>1.300in</Width></TablixColumn><TablixColumn><Width>1.800in</Width></TablixColumn></TablixColumns>
+    <TablixRows>
+      <TablixRow><Height>0.22in</Height><TablixCells><TablixCell><CellContents><Textbox Name="Workstreams_h0">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>Key Project Areas</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#FFFFFF</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#219A80</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#219A80</BackgroundColor>
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom>
+              <VerticalAlign>Middle</VerticalAlign></Style>
+            </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Workstreams_h1">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>Start Date</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#FFFFFF</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#219A80</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#219A80</BackgroundColor>
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom>
+              <VerticalAlign>Middle</VerticalAlign></Style>
+            </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Workstreams_h2">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>Target Implementation Date</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#FFFFFF</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#219A80</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#219A80</BackgroundColor>
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom>
+              <VerticalAlign>Middle</VerticalAlign></Style>
+            </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Workstreams_h3">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>% Complete</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#FFFFFF</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#219A80</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#219A80</BackgroundColor>
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom>
+              <VerticalAlign>Middle</VerticalAlign></Style>
+            </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Workstreams_h4">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>Current Status</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#FFFFFF</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#219A80</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#219A80</BackgroundColor>
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom>
+              <VerticalAlign>Middle</VerticalAlign></Style>
+            </Textbox></CellContents></TablixCell></TablixCells></TablixRow>
+      <TablixRow><Height>0.2in</Height><TablixCells><TablixCell><CellContents><Textbox Name="Workstreams_d0">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!Deliverable.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
+              
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+            </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Workstreams_d1">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Format(Fields!StartDate.Value, "yyyy-MM-dd")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
+              
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+            </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Workstreams_d2">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Format(Fields!TargetDate.Value, "yyyy-MM-dd")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
+              
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+            </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Workstreams_d3">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Format(Fields!PctComplete.Value, "0.0%")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
+              
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+            </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Workstreams_d4">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!WsStatus.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>=Switch(Fields!WsStatus.Value="ON TRACK","#107C10",Fields!WsStatus.Value="AT RISK","#C19C00",True,"#000000")</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
+              
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+            </Textbox></CellContents></TablixCell></TablixCells></TablixRow>
+    </TablixRows>
+  </TablixBody>
+  <TablixColumnHierarchy><TablixMembers><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /></TablixMembers></TablixColumnHierarchy>
+  <TablixRowHierarchy><TablixMembers>
+    <TablixMember><KeepWithGroup>After</KeepWithGroup></TablixMember>
+    <TablixMember><Group Name="Workstreams_Details" /><SortExpressions><SortExpression><Value>=Fields!StartDate.Value</Value></SortExpression></SortExpressions></TablixMember>
+  </TablixMembers></TablixRowHierarchy>
+  <DataSetName>DsWorkstreams</DataSetName>
+  <NoRowsMessage>No rows for the selected Project parameter.</NoRowsMessage>
+  <Top>3.5in</Top><Left>0in</Left><Height>0.42in</Height><Width>10.300in</Width>
+  <Style><Border><Style>None</Style></Border></Style>
+</Tablix><Tablix Name="Accomplishments">
+  <TablixBody>
+    <TablixColumns><TablixColumn><Width>3.315in</Width></TablixColumn><TablixColumn><Width>0.780in</Width></TablixColumn><TablixColumn><Width>0.975in</Width></TablixColumn></TablixColumns>
+    <TablixRows>
+      <TablixRow><Height>0.22in</Height><TablixCells><TablixCell><CellContents><Textbox Name="Accomplishments_h0">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>Accomplishments</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#FFFFFF</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#219A80</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#219A80</BackgroundColor>
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom>
+              <VerticalAlign>Middle</VerticalAlign></Style>
+            </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Accomplishments_h1">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>Source</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#FFFFFF</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#219A80</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#219A80</BackgroundColor>
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom>
+              <VerticalAlign>Middle</VerticalAlign></Style>
+            </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Accomplishments_h2">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>Completed Date</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#FFFFFF</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#219A80</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#219A80</BackgroundColor>
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom>
+              <VerticalAlign>Middle</VerticalAlign></Style>
+            </Textbox></CellContents></TablixCell></TablixCells></TablixRow>
+      <TablixRow><Height>0.2in</Height><TablixCells><TablixCell><CellContents><Textbox Name="Accomplishments_d0">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!Accomplishment.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
+              
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+            </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Accomplishments_d1">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!Source.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
+              
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+            </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Accomplishments_d2">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Format(Fields!CompletedDate.Value, "yyyy-MM-dd")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
+              
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+            </Textbox></CellContents></TablixCell></TablixCells></TablixRow>
+    </TablixRows>
+  </TablixBody>
+  <TablixColumnHierarchy><TablixMembers><TablixMember /><TablixMember /><TablixMember /></TablixMembers></TablixColumnHierarchy>
+  <TablixRowHierarchy><TablixMembers>
+    <TablixMember><KeepWithGroup>After</KeepWithGroup></TablixMember>
+    <TablixMember><Group Name="Accomplishments_Details" /><SortExpressions><SortExpression><Value>=Fields!CompletedDate.Value</Value><Direction>Descending</Direction></SortExpression></SortExpressions></TablixMember>
+  </TablixMembers></TablixRowHierarchy>
+  <DataSetName>DsAccomplishments</DataSetName>
+  <NoRowsMessage>No rows for the selected Project parameter.</NoRowsMessage>
+  <Top>4.6in</Top><Left>0in</Left><Height>0.42in</Height><Width>5.070in</Width>
+  <Style><Border><Style>None</Style></Border></Style>
+</Tablix><Tablix Name="NextSteps">
+  <TablixBody>
+    <TablixColumns><TablixColumn><Width>3.061in</Width></TablixColumn><TablixColumn><Width>1.052in</Width></TablixColumn><TablixColumn><Width>0.957in</Width></TablixColumn></TablixColumns>
+    <TablixRows>
+      <TablixRow><Height>0.22in</Height><TablixCells><TablixCell><CellContents><Textbox Name="NextSteps_h0">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>Next Steps</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#FFFFFF</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#219A80</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#219A80</BackgroundColor>
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom>
+              <VerticalAlign>Middle</VerticalAlign></Style>
+            </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="NextSteps_h1">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>Owner</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#FFFFFF</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#219A80</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#219A80</BackgroundColor>
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom>
+              <VerticalAlign>Middle</VerticalAlign></Style>
+            </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="NextSteps_h2">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>Target Date</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#FFFFFF</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#219A80</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#219A80</BackgroundColor>
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom>
+              <VerticalAlign>Middle</VerticalAlign></Style>
+            </Textbox></CellContents></TablixCell></TablixCells></TablixRow>
+      <TablixRow><Height>0.2in</Height><TablixCells><TablixCell><CellContents><Textbox Name="NextSteps_d0">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!NextStep.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
+              
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+            </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="NextSteps_d1">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!Owner.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
+              
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+            </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="NextSteps_d2">
+              <CanGrow>true</CanGrow>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Format(Fields!TargetDate.Value, "yyyy-MM-dd")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+              <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
+              
+              <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+            </Textbox></CellContents></TablixCell></TablixCells></TablixRow>
+    </TablixRows>
+  </TablixBody>
+  <TablixColumnHierarchy><TablixMembers><TablixMember /><TablixMember /><TablixMember /></TablixMembers></TablixColumnHierarchy>
+  <TablixRowHierarchy><TablixMembers>
+    <TablixMember><KeepWithGroup>After</KeepWithGroup></TablixMember>
+    <TablixMember><Group Name="NextSteps_Details" /><SortExpressions><SortExpression><Value>=Fields!TargetDate.Value</Value></SortExpression></SortExpressions></TablixMember>
+  </TablixMembers></TablixRowHierarchy>
+  <DataSetName>DsNextSteps</DataSetName>
+  <NoRowsMessage>No rows for the selected Project parameter.</NoRowsMessage>
+  <Top>4.6in</Top><Left>5.23in</Left><Height>0.42in</Height><Width>5.070in</Width>
+  <Style><Border><Style>None</Style></Border></Style>
+</Tablix><Textbox Name="Keys">
+  <CanGrow>true</CanGrow>
+  <KeepTogether>true</KeepTogether>
+  <Paragraphs><Paragraph><TextRuns><TextRun><Value>Key:    </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#219A80</Color><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value>G – Green   </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#107C10</Color><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value>Y – Yellow   </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#C19C00</Color><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value>R – Off Track   </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#C0392B</Color><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value>C – Completed   </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#000000</Color><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value>NS - Not Started   </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#000000</Color><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value>H – Hold   </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#6B3FA0</Color><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value>CN – Cancelled        </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#2E86AB</Color><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value>Phase:  Initiating, Planning, Executing, Monitoring, Closing</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#605E5C</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
+  <Top>6.25in</Top><Left>0in</Left><Height>0.25in</Height><Width>10.3in</Width>
+  <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><BackgroundColor>#F4F7F6</BackgroundColor><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+</Textbox></ReportItems>
+            <KeepTogether>true</KeepTogether>
+            <Top>0in</Top><Left>0in</Left><Height>6.6in</Height><Width>10.3in</Width>
+            <Style>
+              <Border><Color>#219A80</Color><Style>Solid</Style><Width>2pt</Width></Border>
+              <BackgroundColor>#F2F7F6</BackgroundColor>
+            </Style>
+          </Rectangle>
+        </ReportItems>
+        <Height>6.65in</Height>
+        <Style />
+      </Body>
+      <Width>10.3in</Width>
+      <Page>
+        <PageHeight>8.5in</PageHeight>
+        <PageWidth>11in</PageWidth>
+        <LeftMargin>0.35in</LeftMargin>
+        <RightMargin>0.35in</RightMargin>
+        <TopMargin>0.35in</TopMargin>
+        <BottomMargin>0.35in</BottomMargin>
+        <Style />
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="ProjectCode">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DsProjectList</DataSetName>
+          <ValueField>ProjectCode</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Project</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>DsProjectList</DataSetName>
+          <ValueField>ProjectCode</ValueField>
+          <LabelField>ProjectName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+    </ReportParameter>
+  </ReportParameters>
+  <ReportParametersLayout>
+    <GridLayoutDefinition>
+      <NumberOfColumns>4</NumberOfColumns>
+      <NumberOfRows>1</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>ProjectCode</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
+    </GridLayoutDefinition>
+  </ReportParametersLayout>
+  <rd:ReportUnitType>Inch</rd:ReportUnitType>
+  <rd:ReportID>a7d15f2d-a64e-5022-9629-1809b1974872</rd:ReportID>
+</Report>

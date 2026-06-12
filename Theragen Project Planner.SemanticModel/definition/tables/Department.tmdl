@@ -1,0 +1,42 @@
+/// Conformed department dimension (DM D01). Filters executing departments on facts.
+table Department
+	lineageTag: 07ad3d81-350c-59b1-b3db-e6f812c5c7c7
+
+	column 'Department ID'
+		dataType: string
+		isHidden
+		lineageTag: 3dcd5f1b-f5b4-5a6d-8271-e48c2cb13abb
+		summarizeBy: none
+		sourceColumn: Department ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Department Code'
+		dataType: string
+		lineageTag: 343f1b7d-dd16-5cb3-8bc4-97278a992347
+		summarizeBy: none
+		sourceColumn: Department Code
+
+		annotation SummarizationSetBy = User
+
+	column Department
+		dataType: string
+		lineageTag: f2ae76ae-7413-5ddf-bd44-fe632f5cf71d
+		summarizeBy: none
+		sourceColumn: Department
+
+		annotation SummarizationSetBy = User
+
+	partition Department = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "department"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"department_id", "code", "name"}),
+				    Renamed = Table.RenameColumns(Selected, {{"department_id", "Department ID"}, {"code", "Department Code"}, {"name", "Department"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table
+

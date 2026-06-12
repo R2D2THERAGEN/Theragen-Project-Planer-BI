@@ -1,0 +1,141 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "edef4cd8ece55fcab378",
+  "position": {
+    "x": 8,
+    "y": 404,
+    "z": 1000,
+    "width": 700,
+    "height": 304
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Schedule Activity"
+                    }
+                  },
+                  "Property": "Activity Code"
+                }
+              },
+              "queryRef": "Schedule Activity.Activity Code"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Schedule Activity"
+                    }
+                  },
+                  "Property": "Activity Name"
+                }
+              },
+              "queryRef": "Schedule Activity.Activity Name"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Schedule Activity"
+                    }
+                  },
+                  "Property": "Owner"
+                }
+              },
+              "queryRef": "Schedule Activity.Owner"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Schedule Activity"
+                    }
+                  },
+                  "Property": "Planned Finish"
+                }
+              },
+              "queryRef": "Schedule Activity.Planned Finish"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Schedule Activity"
+                    }
+                  },
+                  "Property": "Activity Status"
+                }
+              },
+              "queryRef": "Schedule Activity.Activity Status"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Schedule Activity"
+                    }
+                  },
+                  "Property": "Pct Complete"
+                }
+              },
+              "queryRef": "Schedule Activity.Pct Complete"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Schedule Activity"
+                  }
+                },
+                "Property": "Planned Finish"
+              }
+            },
+            "direction": "Ascending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Activity register (sorted by planned finish)'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

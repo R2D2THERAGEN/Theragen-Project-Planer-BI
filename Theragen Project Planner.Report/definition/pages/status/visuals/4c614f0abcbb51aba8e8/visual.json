@@ -1,0 +1,102 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "4c614f0abcbb51aba8e8",
+  "position": {
+    "x": 642,
+    "y": 590,
+    "z": 1000,
+    "width": 630,
+    "height": 88
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Upcoming Next Step"
+                    }
+                  },
+                  "Property": "Next Step"
+                }
+              },
+              "queryRef": "Upcoming Next Step.Next Step"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Upcoming Next Step"
+                    }
+                  },
+                  "Property": "Owner"
+                }
+              },
+              "queryRef": "Upcoming Next Step.Owner"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Upcoming Next Step"
+                    }
+                  },
+                  "Property": "Target Date"
+                }
+              },
+              "queryRef": "Upcoming Next Step.Target Date"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Upcoming Next Step"
+                  }
+                },
+                "Property": "Target Date"
+              }
+            },
+            "direction": "Ascending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Next Steps'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

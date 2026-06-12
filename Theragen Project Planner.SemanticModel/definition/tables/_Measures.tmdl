@@ -429,6 +429,11 @@ table _Measures
 		displayFolder: Status Page
 		lineageTag: 20ae75ec-02a7-54f8-bdf1-b0ccd4215a85
 
+	/// Deck-exact font color for the Health Check status column (conditional formatting).
+	measure 'Area Status Color' = SWITCH([Latest Area Status], "Green", "#00FF00", "Yellow", "#D6D60D", "Red", "#FF0000", "#252423")
+		displayFolder: Status Page
+		lineageTag: 958ebaa8-26df-5932-9b89-25f5f53be24d
+
 	/// Date of the latest status report.
 	measure 'Report Date' = VAR d = MAX('Status Report'[Period End]) RETURN IF(ISBLANK(d), "-", FORMAT(d, "M/D/YYYY"))
 		displayFolder: Status Page
@@ -455,6 +460,11 @@ table _Measures
 	measure 'Workstream Status' = VAR tot = [Activities] VAR done = [Activities Done] VAR atRisk = [Activities At Risk] + [Activities Overdue] VAR started = [Activities In Progress] + done RETURN SWITCH(TRUE(), ISBLANK(tot) || tot = 0, "-", done = tot, "COMPLETED", atRisk > 0, "AT RISK", started = 0, "NOT STARTED", "ON TRACK")
 		displayFolder: Status Page
 		lineageTag: 7cfeaba1-105b-5d12-828a-439297e3a942
+
+	/// Deck-exact font color for the Key Project Areas status column (conditional formatting).
+	measure 'Workstream Status Color' = SWITCH([Workstream Status], "ON TRACK", "#00FF00", "AT RISK", "#D6D60D", "#252423")
+		displayFolder: Status Page
+		lineageTag: 47d79d39-a654-507b-9139-f95bfd2c439b
 
 	/// Legend for status letters (matches the Theragen status report key).
 	measure 'Status Key' = "KEY:   G = Green   |   Y = Yellow   |   R = Off Track   |   C = Completed   |   NS = Not Started   |   H = Hold   |   CN = Cancelled"

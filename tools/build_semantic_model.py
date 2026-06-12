@@ -789,6 +789,10 @@ add("Status Page", "Latest Area Status",
     "VAR d0 = MAX('Status Report'[Period End]) RETURN "
     "CALCULATE(MAX('Status Report Area'[Area Status]), 'Status Report'[Period End] = d0)", "",
     "Health-check status of a knowledge area from the most recent report.")
+add("Status Page", "Area Status Color",
+    "SWITCH([Latest Area Status], \"Green\", \"#00FF00\", \"Yellow\", \"#D6D60D\", "
+    "\"Red\", \"#FF0000\", \"#252423\")", "",
+    "Deck-exact font color for the Health Check status column (conditional formatting).")
 add("Status Page", "Report Date",
     "VAR d = MAX('Status Report'[Period End]) RETURN IF(ISBLANK(d), \"-\", FORMAT(d, \"M/D/YYYY\"))", "",
     "Date of the latest status report.")
@@ -809,6 +813,10 @@ add("Status Page", "Workstream Status",
     "RETURN SWITCH(TRUE(), ISBLANK(tot) || tot = 0, \"-\", done = tot, \"COMPLETED\", "
     "atRisk > 0, \"AT RISK\", started = 0, \"NOT STARTED\", \"ON TRACK\")", "",
     "Roll-up status per workstream: COMPLETED / AT RISK / NOT STARTED / ON TRACK.")
+add("Status Page", "Workstream Status Color",
+    "SWITCH([Workstream Status], \"ON TRACK\", \"#00FF00\", \"AT RISK\", \"#D6D60D\", "
+    "\"#252423\")", "",
+    "Deck-exact font color for the Key Project Areas status column (conditional formatting).")
 add("Status Page", "Status Key",
     "\"KEY:   G = Green   |   Y = Yellow   |   R = Off Track   |   C = Completed   |   "
     "NS = Not Started   |   H = Hold   |   CN = Cancelled\"", "",

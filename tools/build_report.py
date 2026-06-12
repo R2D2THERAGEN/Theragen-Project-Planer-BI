@@ -126,9 +126,20 @@ def chart(page, key, vtype, cat_field, cat_ref, y_measures, x, y, wd, ht,
     return visual(vid(page, key), vtype, pos(x, y, wd, ht), qs, vtitle=vtitle, sort=sort)
 
 
-def table_vis(page, key, fields, x, y, wd, ht, vtitle="", sort=None):
+def table_vis(page, key, fields, x, y, wd, ht, vtitle="", sort=None, font_cf=None):
+    """font_cf: {column_queryRef: color_measure_name} - font color by field value."""
     qs = {"Values": {"projections": [proj(f, r) for f, r in fields]}}
-    return visual(vid(page, key), "tableEx", pos(x, y, wd, ht), qs, vtitle=vtitle, sort=sort)
+    objects = None
+    if font_cf:
+        objects = {"values": [
+            {"selector": {"metadata": qref},
+             "properties": {"fontColorPrimary": {"solid": {"color": {"expr": {
+                 "FillRule": {"Input": {"Measure": {
+                     "Expression": {"SourceRef": {"Entity": MEAS}},
+                     "Property": color_measure}}}}}}}}}
+            for qref, color_measure in font_cf.items()]}
+    return visual(vid(page, key), "tableEx", pos(x, y, wd, ht), qs, vtitle=vtitle,
+                  sort=sort, objects=objects)
 
 
 def matrix(page, key, rows, cols, vals, x, y, wd, ht, vtitle=""):
@@ -246,7 +257,8 @@ vis.append(mrcard(pg, "value", "Business Value (Selected)", 574, 88, 380, 190,
 vis.append(table_vis(pg, "health", [
     (col("Knowledge Area", "Knowledge Area"), "Knowledge Area.Knowledge Area"),
     (mea("Latest Area Status"), f"{MEAS}.Latest Area Status"),
-], 962, 88, 310, 190, vtitle="Health Check"))
+], 962, 88, 310, 190, vtitle="Health Check",
+    font_cf={f"{MEAS}.Latest Area Status": "Area Status Color"}))
 # Row C - RAID: updates / key issues / risks / decisions / dependencies (y286 h160)
 vis.append(table_vis(pg, "raid", [
     (col("Risk", "RAID Type"), "Risk.RAID Type"),
@@ -268,7 +280,8 @@ vis.append(table_vis(pg, "areas", [
     (mea("Workstream Status"), f"{MEAS}.Workstream Status"),
 ], 8, 454, 1264, 128, vtitle="Key Project Areas",
     sort={"sort": [{"field": mea("Workstream Start"),
-                    "direction": "Ascending"}], "isDefaultSort": True}))
+                    "direction": "Ascending"}], "isDefaultSort": True},
+    font_cf={f"{MEAS}.Workstream Status": "Workstream Status Color"}))
 # Row E - accomplishments + next steps (y590 h88)
 vis.append(table_vis(pg, "accomp", [
     (col("Recent Accomplishment", "Accomplishment"), "Recent Accomplishment.Accomplishment"),

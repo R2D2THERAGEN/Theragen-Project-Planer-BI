@@ -48,14 +48,11 @@ table 'Status Report Area'
 		mode: import
 		source =
 				let
-				    Source = Csv.Document(File.Contents(DataFolder & "\status_report_area.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
-				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
-				    Selected = Table.SelectColumns(Promoted, {"area_id", "report_id", "project_code", "knowledge_area", "status"}),
-				    Nulled = Table.ReplaceValue(Selected, "", null, Replacer.ReplaceValue, Table.ColumnNames(Selected)),
-				    Typed = Table.TransformColumnTypes(Nulled, {{"area_id", type text}, {"report_id", type text}, {"project_code", type text}, {"knowledge_area", type text}, {"status", type text}}),
-				    Renamed = Table.RenameColumns(Typed, {{"area_id", "Area ID"}, {"report_id", "Report ID"}, {"project_code", "Project Code"}, {"knowledge_area", "Knowledge Area"}, {"status", "Area Status"}})
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "status_report_area"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"area_id", "report_id", "project_code", "knowledge_area", "status"}),
+				    Renamed = Table.RenameColumns(Selected, {{"area_id", "Area ID"}, {"report_id", "Report ID"}, {"project_code", "Project Code"}, {"knowledge_area", "Knowledge Area"}, {"status", "Area Status"}})
 				in
 				    Renamed
 
 	annotation PBI_ResultType = Table
-

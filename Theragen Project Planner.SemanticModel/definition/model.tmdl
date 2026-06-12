@@ -6,11 +6,9 @@ model Model
 		legacyRedirects
 		returnErrorValuesAsNull
 
-annotation PBI_QueryOrder = ["DataFolder", "Project", "Department", "Person", "WBS Element", "Knowledge Area", "Schedule Activity", "Milestone", "Budget Line", "Risk", "Risk Response", "Change Request", "Status Report", "Status Report Area", "Stakeholder", "Team Member", "Lesson Learned", "Closure Item", "_Measures"]
+annotation PBI_QueryOrder = ["PgServer", "PgDatabase", "Project", "Department", "Person", "WBS Element", "Knowledge Area", "Schedule Activity", "Milestone", "Budget Line", "Risk", "Risk Response", "Change Request", "Status Report", "Status Report Area", "Stakeholder", "Team Member", "Lesson Learned", "Closure Item", "_Measures"]
 
 annotation __PBI_TimeIntelligenceEnabled = 0
-
-annotation PBI_ProTooling = ["DevMode"]
 
 ref table Project
 ref table Department
@@ -29,10 +27,9 @@ ref table Stakeholder
 ref table 'Team Member'
 ref table 'Lesson Learned'
 ref table 'Closure Item'
-ref table Date
+ref table 'Date'
 ref table 'Recent Accomplishment'
 ref table 'Upcoming Next Step'
 ref table _Measures
 
 ref cultureInfo en-US
-

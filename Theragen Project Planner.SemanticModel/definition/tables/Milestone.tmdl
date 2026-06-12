@@ -1,5 +1,5 @@
 /// Fact - milestones (PMBOK P11). Baseline vs forecast vs actual dates.
-table Milestone
+table 'Milestone'
 	lineageTag: 1f186523-e114-5d40-871a-a58126c5bd94
 
 	column 'Milestone ID'
@@ -28,7 +28,7 @@ table Milestone
 
 		annotation SummarizationSetBy = User
 
-	column Milestone
+	column 'Milestone'
 		dataType: string
 		lineageTag: 52e77264-cf70-53f7-920e-9bf6f2fcf960
 		summarizeBy: none
@@ -87,18 +87,15 @@ table Milestone
 
 		annotation SummarizationSetBy = User
 
-	partition Milestone = m
+	partition 'Milestone' = m
 		mode: import
 		source =
 				let
-				    Source = Csv.Document(File.Contents(DataFolder & "\milestone.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
-				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
-				    Selected = Table.SelectColumns(Promoted, {"milestone_id", "project_id", "project_code", "name", "baseline_date", "forecast_date", "actual_date", "status", "owner_role"}),
-				    Nulled = Table.ReplaceValue(Selected, "", null, Replacer.ReplaceValue, Table.ColumnNames(Selected)),
-				    Typed = Table.TransformColumnTypes(Nulled, {{"milestone_id", type text}, {"project_id", type text}, {"project_code", type text}, {"name", type text}, {"baseline_date", type date}, {"forecast_date", type date}, {"actual_date", type date}, {"status", type text}, {"owner_role", type text}}),
-				    Renamed = Table.RenameColumns(Typed, {{"milestone_id", "Milestone ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"name", "Milestone"}, {"baseline_date", "Baseline Date"}, {"forecast_date", "Forecast Date"}, {"actual_date", "Actual Date"}, {"status", "Milestone Status"}, {"owner_role", "Owner Role"}})
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "milestone"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"milestone_id", "project_id", "project_code", "name", "baseline_date", "forecast_date", "actual_date", "status", "owner_role"}),
+				    Renamed = Table.RenameColumns(Selected, {{"milestone_id", "Milestone ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"name", "Milestone"}, {"baseline_date", "Baseline Date"}, {"forecast_date", "Forecast Date"}, {"actual_date", "Actual Date"}, {"status", "Milestone Status"}, {"owner_role", "Owner Role"}})
 				in
 				    Renamed
 
 	annotation PBI_ResultType = Table
-

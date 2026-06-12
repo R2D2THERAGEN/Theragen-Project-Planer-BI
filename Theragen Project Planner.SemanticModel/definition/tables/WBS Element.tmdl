@@ -97,7 +97,7 @@ table 'WBS Element'
 		annotation SummarizationSetBy = User
 
 	/// Level-1 deliverable this node rolls up to.
-	column Deliverable = IF('WBS Element'[WBS Level] = 1, 'WBS Element'[WBS Name], LOOKUPVALUE('WBS Element'[WBS Name], 'WBS Element'[WBS ID], 'WBS Element'[Parent WBS ID]))
+	column 'Deliverable' = IF('WBS Element'[WBS Level] = 1, 'WBS Element'[WBS Name], LOOKUPVALUE('WBS Element'[WBS Name], 'WBS Element'[WBS ID], 'WBS Element'[Parent WBS ID]))
 		dataType: string
 		lineageTag: efd8b700-a804-5fcd-8ab5-da5b9ad52bf8
 		summarizeBy: none
@@ -116,14 +116,11 @@ table 'WBS Element'
 		mode: import
 		source =
 				let
-				    Source = Csv.Document(File.Contents(DataFolder & "\wbs_element.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
-				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
-				    Selected = Table.SelectColumns(Promoted, {"wbs_element_id", "project_id", "project_code", "wbs_code", "parent_wbs_element_id", "level", "name", "owning_department", "owner_role", "estimated_effort_hrs", "estimated_cost"}),
-				    Nulled = Table.ReplaceValue(Selected, "", null, Replacer.ReplaceValue, Table.ColumnNames(Selected)),
-				    Typed = Table.TransformColumnTypes(Nulled, {{"wbs_element_id", type text}, {"project_id", type text}, {"project_code", type text}, {"wbs_code", type text}, {"parent_wbs_element_id", type text}, {"level", Int64.Type}, {"name", type text}, {"owning_department", type text}, {"owner_role", type text}, {"estimated_effort_hrs", type number}, {"estimated_cost", Currency.Type}}),
-				    Renamed = Table.RenameColumns(Typed, {{"wbs_element_id", "WBS ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"wbs_code", "WBS Code"}, {"parent_wbs_element_id", "Parent WBS ID"}, {"level", "WBS Level"}, {"name", "WBS Name"}, {"owning_department", "Owning Department"}, {"owner_role", "Owner Role"}, {"estimated_effort_hrs", "Estimated Effort Hrs"}, {"estimated_cost", "Estimated Cost"}})
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "wbs_element"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"wbs_element_id", "project_id", "project_code", "wbs_code", "parent_wbs_element_id", "level", "name", "owning_department", "owner_role", "estimated_effort_hrs", "estimated_cost"}),
+				    Renamed = Table.RenameColumns(Selected, {{"wbs_element_id", "WBS ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"wbs_code", "WBS Code"}, {"parent_wbs_element_id", "Parent WBS ID"}, {"level", "WBS Level"}, {"name", "WBS Name"}, {"owning_department", "Owning Department"}, {"owner_role", "Owner Role"}, {"estimated_effort_hrs", "Estimated Effort Hrs"}, {"estimated_cost", "Estimated Cost"}})
 				in
 				    Renamed
 
 	annotation PBI_ResultType = Table
-

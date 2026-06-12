@@ -81,7 +81,7 @@ table 'Budget Line'
 
 		annotation SummarizationSetBy = User
 
-	column Subtotal
+	column 'Subtotal'
 		dataType: decimal
 		formatString: \$#,##0;(\$#,##0);\$0
 		lineageTag: 95821974-1008-510b-bf2e-0eb9506ed464
@@ -99,7 +99,7 @@ table 'Budget Line'
 
 		annotation SummarizationSetBy = User
 
-	column Total
+	column 'Total'
 		dataType: decimal
 		formatString: \$#,##0;(\$#,##0);\$0
 		lineageTag: a6b48238-d0c1-5f0d-a0b0-b287ec4383d5
@@ -120,14 +120,11 @@ table 'Budget Line'
 		mode: import
 		source =
 				let
-				    Source = Csv.Document(File.Contents(DataFolder & "\budget_line_item.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
-				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
-				    Selected = Table.SelectColumns(Promoted, {"budget_line_id", "wbs_element_id", "project_id", "project_code", "category", "labor_amount", "materials_amount", "vendor_amount", "other_amount", "subtotal", "contingency_pct", "total", "funding_source"}),
-				    Nulled = Table.ReplaceValue(Selected, "", null, Replacer.ReplaceValue, Table.ColumnNames(Selected)),
-				    Typed = Table.TransformColumnTypes(Nulled, {{"budget_line_id", type text}, {"wbs_element_id", type text}, {"project_id", type text}, {"project_code", type text}, {"category", type text}, {"labor_amount", Currency.Type}, {"materials_amount", Currency.Type}, {"vendor_amount", Currency.Type}, {"other_amount", Currency.Type}, {"subtotal", Currency.Type}, {"contingency_pct", type number}, {"total", Currency.Type}, {"funding_source", type text}}),
-				    Renamed = Table.RenameColumns(Typed, {{"budget_line_id", "Budget Line ID"}, {"wbs_element_id", "WBS ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"category", "Cost Category"}, {"labor_amount", "Labor Amount"}, {"materials_amount", "Materials Amount"}, {"vendor_amount", "Vendor Amount"}, {"other_amount", "Other Amount"}, {"subtotal", "Subtotal"}, {"contingency_pct", "Contingency Pct"}, {"total", "Total"}, {"funding_source", "Funding Source"}})
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "budget_line_item"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"budget_line_id", "wbs_element_id", "project_id", "project_code", "category", "labor_amount", "materials_amount", "vendor_amount", "other_amount", "subtotal", "contingency_pct", "total", "funding_source"}),
+				    Renamed = Table.RenameColumns(Selected, {{"budget_line_id", "Budget Line ID"}, {"wbs_element_id", "WBS ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"category", "Cost Category"}, {"labor_amount", "Labor Amount"}, {"materials_amount", "Materials Amount"}, {"vendor_amount", "Vendor Amount"}, {"other_amount", "Other Amount"}, {"subtotal", "Subtotal"}, {"contingency_pct", "Contingency Pct"}, {"total", "Total"}, {"funding_source", "Funding Source"}})
 				in
 				    Renamed
 
 	annotation PBI_ResultType = Table
-

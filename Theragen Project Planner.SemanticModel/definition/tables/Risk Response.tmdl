@@ -81,14 +81,11 @@ table 'Risk Response'
 		mode: import
 		source =
 				let
-				    Source = Csv.Document(File.Contents(DataFolder & "\risk_response.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
-				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
-				    Selected = Table.SelectColumns(Promoted, {"response_id", "risk_id", "project_code", "risk_code", "action_type", "description", "owner_name", "due_date", "status"}),
-				    Nulled = Table.ReplaceValue(Selected, "", null, Replacer.ReplaceValue, Table.ColumnNames(Selected)),
-				    Typed = Table.TransformColumnTypes(Nulled, {{"response_id", type text}, {"risk_id", type text}, {"project_code", type text}, {"risk_code", type text}, {"action_type", type text}, {"description", type text}, {"owner_name", type text}, {"due_date", type date}, {"status", type text}}),
-				    Renamed = Table.RenameColumns(Typed, {{"response_id", "Response ID"}, {"risk_id", "Risk ID"}, {"project_code", "Project Code"}, {"risk_code", "Risk Code"}, {"action_type", "Action Type"}, {"description", "Action Description"}, {"owner_name", "Action Owner"}, {"due_date", "Action Due Date"}, {"status", "Action Status"}})
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "risk_response"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"response_id", "risk_id", "project_code", "risk_code", "action_type", "description", "owner_name", "due_date", "status"}),
+				    Renamed = Table.RenameColumns(Selected, {{"response_id", "Response ID"}, {"risk_id", "Risk ID"}, {"project_code", "Project Code"}, {"risk_code", "Risk Code"}, {"action_type", "Action Type"}, {"description", "Action Description"}, {"owner_name", "Action Owner"}, {"due_date", "Action Due Date"}, {"status", "Action Status"}})
 				in
 				    Renamed
 
 	annotation PBI_ResultType = Table
-

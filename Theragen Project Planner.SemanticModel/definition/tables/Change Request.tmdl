@@ -94,7 +94,7 @@ table 'Change Request'
 
 		annotation SummarizationSetBy = User
 
-	column Reason
+	column 'Reason'
 		dataType: string
 		lineageTag: 5cf1d5e3-aef1-5be7-a432-64a1785abf4a
 		summarizeBy: none
@@ -120,7 +120,7 @@ table 'Change Request'
 
 		annotation SummarizationSetBy = User
 
-	column Decision
+	column 'Decision'
 		dataType: string
 		lineageTag: f110871a-e180-585f-8471-0e0e9e6eca55
 		summarizeBy: none
@@ -158,14 +158,11 @@ table 'Change Request'
 		mode: import
 		source =
 				let
-				    Source = Csv.Document(File.Contents(DataFolder & "\change_request.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
-				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
-				    Selected = Table.SelectColumns(Promoted, {"cr_id", "project_id", "project_code", "cr_code", "intake_id", "requested_at", "requested_by_person_id", "requested_by_name", "cr_class", "change_types", "description", "reason", "impact_schedule_days", "impact_cost", "decision", "decided_at", "cycle_time_days", "status"}),
-				    Nulled = Table.ReplaceValue(Selected, "", null, Replacer.ReplaceValue, Table.ColumnNames(Selected)),
-				    Typed = Table.TransformColumnTypes(Nulled, {{"cr_id", type text}, {"project_id", type text}, {"project_code", type text}, {"cr_code", type text}, {"intake_id", type text}, {"requested_at", type date}, {"requested_by_person_id", type text}, {"requested_by_name", type text}, {"cr_class", type text}, {"change_types", type text}, {"description", type text}, {"reason", type text}, {"impact_schedule_days", Int64.Type}, {"impact_cost", Currency.Type}, {"decision", type text}, {"decided_at", type date}, {"cycle_time_days", Int64.Type}, {"status", type text}}),
-				    Renamed = Table.RenameColumns(Typed, {{"cr_id", "CR ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"cr_code", "CR Code"}, {"intake_id", "Intake ID"}, {"requested_at", "Requested Date"}, {"requested_by_person_id", "Requested By ID"}, {"requested_by_name", "Requested By"}, {"cr_class", "CR Class"}, {"change_types", "Change Type"}, {"description", "CR Description"}, {"reason", "Reason"}, {"impact_schedule_days", "Schedule Impact Days"}, {"impact_cost", "Cost Impact"}, {"decision", "Decision"}, {"decided_at", "Decided Date"}, {"cycle_time_days", "Cycle Time Days"}, {"status", "CR Status"}})
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "change_request"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"cr_id", "project_id", "project_code", "cr_code", "intake_id", "requested_at", "requested_by_person_id", "requested_by_name", "cr_class", "change_types", "description", "reason", "impact_schedule_days", "impact_cost", "decision", "decided_at", "cycle_time_days", "status"}),
+				    Renamed = Table.RenameColumns(Selected, {{"cr_id", "CR ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"cr_code", "CR Code"}, {"intake_id", "Intake ID"}, {"requested_at", "Requested Date"}, {"requested_by_person_id", "Requested By ID"}, {"requested_by_name", "Requested By"}, {"cr_class", "CR Class"}, {"change_types", "Change Type"}, {"description", "CR Description"}, {"reason", "Reason"}, {"impact_schedule_days", "Schedule Impact Days"}, {"impact_cost", "Cost Impact"}, {"decision", "Decision"}, {"decided_at", "Decided Date"}, {"cycle_time_days", "Cycle Time Days"}, {"status", "CR Status"}})
 				in
 				    Renamed
 
 	annotation PBI_ResultType = Table
-

@@ -1,5 +1,5 @@
 /// Fact - risk register (PMBOK P14). 5x5 likelihood x impact scoring.
-table Risk
+table 'Risk'
 	lineageTag: a2df0eeb-9b9b-5b4c-ad79-aa6aa62118ab
 
 	column 'Risk ID'
@@ -52,7 +52,7 @@ table Risk
 
 		annotation SummarizationSetBy = User
 
-	column Likelihood
+	column 'Likelihood'
 		dataType: int64
 		formatString: #,0
 		lineageTag: bd35f583-6313-531a-bdb5-721d8443efac
@@ -61,7 +61,7 @@ table Risk
 
 		annotation SummarizationSetBy = User
 
-	column Impact
+	column 'Impact'
 		dataType: int64
 		formatString: #,0
 		lineageTag: b948501a-bb1c-544f-a2df-d8784954dec4
@@ -96,7 +96,7 @@ table Risk
 
 		annotation SummarizationSetBy = User
 
-	column Owner
+	column 'Owner'
 		dataType: string
 		lineageTag: dbc0f95f-a869-56a4-8eac-616bc037d27e
 		summarizeBy: none
@@ -104,7 +104,7 @@ table Risk
 
 		annotation SummarizationSetBy = User
 
-	column Department
+	column 'Department'
 		dataType: string
 		lineageTag: 9b4884d5-0fce-5ba6-af1d-61d229b17533
 		summarizeBy: none
@@ -147,7 +147,7 @@ table Risk
 		annotation SummarizationSetBy = User
 
 	/// Banding of Risk Score on the 5x5 matrix: >=20 Critical, >=12 High, >=6 Medium.
-	column Severity = SWITCH(TRUE(), 'Risk'[Risk Score] >= 20, "Critical", 'Risk'[Risk Score] >= 12, "High", 'Risk'[Risk Score] >= 6, "Medium", "Low")
+	column 'Severity' = SWITCH(TRUE(), 'Risk'[Risk Score] >= 20, "Critical", 'Risk'[Risk Score] >= 12, "High", 'Risk'[Risk Score] >= 6, "Medium", "Low")
 		dataType: string
 		lineageTag: c777e9c3-a482-50c2-9c3e-4c0b73724d59
 		summarizeBy: none
@@ -162,18 +162,15 @@ table Risk
 
 		annotation SummarizationSetBy = User
 
-	partition Risk = m
+	partition 'Risk' = m
 		mode: import
 		source =
 				let
-				    Source = Csv.Document(File.Contents(DataFolder & "\risk.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
-				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
-				    Selected = Table.SelectColumns(Promoted, {"risk_id", "project_id", "project_code", "risk_code", "category", "description", "likelihood", "impact", "score", "response_type", "owner_person_id", "owner_name", "department", "due_date", "status", "residual_score", "compliance_flag"}),
-				    Nulled = Table.ReplaceValue(Selected, "", null, Replacer.ReplaceValue, Table.ColumnNames(Selected)),
-				    Typed = Table.TransformColumnTypes(Nulled, {{"risk_id", type text}, {"project_id", type text}, {"project_code", type text}, {"risk_code", type text}, {"category", type text}, {"description", type text}, {"likelihood", Int64.Type}, {"impact", Int64.Type}, {"score", Int64.Type}, {"response_type", type text}, {"owner_person_id", type text}, {"owner_name", type text}, {"department", type text}, {"due_date", type date}, {"status", type text}, {"residual_score", Int64.Type}, {"compliance_flag", type text}}),
-				    Renamed = Table.RenameColumns(Typed, {{"risk_id", "Risk ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"risk_code", "Risk Code"}, {"category", "Risk Category"}, {"description", "Risk Description"}, {"likelihood", "Likelihood"}, {"impact", "Impact"}, {"score", "Risk Score"}, {"response_type", "Response Type"}, {"owner_person_id", "Owner ID"}, {"owner_name", "Owner"}, {"department", "Department"}, {"due_date", "Due Date"}, {"status", "Risk Status"}, {"residual_score", "Residual Score"}, {"compliance_flag", "Compliance Frame"}})
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "risk"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"risk_id", "project_id", "project_code", "risk_code", "category", "description", "likelihood", "impact", "score", "response_type", "owner_person_id", "owner_name", "department", "due_date", "status", "residual_score", "compliance_flag"}),
+				    Renamed = Table.RenameColumns(Selected, {{"risk_id", "Risk ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"risk_code", "Risk Code"}, {"category", "Risk Category"}, {"description", "Risk Description"}, {"likelihood", "Likelihood"}, {"impact", "Impact"}, {"score", "Risk Score"}, {"response_type", "Response Type"}, {"owner_person_id", "Owner ID"}, {"owner_name", "Owner"}, {"department", "Department"}, {"due_date", "Due Date"}, {"status", "Risk Status"}, {"residual_score", "Residual Score"}, {"compliance_flag", "Compliance Frame"}})
 				in
 				    Renamed
 
 	annotation PBI_ResultType = Table
-

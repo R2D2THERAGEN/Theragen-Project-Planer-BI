@@ -36,7 +36,7 @@ table 'Lesson Learned'
 
 		annotation SummarizationSetBy = User
 
-	column Lesson
+	column 'Lesson'
 		dataType: string
 		lineageTag: d4544e6a-9790-5eaa-843a-d29d87a538db
 		summarizeBy: none
@@ -52,7 +52,7 @@ table 'Lesson Learned'
 
 		annotation SummarizationSetBy = User
 
-	column Recommendation
+	column 'Recommendation'
 		dataType: string
 		lineageTag: 6ca85ade-ba99-5b85-9338-433634589d67
 		summarizeBy: none
@@ -80,14 +80,11 @@ table 'Lesson Learned'
 		mode: import
 		source =
 				let
-				    Source = Csv.Document(File.Contents(DataFolder & "\lesson_learned.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
-				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
-				    Selected = Table.SelectColumns(Promoted, {"lesson_id", "project_id", "project_code", "category", "lesson", "what_happened", "recommendation", "followup_owner_role", "status"}),
-				    Nulled = Table.ReplaceValue(Selected, "", null, Replacer.ReplaceValue, Table.ColumnNames(Selected)),
-				    Typed = Table.TransformColumnTypes(Nulled, {{"lesson_id", type text}, {"project_id", type text}, {"project_code", type text}, {"category", type text}, {"lesson", type text}, {"what_happened", type text}, {"recommendation", type text}, {"followup_owner_role", type text}, {"status", type text}}),
-				    Renamed = Table.RenameColumns(Typed, {{"lesson_id", "Lesson ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"category", "Lesson Category"}, {"lesson", "Lesson"}, {"what_happened", "What Happened"}, {"recommendation", "Recommendation"}, {"followup_owner_role", "Follow-up Owner"}, {"status", "Lesson Status"}})
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "lesson_learned"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"lesson_id", "project_id", "project_code", "category", "lesson", "what_happened", "recommendation", "followup_owner_role", "status"}),
+				    Renamed = Table.RenameColumns(Selected, {{"lesson_id", "Lesson ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"category", "Lesson Category"}, {"lesson", "Lesson"}, {"what_happened", "What Happened"}, {"recommendation", "Recommendation"}, {"followup_owner_role", "Follow-up Owner"}, {"status", "Lesson Status"}})
 				in
 				    Renamed
 
 	annotation PBI_ResultType = Table
-

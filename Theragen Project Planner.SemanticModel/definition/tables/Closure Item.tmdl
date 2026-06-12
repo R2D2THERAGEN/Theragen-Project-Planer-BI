@@ -44,7 +44,7 @@ table 'Closure Item'
 
 		annotation SummarizationSetBy = User
 
-	column Done
+	column 'Done'
 		dataType: boolean
 		lineageTag: 3929b9c5-9b6b-55d5-9470-e61770cbf624
 		summarizeBy: none
@@ -52,7 +52,7 @@ table 'Closure Item'
 
 		annotation SummarizationSetBy = User
 
-	column Evidence
+	column 'Evidence'
 		dataType: string
 		lineageTag: 2bb9342e-582b-5f2a-9301-c1456ca1086c
 		summarizeBy: none
@@ -64,14 +64,11 @@ table 'Closure Item'
 		mode: import
 		source =
 				let
-				    Source = Csv.Document(File.Contents(DataFolder & "\closure_checklist_item.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
-				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
-				    Selected = Table.SelectColumns(Promoted, {"closure_item_id", "project_id", "project_code", "item", "owner_role", "done", "evidence"}),
-				    Nulled = Table.ReplaceValue(Selected, "", null, Replacer.ReplaceValue, Table.ColumnNames(Selected)),
-				    Typed = Table.TransformColumnTypes(Nulled, {{"closure_item_id", type text}, {"project_id", type text}, {"project_code", type text}, {"item", type text}, {"owner_role", type text}, {"done", type logical}, {"evidence", type text}}),
-				    Renamed = Table.RenameColumns(Typed, {{"closure_item_id", "Closure Item ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"item", "Closure Item"}, {"owner_role", "Owner Role"}, {"done", "Done"}, {"evidence", "Evidence"}})
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "closure_checklist_item"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"closure_item_id", "project_id", "project_code", "item", "owner_role", "done", "evidence"}),
+				    Renamed = Table.RenameColumns(Selected, {{"closure_item_id", "Closure Item ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"item", "Closure Item"}, {"owner_role", "Owner Role"}, {"done", "Done"}, {"evidence", "Evidence"}})
 				in
 				    Renamed
 
 	annotation PBI_ResultType = Table
-

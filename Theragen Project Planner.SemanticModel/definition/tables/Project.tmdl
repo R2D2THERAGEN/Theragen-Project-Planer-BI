@@ -1,5 +1,5 @@
 /// Project dimension - one row per project (PMBOK P01 project, charter fields denormalized).
-table Project
+table 'Project'
 	lineageTag: 43886340-21d5-5420-bcc8-b7ae039e2aec
 
 	column 'Project ID'
@@ -51,7 +51,7 @@ table Project
 
 		annotation SummarizationSetBy = User
 
-	column Sponsor
+	column 'Sponsor'
 		dataType: string
 		lineageTag: e5e0390c-719f-57ba-81af-0cd7d8d2df5e
 		summarizeBy: none
@@ -75,7 +75,7 @@ table Project
 
 		annotation SummarizationSetBy = User
 
-	column Approach
+	column 'Approach'
 		dataType: string
 		lineageTag: f7c2692b-ae11-59a2-a491-17dd3d11afd6
 		summarizeBy: none
@@ -152,18 +152,15 @@ table Project
 
 		annotation SummarizationSetBy = User
 
-	partition Project = m
+	partition 'Project' = m
 		mode: import
 		source =
 				let
-				    Source = Csv.Document(File.Contents(DataFolder & "\project.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
-				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
-				    Selected = Table.SelectColumns(Promoted, {"project_id", "project_code", "intake_id", "name", "description", "business_value", "sponsor_name", "project_manager_name", "primary_department", "approach", "lifecycle_phase", "status", "planned_start", "planned_finish", "actual_start", "actual_finish", "budget_total", "strategic_objective_ref"}),
-				    Nulled = Table.ReplaceValue(Selected, "", null, Replacer.ReplaceValue, Table.ColumnNames(Selected)),
-				    Typed = Table.TransformColumnTypes(Nulled, {{"project_id", type text}, {"project_code", type text}, {"intake_id", type text}, {"name", type text}, {"description", type text}, {"business_value", type text}, {"sponsor_name", type text}, {"project_manager_name", type text}, {"primary_department", type text}, {"approach", type text}, {"lifecycle_phase", type text}, {"status", type text}, {"planned_start", type date}, {"planned_finish", type date}, {"actual_start", type date}, {"actual_finish", type date}, {"budget_total", Currency.Type}, {"strategic_objective_ref", type text}}),
-				    Renamed = Table.RenameColumns(Typed, {{"project_id", "Project ID"}, {"project_code", "Project Code"}, {"intake_id", "Intake ID"}, {"name", "Project Name"}, {"description", "Project Description"}, {"business_value", "Business Value"}, {"sponsor_name", "Sponsor"}, {"project_manager_name", "Project Manager"}, {"primary_department", "Primary Department"}, {"approach", "Approach"}, {"lifecycle_phase", "Lifecycle Phase"}, {"status", "Project Status"}, {"planned_start", "Planned Start"}, {"planned_finish", "Planned Finish"}, {"actual_start", "Actual Start"}, {"actual_finish", "Actual Finish"}, {"budget_total", "Charter Budget"}, {"strategic_objective_ref", "Strategic Objective"}})
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "project"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"project_id", "project_code", "intake_id", "name", "description", "business_value", "sponsor_name", "project_manager_name", "primary_department", "approach", "lifecycle_phase", "status", "planned_start", "planned_finish", "actual_start", "actual_finish", "budget_total", "strategic_objective_ref"}),
+				    Renamed = Table.RenameColumns(Selected, {{"project_id", "Project ID"}, {"project_code", "Project Code"}, {"intake_id", "Intake ID"}, {"name", "Project Name"}, {"description", "Project Description"}, {"business_value", "Business Value"}, {"sponsor_name", "Sponsor"}, {"project_manager_name", "Project Manager"}, {"primary_department", "Primary Department"}, {"approach", "Approach"}, {"lifecycle_phase", "Lifecycle Phase"}, {"status", "Project Status"}, {"planned_start", "Planned Start"}, {"planned_finish", "Planned Finish"}, {"actual_start", "Actual Start"}, {"actual_finish", "Actual Finish"}, {"budget_total", "Charter Budget"}, {"strategic_objective_ref", "Strategic Objective"}})
 				in
 				    Renamed
 
 	annotation PBI_ResultType = Table
-

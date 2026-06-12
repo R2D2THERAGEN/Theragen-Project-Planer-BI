@@ -1,5 +1,5 @@
 /// Person directory (DM D02). Owners, requesters and assignees on facts.
-table Person
+table 'Person'
 	lineageTag: b4c6cdec-1a41-5001-b43e-dd06efbc25e0
 
 	column 'Person ID'
@@ -11,7 +11,7 @@ table Person
 
 		annotation SummarizationSetBy = User
 
-	column Person
+	column 'Person'
 		dataType: string
 		lineageTag: 34350de5-beb8-5edf-86a3-673e1258680c
 		summarizeBy: none
@@ -19,7 +19,7 @@ table Person
 
 		annotation SummarizationSetBy = User
 
-	column Email
+	column 'Email'
 		dataType: string
 		lineageTag: 26ed695f-8b9e-5b1a-ab10-22c8c36c8128
 		summarizeBy: none
@@ -51,18 +51,15 @@ table Person
 
 		annotation SummarizationSetBy = User
 
-	partition Person = m
+	partition 'Person' = m
 		mode: import
 		source =
 				let
-				    Source = Csv.Document(File.Contents(DataFolder & "\person.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
-				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
-				    Selected = Table.SelectColumns(Promoted, {"person_id", "display_name", "email", "department_name", "role_title", "employee_number"}),
-				    Nulled = Table.ReplaceValue(Selected, "", null, Replacer.ReplaceValue, Table.ColumnNames(Selected)),
-				    Typed = Table.TransformColumnTypes(Nulled, {{"person_id", type text}, {"display_name", type text}, {"email", type text}, {"department_name", type text}, {"role_title", type text}, {"employee_number", type text}}),
-				    Renamed = Table.RenameColumns(Typed, {{"person_id", "Person ID"}, {"display_name", "Person"}, {"email", "Email"}, {"department_name", "Person Department"}, {"role_title", "Role Title"}, {"employee_number", "Employee Number"}})
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "person"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"person_id", "display_name", "email", "department_name", "role_title", "employee_number"}),
+				    Renamed = Table.RenameColumns(Selected, {{"person_id", "Person ID"}, {"display_name", "Person"}, {"email", "Email"}, {"department_name", "Person Department"}, {"role_title", "Role Title"}, {"employee_number", "Employee Number"}})
 				in
 				    Renamed
 
 	annotation PBI_ResultType = Table
-

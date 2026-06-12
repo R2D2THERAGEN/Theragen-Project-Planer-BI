@@ -63,7 +63,7 @@ table 'Status Report'
 
 		annotation SummarizationSetBy = User
 
-	column Trend
+	column 'Trend'
 		dataType: string
 		lineageTag: cb4433e0-b732-5087-9e0b-19687d3f3d9a
 		summarizeBy: none
@@ -108,14 +108,11 @@ table 'Status Report'
 		mode: import
 		source =
 				let
-				    Source = Csv.Document(File.Contents(DataFolder & "\status_report.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
-				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
-				    Selected = Table.SelectColumns(Promoted, {"report_id", "project_id", "project_code", "report_number", "period_start", "period_end", "overall_status", "trend", "executive_summary", "decisions_needed", "submitted_by_name", "submitted_at"}),
-				    Nulled = Table.ReplaceValue(Selected, "", null, Replacer.ReplaceValue, Table.ColumnNames(Selected)),
-				    Typed = Table.TransformColumnTypes(Nulled, {{"report_id", type text}, {"project_id", type text}, {"project_code", type text}, {"report_number", Int64.Type}, {"period_start", type date}, {"period_end", type date}, {"overall_status", type text}, {"trend", type text}, {"executive_summary", type text}, {"decisions_needed", type text}, {"submitted_by_name", type text}, {"submitted_at", type date}}),
-				    Renamed = Table.RenameColumns(Typed, {{"report_id", "Report ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"report_number", "Report Number"}, {"period_start", "Period Start"}, {"period_end", "Period End"}, {"overall_status", "Overall Status"}, {"trend", "Trend"}, {"executive_summary", "Executive Summary"}, {"decisions_needed", "Decisions Needed"}, {"submitted_by_name", "Submitted By"}, {"submitted_at", "Submitted Date"}})
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "status_report"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"report_id", "project_id", "project_code", "report_number", "period_start", "period_end", "overall_status", "trend", "executive_summary", "decisions_needed", "submitted_by_name", "submitted_at"}),
+				    Renamed = Table.RenameColumns(Selected, {{"report_id", "Report ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"report_number", "Report Number"}, {"period_start", "Period Start"}, {"period_end", "Period End"}, {"overall_status", "Overall Status"}, {"trend", "Trend"}, {"executive_summary", "Executive Summary"}, {"decisions_needed", "Decisions Needed"}, {"submitted_by_name", "Submitted By"}, {"submitted_at", "Submitted Date"}})
 				in
 				    Renamed
 
 	annotation PBI_ResultType = Table
-

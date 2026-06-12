@@ -37,7 +37,7 @@ table 'Team Member'
 
 		annotation SummarizationSetBy = User
 
-	column Member
+	column 'Member'
 		dataType: string
 		lineageTag: 817978f8-c945-53ff-adb7-ea4bf4bf96b9
 		summarizeBy: none
@@ -53,7 +53,7 @@ table 'Team Member'
 
 		annotation SummarizationSetBy = User
 
-	column Department
+	column 'Department'
 		dataType: string
 		lineageTag: 623878a1-fcba-5f83-b0e1-f152d4491b94
 		summarizeBy: none
@@ -92,14 +92,11 @@ table 'Team Member'
 		mode: import
 		source =
 				let
-				    Source = Csv.Document(File.Contents(DataFolder & "\project_team_member.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
-				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
-				    Selected = Table.SelectColumns(Promoted, {"team_member_id", "project_id", "project_code", "person_id", "member_name", "role", "department", "allocation_pct", "start_date", "end_date"}),
-				    Nulled = Table.ReplaceValue(Selected, "", null, Replacer.ReplaceValue, Table.ColumnNames(Selected)),
-				    Typed = Table.TransformColumnTypes(Nulled, {{"team_member_id", type text}, {"project_id", type text}, {"project_code", type text}, {"person_id", type text}, {"member_name", type text}, {"role", type text}, {"department", type text}, {"allocation_pct", type number}, {"start_date", type date}, {"end_date", type date}}),
-				    Renamed = Table.RenameColumns(Typed, {{"team_member_id", "Team Member ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"person_id", "Person ID"}, {"member_name", "Member"}, {"role", "Team Role"}, {"department", "Department"}, {"allocation_pct", "Allocation Pct"}, {"start_date", "Start Date"}, {"end_date", "End Date"}})
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "project_team_member"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"team_member_id", "project_id", "project_code", "person_id", "member_name", "role", "department", "allocation_pct", "start_date", "end_date"}),
+				    Renamed = Table.RenameColumns(Selected, {{"team_member_id", "Team Member ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"person_id", "Person ID"}, {"member_name", "Member"}, {"role", "Team Role"}, {"department", "Department"}, {"allocation_pct", "Allocation Pct"}, {"start_date", "Start Date"}, {"end_date", "End Date"}})
 				in
 				    Renamed
 
 	annotation PBI_ResultType = Table
-

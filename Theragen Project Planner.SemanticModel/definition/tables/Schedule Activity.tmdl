@@ -107,7 +107,7 @@ table 'Schedule Activity'
 
 		annotation SummarizationSetBy = User
 
-	column Owner
+	column 'Owner'
 		dataType: string
 		lineageTag: e5a447d2-3250-5807-93ef-238a8ed39bfe
 		summarizeBy: none
@@ -115,7 +115,7 @@ table 'Schedule Activity'
 
 		annotation SummarizationSetBy = User
 
-	column Department
+	column 'Department'
 		dataType: string
 		lineageTag: 1ca4cedf-ab3e-5b1b-bfea-aeddc3186585
 		summarizeBy: none
@@ -144,14 +144,11 @@ table 'Schedule Activity'
 		mode: import
 		source =
 				let
-				    Source = Csv.Document(File.Contents(DataFolder & "\schedule_activity.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
-				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
-				    Selected = Table.SelectColumns(Promoted, {"activity_id", "wbs_element_id", "project_id", "project_code", "activity_code", "name", "start_planned", "finish_planned", "start_actual", "finish_actual", "duration_days", "owner_person_id", "owner_name", "department", "status", "pct_complete"}),
-				    Nulled = Table.ReplaceValue(Selected, "", null, Replacer.ReplaceValue, Table.ColumnNames(Selected)),
-				    Typed = Table.TransformColumnTypes(Nulled, {{"activity_id", type text}, {"wbs_element_id", type text}, {"project_id", type text}, {"project_code", type text}, {"activity_code", type text}, {"name", type text}, {"start_planned", type date}, {"finish_planned", type date}, {"start_actual", type date}, {"finish_actual", type date}, {"duration_days", Int64.Type}, {"owner_person_id", type text}, {"owner_name", type text}, {"department", type text}, {"status", type text}, {"pct_complete", type number}}),
-				    Renamed = Table.RenameColumns(Typed, {{"activity_id", "Activity ID"}, {"wbs_element_id", "WBS ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"activity_code", "Activity Code"}, {"name", "Activity Name"}, {"start_planned", "Planned Start"}, {"finish_planned", "Planned Finish"}, {"start_actual", "Actual Start"}, {"finish_actual", "Actual Finish"}, {"duration_days", "Duration Days"}, {"owner_person_id", "Owner ID"}, {"owner_name", "Owner"}, {"department", "Department"}, {"status", "Activity Status"}, {"pct_complete", "Pct Complete"}})
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "schedule_activity"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"activity_id", "wbs_element_id", "project_id", "project_code", "activity_code", "name", "start_planned", "finish_planned", "start_actual", "finish_actual", "duration_days", "owner_person_id", "owner_name", "department", "status", "pct_complete"}),
+				    Renamed = Table.RenameColumns(Selected, {{"activity_id", "Activity ID"}, {"wbs_element_id", "WBS ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"activity_code", "Activity Code"}, {"name", "Activity Name"}, {"start_planned", "Planned Start"}, {"finish_planned", "Planned Finish"}, {"start_actual", "Actual Start"}, {"finish_actual", "Actual Finish"}, {"duration_days", "Duration Days"}, {"owner_person_id", "Owner ID"}, {"owner_name", "Owner"}, {"department", "Department"}, {"status", "Activity Status"}, {"pct_complete", "Pct Complete"}})
 				in
 				    Renamed
 
 	annotation PBI_ResultType = Table
-

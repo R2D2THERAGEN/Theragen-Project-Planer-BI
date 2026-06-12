@@ -6,8 +6,8 @@ table 'Knowledge Area'
 		dataType: string
 		lineageTag: f27bd9cd-fc01-5b41-8aa1-adf9c35d9b8f
 		summarizeBy: none
-		sourceColumn: Knowledge Area
 		sortByColumn: 'KA Sort'
+		sourceColumn: Knowledge Area
 
 		annotation SummarizationSetBy = User
 
@@ -24,14 +24,11 @@ table 'Knowledge Area'
 		mode: import
 		source =
 				let
-				    Source = Csv.Document(File.Contents(DataFolder & "\knowledge_area.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
-				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
-				    Selected = Table.SelectColumns(Promoted, {"knowledge_area", "sort_order"}),
-				    Nulled = Table.ReplaceValue(Selected, "", null, Replacer.ReplaceValue, Table.ColumnNames(Selected)),
-				    Typed = Table.TransformColumnTypes(Nulled, {{"knowledge_area", type text}, {"sort_order", Int64.Type}}),
-				    Renamed = Table.RenameColumns(Typed, {{"knowledge_area", "Knowledge Area"}, {"sort_order", "KA Sort"}})
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "knowledge_area"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"knowledge_area", "sort_order"}),
+				    Renamed = Table.RenameColumns(Selected, {{"knowledge_area", "Knowledge Area"}, {"sort_order", "KA Sort"}})
 				in
 				    Renamed
 
 	annotation PBI_ResultType = Table
-

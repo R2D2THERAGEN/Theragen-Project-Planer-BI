@@ -368,19 +368,18 @@ TYPE_M = {"string": "type text", "int64": "Int64.Type", "double": "type number",
 
 
 def m_partition(t):
+    """Partition M against the bi.* views in Azure PostgreSQL. Each view
+    reproduces the original SampleData CSV contract, so the select/rename
+    steps are identical to the CSV era (sources arrive typed from the DB)."""
     cols = t["cols"]
     sel = ", ".join(f'"{src}"' for _, src, _, _ in cols)
-    types = ", ".join("{" + f'"{src}", {TYPE_M[dt]}' + "}" for _, src, dt, _ in cols)
     rens = ", ".join("{" + f'"{src}", "{fr}"' + "}" for fr, src, _, _ in cols if src != fr)
     lines = [
         "let",
-        f'\tSource = Csv.Document(File.Contents(DataFolder & "\\{t["csv"]}.csv"), '
-        "[Delimiter = \",\", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),",
-        "\tPromoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),",
-        f"\tSelected = Table.SelectColumns(Promoted, {{{sel}}}),",
-        "\tNulled = Table.ReplaceValue(Selected, \"\", null, Replacer.ReplaceValue, Table.ColumnNames(Selected)),",
-        f"\tTyped = Table.TransformColumnTypes(Nulled, {{{types}}}),",
-        f"\tRenamed = Table.RenameColumns(Typed, {{{rens}}})",
+        "\tSource = PostgreSQL.Database(PgServer, PgDatabase),",
+        f'\tData = Source{{[Schema = "bi", Item = "{t["csv"]}"]}}[Data],',
+        f"\tSelected = Table.SelectColumns(Data, {{{sel}}}),",
+        f"\tRenamed = Table.RenameColumns(Selected, {{{rens}}})",
         "in",
         "\tRenamed",
     ]
@@ -992,7 +991,7 @@ TABLE_ORDER = ["Project", "Department", "Person", "WBS Element", "Knowledge Area
 
 
 def emit_model():
-    qorder = ", ".join(f"\"{t}\"" for t in ["DataFolder"] + TABLE_ORDER + ["_Measures"])
+    qorder = ", ".join(f"\"{t}\"" for t in ["PgServer", "PgDatabase"] + TABLE_ORDER + ["_Measures"])
     out = ["model Model",
            "\tculture: en-US",
            "\tdefaultPowerBIDataSourceVersion: powerBI_V3",
@@ -1014,11 +1013,16 @@ def emit_model():
 
 
 def emit_expressions():
-    folder = os.path.join(ROOT, "SampleData")
     return "\n".join([
-        "/// Folder containing the PMBOK sample data CSVs. Repoint when the PostgreSQL source goes live.",
-        f'expression DataFolder = "{folder}" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]',
-        f"\tlineageTag: {tag('expr', 'DataFolder')}",
+        "/// Azure Database for PostgreSQL host serving THG-ENT-DBS-001 (schemas doc_mgmt / pmbok / bi).",
+        'expression PgServer = "psql-theragen-pmbok.postgres.database.azure.com" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]',
+        f"\tlineageTag: {tag('expr', 'PgServer')}",
+        "",
+        "\tannotation PBI_ResultType = Text",
+        "",
+        "/// Database name on the PostgreSQL server.",
+        'expression PgDatabase = "theragen_pmbok" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]',
+        f"\tlineageTag: {tag('expr', 'PgDatabase')}",
         "",
         "\tannotation PBI_ResultType = Text",
         "",

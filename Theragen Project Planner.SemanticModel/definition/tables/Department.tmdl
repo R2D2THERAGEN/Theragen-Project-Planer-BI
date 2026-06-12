@@ -1,5 +1,5 @@
 /// Conformed department dimension (DM D01). Filters executing departments on facts.
-table Department
+table 'Department'
 	lineageTag: 07ad3d81-350c-59b1-b3db-e6f812c5c7c7
 
 	column 'Department ID'
@@ -19,7 +19,7 @@ table Department
 
 		annotation SummarizationSetBy = User
 
-	column Department
+	column 'Department'
 		dataType: string
 		lineageTag: f2ae76ae-7413-5ddf-bd44-fe632f5cf71d
 		summarizeBy: none
@@ -27,18 +27,15 @@ table Department
 
 		annotation SummarizationSetBy = User
 
-	partition Department = m
+	partition 'Department' = m
 		mode: import
 		source =
 				let
-				    Source = Csv.Document(File.Contents(DataFolder & "\department.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
-				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
-				    Selected = Table.SelectColumns(Promoted, {"department_id", "code", "name"}),
-				    Nulled = Table.ReplaceValue(Selected, "", null, Replacer.ReplaceValue, Table.ColumnNames(Selected)),
-				    Typed = Table.TransformColumnTypes(Nulled, {{"department_id", type text}, {"code", type text}, {"name", type text}}),
-				    Renamed = Table.RenameColumns(Typed, {{"department_id", "Department ID"}, {"code", "Department Code"}, {"name", "Department"}})
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "department"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"department_id", "code", "name"}),
+				    Renamed = Table.RenameColumns(Selected, {{"department_id", "Department ID"}, {"code", "Department Code"}, {"name", "Department"}})
 				in
 				    Renamed
 
 	annotation PBI_ResultType = Table
-

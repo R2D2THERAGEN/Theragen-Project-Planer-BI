@@ -49,6 +49,15 @@ def insert(cur, table, cols, data):
 
 
 def main():
+    # This loader DROPS and recreates all three schemas. Once real intakes
+    # exist, an accidental run is data loss - require explicit intent.
+    if "--reseed" not in sys.argv:
+        sys.exit("Refusing to run: this is a destructive reseed. "
+                 "Pass --reseed and confirm interactively.")
+    typed = input(f"Type the database name ({CFG['database']}) to confirm wipe: ")
+    if typed.strip() != CFG["database"]:
+        sys.exit("Confirmation mismatch - aborting.")
+
     conn = psycopg.connect(host=CFG["server"], dbname=CFG["database"],
                            user=CFG["user"], password=CFG["password"],
                            sslmode="require")
@@ -58,7 +67,8 @@ def main():
     cur.execute("DROP SCHEMA IF EXISTS bi CASCADE; "
                 "DROP SCHEMA IF EXISTS pmbok CASCADE; "
                 "DROP SCHEMA IF EXISTS doc_mgmt CASCADE;")
-    for f in ("01_dm.sql", "02_pmbok.sql", "03_bi_views.sql", "04_foreign_keys.sql"):
+    for f in ("01_dm.sql", "02_pmbok.sql", "03_bi_views.sql", "04_foreign_keys.sql",
+              "05_intake_external_ref.sql"):
         sql = open(os.path.join(ROOT, "db", f), encoding="utf-8").read()
         cur.execute(sql)
         print(f"executed {f}")

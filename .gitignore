@@ -10,3 +10,5 @@ tools/.schema_cache/
 
 # Local database credentials (never commit)
 db/.pg.local.json
+db/.m365.local.json
+db/.graph_token_cache.json

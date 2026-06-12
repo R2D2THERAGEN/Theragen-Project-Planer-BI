@@ -60,18 +60,41 @@ Full design rationale: [docs/MODEL_DESIGN.md](docs/MODEL_DESIGN.md)
 | Stakeholders & Team | Template 02 — Stakeholder Register + RACI (interest × influence) |
 | Lessons & Closure | Template 14 — Lessons Learned & Closure checklist |
 
-## Swapping in the production database
+## Production database
 
-The PMBOK schema is specified for PostgreSQL (DDL in `_source_extracts/PMBOK_DDL.tsv`).
-When it goes live:
+The model loads from **Azure PostgreSQL Flexible Server**
+(`psql-theragen-pmbok.postgres.database.azure.com`, database `theragen_pmbok`). The
+spec's DDL lives in `db/` (`doc_mgmt` + `pmbok` schemas, FKs hoisted to
+`04_foreign_keys.sql`), and a `bi` schema of views re-shapes the OLTP tables to the
+original CSV contracts so every model partition navigates to `bi.*` with unchanged
+column names. `tools/load_postgres.py` seeds it from `SampleData/` — **destructive**:
+it drops all three schemas and requires `--reseed` plus a typed database-name
+confirmation. The `DataFolder` parameter remains for offline dev/test fixtures.
+`Approval`, `Decision`, `Assumption/Constraint`, scope detail and the DM governance
+schema are deliberate Phase-2 additions (see MODEL_DESIGN.md §1).
 
-1. Each table's partition M query reads one CSV named exactly like its source table
-   (`project.csv` ← `pmbok.project`). Replace the `Csv.Document(File.Contents(...))`
-   step with `PostgreSQL.Database(server, db)` navigation to the same table — column
-   names match the DDL, so the rename step keeps working.
-2. Delete the `DataFolder` parameter or keep it for dev/test fixtures.
-3. `Approval`, `Decision`, `Assumption/Constraint`, scope detail and the DM governance
-   schema are deliberate Phase-2 additions (see MODEL_DESIGN.md §1).
+## Project ingestion
+
+New projects enter through **Microsoft Forms → Power Automate → SharePoint List →
+nightly sync**:
+
+- Form submissions land on the **Project Intake** SharePoint List as
+  `TriageStatus = Submitted`, `SyncStatus = Pending`, with people pickers resolved
+  from the M365 directory.
+- `tools/sync_intake.py` runs daily at **5:30 AM** (Task Scheduler job
+  `Theragen\SyncIntake` → `tools/run_intake_sync.cmd`, log in `logs/intake_sync.log`).
+  New items become `doc_mgmt.intake_submission` + `pmbok.project` (status
+  **Proposed**) + a charter row in one transaction; afterwards, `TriageStatus` edits
+  on the List drive transitions (Approved → Active, Rejected → Cancelled,
+  On Hold → Paused).
+- Results are written back onto each List item (`SyncStatus`, `IntakeID`,
+  `ProjectCode`, error messages), so the List is the PMO's triage surface; the sync
+  is idempotent via `intake_submission.external_ref` = List item id.
+- The 6:00 AM semantic-model refresh picks the new rows up into the reports.
+
+Setup recipe (Form questions, Flow steps, schedule, smoke test):
+[docs/intake-setup.md](docs/intake-setup.md). Design rationale:
+[docs/superpowers/specs/2026-06-12-project-ingestion-design.md](docs/superpowers/specs/2026-06-12-project-ingestion-design.md).
 
 **EVM note:** the v1.0 schema has no cost-actuals entity, so AC/CPI/EAC are intentionally
 absent; SPI/SV/EV/PV derive from WBS estimates and activity percent-complete. Add an

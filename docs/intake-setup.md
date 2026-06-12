@@ -11,9 +11,12 @@ in Task 4). Do not re-run the creator script.
 
 ## Before you start
 
-Sign in to Forms, Power Automate, and SharePoint as **ai@theragen.com** — the same account
-that owns the SharePoint site and ran `create_intake_list.py`. Using a different account
-will cause permission errors when the Flow tries to write to the list.
+Sign in to Forms, Power Automate, and SharePoint as **richard.allen@theragen.com** — the
+account that created the Project Intake List (`create_intake_list.py`) and whose cached
+Graph token the daily sync runs under. (`ai@theragen.com` is a separate account; building
+the Form/Flow there works only if that account is granted Edit on the List.) Using an
+account without List write access will cause permission errors when the Flow tries to
+create the item.
 
 Confirm the account is licensed for:
 - **Microsoft Forms** — included in M365 E3/E5 and most business plans.

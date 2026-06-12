@@ -224,31 +224,36 @@ def dataset_xml(name, d):
 
 
 def build():
+    # Inside a tablix, plain Fields! references resolve against the region's
+    # dataset. Standalone textboxes in a multi-dataset report MUST use a
+    # dataset-scoped aggregate or the service rejects the .rdl with
+    # rsFieldReferenceAmbiguous.
     F = "=Fields!{}.Value".format
+    FH = '=First(Fields!{}.Value, "DsHeader")'.format
     body_items = []
 
     # --- Row A: verify the project (top 0 .. 0.55) ------------------------
     body_items.append(label_value_box("HdrName", "THERAGEN PROJECT NAME",
-                                      F("ProjectName"), 0, 0, 3.3, 0.5, vsize="11pt"))
+                                      FH("ProjectName"), 0, 0, 3.3, 0.5, vsize="11pt"))
     body_items.append(label_value_box("HdrPM", "PROJECT MANAGER",
-                                      F("ProjectManager"), 3.38, 0, 1.9, 0.5))
+                                      FH("ProjectManager"), 3.38, 0, 1.9, 0.5))
     body_items.append(label_value_box("HdrTarget", "TARGET DATE COMPLETION",
-                                      F("TargetDate"), 5.36, 0, 1.6, 0.5))
+                                      FH("TargetDate"), 5.36, 0, 1.6, 0.5))
     body_items.append(label_value_box("HdrPhase", "CURRENT PHASE",
-                                      F("Phase"), 7.04, 0, 1.5, 0.5))
+                                      FH("Phase"), 7.04, 0, 1.5, 0.5))
     body_items.append(label_value_box("HdrDate", "DATE OF REPORT",
-                                      F("ReportDate"), 8.62, 0, 1.68, 0.5))
+                                      FH("ReportDate"), 8.62, 0, 1.68, 0.5))
 
     # --- Row B: main status / description / value / health (0.62..2.1) ----
     runs = (para(textrun("MAIN STATUS", size="6.5pt", bold=True, color="#FFFFFF"), "Center") +
-            para(textrun(F("MainStatus"), size="44pt", bold=True, color="#FFFFFF"), "Center"))
+            para(textrun(FH("MainStatus"), size="44pt", bold=True, color="#FFFFFF"), "Center"))
     body_items.append(textbox("MainStatus", runs, 0, 0.62, 1.2, 1.45,
-                              bg=F("StatusColor"), border=GRID, valign="Middle", grow=False))
+                              bg=FH("StatusColor"), border=GRID, valign="Middle", grow=False))
     runs = (para(textrun("PROJECT DESCRIPTION", size="6.5pt", bold=True, color=TEAL)) +
-            para(textrun(F("Description"), size="8pt")))
+            para(textrun(FH("Description"), size="8pt")))
     body_items.append(textbox("Descr", runs, 1.28, 0.62, 3.4, 1.45))
     runs = (para(textrun("BUSINESS VALUE", size="6.5pt", bold=True, color=TEAL)) +
-            para(textrun(F("BusinessValue"), size="8pt")))
+            para(textrun(FH("BusinessValue"), size="8pt")))
     body_items.append(textbox("Value", runs, 4.76, 0.62, 3.4, 1.45))
     body_items.append(tablix("HealthCheck", "DsHealth", [
         ("Health Check", F("KnowledgeArea"), 1.2, "Left"),

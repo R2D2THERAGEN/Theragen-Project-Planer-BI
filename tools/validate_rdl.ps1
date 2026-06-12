@@ -15,6 +15,20 @@ try {
     Write-Output ("OK: deserialized. DataSets={0} ReportItems={1} Params={2}" -f `
         $report.DataSets.Count, $report.ReportSections[0].Body.ReportItems.Count, `
         $report.ReportParameters.Count)
+    # Every data region must name its dataset or the service rejects the
+    # upload (rsMissingDataSetName, e.g. a designer-inserted GaugePanel1).
+    $bad = @()
+    foreach ($item in $report.ReportSections[0].Body.ReportItems) {
+        $prop = $item.GetType().GetProperty("DataSetName")
+        if ($prop -and [string]::IsNullOrEmpty($prop.GetValue($item))) {
+            $bad += "$($item.GetType().Name) '$($item.Name)'"
+        }
+    }
+    if ($bad.Count -gt 0) {
+        Write-Output ("ERR: data regions missing DataSetName -> {0}" -f ($bad -join ", "))
+        exit 1
+    }
+    Write-Output "OK: all data regions have DataSetName"
     # Round-trip: serialize back to catch null-init gaps the designer would hit.
     $ms = New-Object System.IO.MemoryStream
     $serializer.Serialize($ms, $report)

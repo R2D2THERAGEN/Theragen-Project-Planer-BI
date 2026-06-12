@@ -387,8 +387,16 @@ def build():
     runs = (para(textrun("BUSINESS VALUE", size="6.5pt", bold=True, color=TEAL)) +
             para(textrun(FH("BusinessValue"), size="8pt")))
     body_items.append(textbox("Value", runs, 3.86, 0.62, 2.5, 1.45))
-    # Severity gauge + banded rating (same calculations as the interactive page).
-    body_items.append(risk_gauge(6.44, 0.62, 1.6, 1.0))
+    # Severity score block (same calculations as the interactive gauge; the
+    # service renderer draws GaugePanels as empty boxes, so the paginated
+    # version shows the score itself, colored by the PMI band).
+    runs = (para(textrun("AVG RISK SCORE", size="6.5pt", bold=True, color=TEAL), "Center") +
+            para(textrun('=Format(First(Fields!AvgScore.Value, "DsGauge"), "0.0")',
+                         size="26pt", bold=True,
+                         color='=First(Fields!RatingColor.Value, "DsGauge")'), "Center") +
+            para(textrun("of 25  ·  High ≥ 12", size="6.5pt", color="#605E5C"), "Center"))
+    body_items.append(textbox("AvgScoreBox", runs, 6.44, 0.62, 1.6, 1.0,
+                              border=GRID, valign="Middle", grow=False))
     runs = (para(textrun("RISK RATING", size="6.5pt", bold=True, color=TEAL), "Center") +
             para(textrun('=First(Fields!RiskRating.Value, "DsGauge")', size="11pt", bold=True,
                          color='=First(Fields!RatingColor.Value, "DsGauge")'), "Center"))

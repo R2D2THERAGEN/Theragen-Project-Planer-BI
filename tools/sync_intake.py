@@ -131,13 +131,15 @@ def normalize(item, g):
         "PlannedStart": (f.get("PlannedStart") or "")[:10] or None,
         "PlannedFinish": (f.get("PlannedFinish") or "")[:10] or None,
         "EstimatedBudget": f.get("EstimatedBudget"),
-        "EffortBucket": f.get("EffortBucket") or "Large (3-12 mo)",
+        "EffortBucket": f.get("EffortBucket") or "Large (3-12 mo)",  # spec default when the choice is blank
         "Flags": {k: _coerce_bool(f.get(k)) for k in
                   ("PHIFlag", "CFR11Flag", "ClinicalFlag", "VendorFlag",
                    "DataSharingFlag")},
         "StrategicObjective": f.get("StrategicObjective") or None,
         "TriageStatus": f.get("TriageStatus") or "Submitted",
         "SyncStatus": f.get("SyncStatus") or "Pending",
+        "IntakeID": f.get("IntakeID") or "",
+        "ProjectCode": f.get("ProjectCode") or "",
     }
 
 
@@ -173,7 +175,10 @@ def process_new(conn, g, it, dry):
     dept = conn.execute("SELECT department_id, code FROM doc_mgmt.department "
                         "WHERE name=%s", (it["Department"],)).fetchone()
     if not dept:
-        return f"ERROR item {it['item_id']}: unknown department {it['Department']}"
+        msg = f"Unknown department: {it['Department']}"
+        if not dry:
+            writeback(g, it["item_id"], {"SyncStatus": "Error", "SyncMessage": msg})
+        return f"ERROR item {it['item_id']}: {msg}"
     dept_id, dept_code = dept
     existing_codes = [r[0] for r in conn.execute(
         "SELECT project_code FROM pmbok.project").fetchall()]
@@ -184,6 +189,8 @@ def process_new(conn, g, it, dry):
         return (f"DRY item {it['item_id']}: would create {intake_id} / "
                 f"{project_code} ({it['Title']})")
 
+    # sponsor/pm are guaranteed non-None here: validate_item rejects blank
+    # emails and the directory-miss guards above return before this point.
     with conn.transaction():
         conn.execute(
             "INSERT INTO doc_mgmt.intake_submission (intake_submission_id, intake_id,"
@@ -225,15 +232,30 @@ def process_new(conn, g, it, dry):
 def process_triage(conn, g, it, dry):
     target = il.triage_to_status(it["TriageStatus"])
     if target is None:
-        return f"ERROR item {it['item_id']}: unknown TriageStatus {it['TriageStatus']}"
+        msg = f"Unknown TriageStatus: {it['TriageStatus']}"
+        if not dry:
+            writeback(g, it["item_id"], {"SyncStatus": "Error", "SyncMessage": msg})
+        return f"ERROR item {it['item_id']}: {msg}"
     row = conn.execute(
-        "SELECT p.project_id, p.status FROM pmbok.project p"
+        "SELECT p.project_id, p.status, p.project_code, i.intake_id"
+        " FROM pmbok.project p"
         " JOIN doc_mgmt.intake_submission i ON i.intake_id = p.intake_id"
         " WHERE i.external_ref = %s", (it["item_id"],)).fetchone()
     if not row:
-        return f"ERROR item {it['item_id']}: synced intake has no project row"
-    project_id, current = row
+        msg = "synced intake has no project row"
+        if not dry:
+            writeback(g, it["item_id"], {"SyncStatus": "Error", "SyncMessage": msg})
+        return f"ERROR item {it['item_id']}: {msg}"
+    project_id, current, project_code, intake_id = row
+    ids = {"IntakeID": intake_id, "ProjectCode": project_code}
     if current == target:
+        # Heal a lost write-back (DB committed but the PATCH failed last run).
+        if it["SyncStatus"] != "Synced" or it["IntakeID"] != intake_id \
+                or it["ProjectCode"] != project_code:
+            if not dry:
+                writeback(g, it["item_id"], {"SyncStatus": "Synced",
+                                             "SyncMessage": "", **ids})
+            return f"OK item {it['item_id']}: healed write-back (status already {current})"
         return f"OK item {it['item_id']}: status already {current}"
     if dry:
         return f"DRY item {it['item_id']}: would move {current} -> {target}"
@@ -244,7 +266,7 @@ def process_triage(conn, g, it, dry):
             " THEN CURRENT_DATE ELSE actual_start END WHERE project_id=%s",
             (target, target, project_id))
     writeback(g, it["item_id"], {"SyncStatus": "Synced",
-                                 "SyncMessage": f"Status -> {target}"})
+                                 "SyncMessage": f"Status -> {target}", **ids})
     return f"OK triage item {it['item_id']}: {current} -> {target}"
 
 

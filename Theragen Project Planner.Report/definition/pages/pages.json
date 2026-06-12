@@ -1,5 +1,5 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/pagesMetadata/1.0.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/pagesMetadata/1.1.0/schema.json",
   "pageOrder": [
     "portfolio",
     "status",
@@ -8,7 +8,8 @@
     "risk",
     "change",
     "people",
-    "closing"
+    "closing",
+    "47d6b7de3d0c9d646c63"
   ],
-  "activePageName": "portfolio"
+  "activePageName": "47d6b7de3d0c9d646c63"
 }

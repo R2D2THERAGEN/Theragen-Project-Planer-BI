@@ -4,11 +4,14 @@
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
     <DataSource Name="TheragenModel">
-      <ConnectionProperties>
-        <DataProvider>PBISERVICE</DataProvider>
-        <ConnectString>Data Source=powerbi://api.powerbi.com/v1.0/myorg/Playground;Initial Catalog=Theragen Project Planner</ConnectString>
-      </ConnectionProperties>
       <rd:SecurityType>None</rd:SecurityType>
+      <ConnectionProperties>
+        <DataProvider>PBIDATASET</DataProvider>
+        <ConnectString>Data Source=pbiazure://api.powerbi.com/;Identity Provider="https://login.microsoftonline.com/organizations, https://analysis.windows.net/powerbi/api, f0b72488-7082-488a-a7e8-eada97bd842d";Initial Catalog=sobe_wowvirtualserver-00000000-0000-0000-0000-000000000000;Integrated Security=ClaimsToken</ConnectString>
+      </ConnectionProperties>
+      <rd:DataSourceID>493bf767-e040-579e-97ca-1cfe78fd24eb</rd:DataSourceID>
+      <rd:PowerBIWorkspaceName>Playground</rd:PowerBIWorkspaceName>
+      <rd:PowerBIDatasetName>Theragen Project Planner</rd:PowerBIDatasetName>
     </DataSource>
   </DataSources>
   <DataSets><DataSet Name="DsProjectList">

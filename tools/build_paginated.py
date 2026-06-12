@@ -18,6 +18,15 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "paginated", "Theragen Status Report.rdl")
 LOGO = os.path.join(ROOT, "assets", "theragen-logo.jpeg")
 
+# Published semantic model in the Power BI service. Format verified against
+# Theragen's working Report Builder files (canonical PBIDATASET provider).
+# DATASET_GUID: open the model in the service; the URL contains
+# .../datasets/<guid>/details.
+TENANT_ID = "f0b72488-7082-488a-a7e8-eada97bd842d"
+WORKSPACE_NAME = "Playground"
+DATASET_NAME = "Theragen Project Planner"
+DATASET_GUID = "00000000-0000-0000-0000-000000000000"  # TODO: real model GUID
+
 TEAL = "#219A80"
 INK = "#252423"
 GRID = "#DCE4E3"
@@ -400,11 +409,14 @@ def build():
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
     <DataSource Name="TheragenModel">
-      <ConnectionProperties>
-        <DataProvider>PBISERVICE</DataProvider>
-        <ConnectString>Data Source=powerbi://api.powerbi.com/v1.0/myorg/Playground;Initial Catalog=Theragen Project Planner</ConnectString>
-      </ConnectionProperties>
       <rd:SecurityType>None</rd:SecurityType>
+      <ConnectionProperties>
+        <DataProvider>PBIDATASET</DataProvider>
+        <ConnectString>Data Source=pbiazure://api.powerbi.com/;Identity Provider="https://login.microsoftonline.com/organizations, https://analysis.windows.net/powerbi/api, {TENANT_ID}";Initial Catalog=sobe_wowvirtualserver-{DATASET_GUID};Integrated Security=ClaimsToken</ConnectString>
+      </ConnectionProperties>
+      <rd:DataSourceID>{uuid.uuid5(uuid.NAMESPACE_URL, 'thg-bi/paginated/datasource')}</rd:DataSourceID>
+      <rd:PowerBIWorkspaceName>{WORKSPACE_NAME}</rd:PowerBIWorkspaceName>
+      <rd:PowerBIDatasetName>{DATASET_NAME}</rd:PowerBIDatasetName>
     </DataSource>
   </DataSources>
   <DataSets>{datasets}</DataSets>

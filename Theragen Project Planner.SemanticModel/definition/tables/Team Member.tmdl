@@ -37,7 +37,7 @@ table 'Team Member'
 
 		annotation SummarizationSetBy = User
 
-	column Member
+	column 'Member'
 		dataType: string
 		lineageTag: 817978f8-c945-53ff-adb7-ea4bf4bf96b9
 		summarizeBy: none
@@ -53,7 +53,7 @@ table 'Team Member'
 
 		annotation SummarizationSetBy = User
 
-	column Department
+	column 'Department'
 		dataType: string
 		lineageTag: 623878a1-fcba-5f83-b0e1-f152d4491b94
 		summarizeBy: none
@@ -102,4 +102,3 @@ table 'Team Member'
 				    Renamed
 
 	annotation PBI_ResultType = Table
-

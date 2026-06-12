@@ -1,34 +1,17 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
-  "name": "8022f6323b8c5c08a073",
+  "name": "1f09f70dc49f50d095cc",
   "position": {
-    "x": 864,
+    "x": 436,
     "y": 116,
     "z": 1000,
-    "width": 408,
-    "height": 260
+    "width": 304,
+    "height": 192
   },
   "visual": {
-    "visualType": "barChart",
+    "visualType": "gauge",
     "query": {
       "queryState": {
-        "Category": {
-          "projections": [
-            {
-              "field": {
-                "Column": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "Closure Item"
-                    }
-                  },
-                  "Property": "Project Code"
-                }
-              },
-              "queryRef": "Closure Item.Project Code"
-            }
-          ]
-        },
         "Y": {
           "projections": [
             {
@@ -39,27 +22,44 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Closure Items"
+                  "Property": "Avg Risk Score (Open)"
                 }
               },
-              "queryRef": "_Measures.Closure Items"
+              "queryRef": "_Measures.Avg Risk Score (Open)"
             }
           ]
         },
-        "Series": {
+        "MaxValue": {
           "projections": [
             {
               "field": {
-                "Column": {
+                "Measure": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "Closure Item"
+                      "Entity": "_Measures"
                     }
                   },
-                  "Property": "Done"
+                  "Property": "Risk Scale Max"
                 }
               },
-              "queryRef": "Closure Item.Done"
+              "queryRef": "_Measures.Risk Scale Max"
+            }
+          ]
+        },
+        "TargetValue": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "High Risk Threshold"
+                }
+              },
+              "queryRef": "_Measures.High Risk Threshold"
             }
           ]
         }
@@ -80,7 +80,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Closure checklist by project'"
+                  "Value": "'Avg open-risk score (target = high threshold 12)'"
                 }
               }
             }

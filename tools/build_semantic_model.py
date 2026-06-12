@@ -700,6 +700,40 @@ add("Risk", "Risks Past Due",
     "&& 'Risk'[Risk Status] IN {\"Open\", \"Mitigating\"}))", C_WHOLE,
     "Open risks whose mitigation due date has passed.")
 add("Risk", "Avg Risk Score", "AVERAGE('Risk'[Risk Score])", C_NUM1, "Mean risk score.")
+# Industry-standard register analytics (PMI / ISO 31000, 5x5 scale).
+OPEN_RISK = "'Risk'[Risk Status] IN {\"Open\", \"Mitigating\", \"Monitoring\"}"
+add("Risk", "Avg Risk Score (Open)",
+    f"CALCULATE(AVERAGE('Risk'[Risk Score]), {OPEN_RISK})", C_NUM1,
+    "Mean L x I score of open risks on the 1-25 scale. Gauge value.")
+add("Risk", "Avg Likelihood (Open)",
+    f"CALCULATE(AVERAGE('Risk'[Likelihood]), {OPEN_RISK})", C_NUM1,
+    "Mean likelihood (1-5) of open risks.")
+add("Risk", "Avg Impact (Open)",
+    f"CALCULATE(AVERAGE('Risk'[Impact]), {OPEN_RISK})", C_NUM1,
+    "Mean impact (1-5) of open risks.")
+add("Risk", "Avg Residual Score (Open)",
+    f"CALCULATE(AVERAGE('Risk'[Residual Score]), {OPEN_RISK})", C_NUM1,
+    "Mean residual score of open risks after planned mitigation.")
+add("Risk", "Risk Index",
+    "DIVIDE([Avg Risk Score (Open)], 25)", C_PCT,
+    "Severity index: average open-risk score normalized to the 5x5 maximum (25).")
+add("Risk", "Risk Rating",
+    "SWITCH(TRUE(), ISBLANK([Avg Risk Score (Open)]), \"-\", "
+    "[Avg Risk Score (Open)] < 6, \"LOW\", [Avg Risk Score (Open)] < 12, \"MODERATE\", "
+    "[Avg Risk Score (Open)] < 20, \"HIGH\", \"CRITICAL\")", "",
+    "Banded rating of the average open-risk score: <6 LOW, <12 MODERATE, <20 HIGH, else CRITICAL.")
+add("Risk", "Risk Rating Color",
+    "SWITCH([Risk Rating], \"LOW\", \"#00FF00\", \"MODERATE\", \"#D6D60D\", "
+    "\"HIGH\", \"#FF0000\", \"CRITICAL\", \"#C00000\", \"#605E5C\")", "",
+    "Deck-aligned color for the Risk Rating band (conditional formatting).")
+add("Risk", "Risk Scale Max", "25", C_WHOLE,
+    "Maximum of the 5x5 risk matrix. Gauge maximum.")
+add("Risk", "High Risk Threshold", "12", C_WHOLE,
+    "Score at which a risk is rated High (>=12). Gauge target line.")
+add("Risk", "Mitigation Coverage %",
+    f"DIVIDE(COUNTROWS(FILTER(CALCULATETABLE('Risk', {OPEN_RISK}), "
+    "CALCULATE(COUNTROWS('Risk Response')) > 0)), [Open Risks])", C_PCT,
+    "Share of open risks that have at least one response action planned.")
 add("Risk", "Response Actions", "COUNTROWS('Risk Response')", C_WHOLE,
     "Risk response actions in context.")
 add("Risk", "Open Response Actions",

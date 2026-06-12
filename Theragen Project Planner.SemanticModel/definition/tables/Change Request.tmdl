@@ -94,7 +94,7 @@ table 'Change Request'
 
 		annotation SummarizationSetBy = User
 
-	column Reason
+	column 'Reason'
 		dataType: string
 		lineageTag: 5cf1d5e3-aef1-5be7-a432-64a1785abf4a
 		summarizeBy: none
@@ -120,7 +120,7 @@ table 'Change Request'
 
 		annotation SummarizationSetBy = User
 
-	column Decision
+	column 'Decision'
 		dataType: string
 		lineageTag: f110871a-e180-585f-8471-0e0e9e6eca55
 		summarizeBy: none
@@ -168,4 +168,3 @@ table 'Change Request'
 				    Renamed
 
 	annotation PBI_ResultType = Table
-

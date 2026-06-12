@@ -1,5 +1,5 @@
 /// Fact - stakeholder register entries (PMBOK P03) with RACI engagement and interest/influence.
-table Stakeholder
+table 'Stakeholder'
 	lineageTag: 93b1cda5-0c54-5226-9561-ab27307b116b
 
 	column 'Stakeholder ID'
@@ -45,7 +45,7 @@ table Stakeholder
 
 		annotation SummarizationSetBy = User
 
-	column Stakeholder
+	column 'Stakeholder'
 		dataType: string
 		lineageTag: 039a7175-f46b-56e9-a06d-c8365cfc34c8
 		summarizeBy: none
@@ -61,7 +61,7 @@ table Stakeholder
 
 		annotation SummarizationSetBy = User
 
-	column Department
+	column 'Department'
 		dataType: string
 		lineageTag: 71acbcf7-4317-5ed5-84f8-3287fac1c0bc
 		summarizeBy: none
@@ -69,7 +69,7 @@ table Stakeholder
 
 		annotation SummarizationSetBy = User
 
-	column Engagement
+	column 'Engagement'
 		dataType: string
 		lineageTag: a1bfcac6-771f-5159-9205-5cf68c1112b2
 		summarizeBy: none
@@ -77,7 +77,7 @@ table Stakeholder
 
 		annotation SummarizationSetBy = User
 
-	column Interest
+	column 'Interest'
 		dataType: string
 		lineageTag: c457848f-06e7-585d-bf06-9ca993af00b7
 		summarizeBy: none
@@ -85,7 +85,7 @@ table Stakeholder
 
 		annotation SummarizationSetBy = User
 
-	column Influence
+	column 'Influence'
 		dataType: string
 		lineageTag: 80bb41f0-f45f-5fad-b0bc-46b2ca9c3533
 		summarizeBy: none
@@ -101,7 +101,7 @@ table Stakeholder
 
 		annotation SummarizationSetBy = User
 
-	partition Stakeholder = m
+	partition 'Stakeholder' = m
 		mode: import
 		source =
 				let
@@ -115,4 +115,3 @@ table Stakeholder
 				    Renamed
 
 	annotation PBI_ResultType = Table
-

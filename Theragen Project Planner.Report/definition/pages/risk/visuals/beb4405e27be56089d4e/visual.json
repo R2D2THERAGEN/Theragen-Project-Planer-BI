@@ -1,35 +1,17 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
   "name": "beb4405e27be56089d4e",
   "position": {
     "x": 8,
     "y": 116,
     "z": 1000,
-    "height": 280,
-    "width": 420
+    "width": 420,
+    "height": 280
   },
   "visual": {
     "visualType": "pivotTable",
     "query": {
       "queryState": {
-        "Columns": {
-          "projections": [
-            {
-              "field": {
-                "Column": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "Risk"
-                    }
-                  },
-                  "Property": "Impact"
-                }
-              },
-              "queryRef": "Risk.Impact",
-              "active": true
-            }
-          ]
-        },
         "Rows": {
           "projections": [
             {
@@ -43,8 +25,7 @@
                   "Property": "Likelihood"
                 }
               },
-              "queryRef": "Risk.Likelihood",
-              "active": true
+              "queryRef": "Risk.Likelihood"
             }
           ]
         },
@@ -64,9 +45,27 @@
               "queryRef": "_Measures.Risks"
             }
           ]
+        },
+        "Columns": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Risk"
+                    }
+                  },
+                  "Property": "Impact"
+                }
+              },
+              "queryRef": "Risk.Impact"
+            }
+          ]
         }
       }
     },
+    "drillFilterOtherVisuals": true,
     "visualContainerObjects": {
       "title": [
         {
@@ -88,7 +87,6 @@
           }
         }
       ]
-    },
-    "drillFilterOtherVisuals": true
+    }
   }
 }

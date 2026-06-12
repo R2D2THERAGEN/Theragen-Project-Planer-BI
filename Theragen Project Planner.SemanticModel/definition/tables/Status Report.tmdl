@@ -63,7 +63,7 @@ table 'Status Report'
 
 		annotation SummarizationSetBy = User
 
-	column Trend
+	column 'Trend'
 		dataType: string
 		lineageTag: cb4433e0-b732-5087-9e0b-19687d3f3d9a
 		summarizeBy: none
@@ -118,4 +118,3 @@ table 'Status Report'
 				    Renamed
 
 	annotation PBI_ResultType = Table
-

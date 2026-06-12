@@ -1,35 +1,18 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
-  "name": "bff2e7ebe3ff5893be97",
+  "name": "51840fcc14c6559e8a98",
   "position": {
     "x": 436,
-    "y": 404,
+    "y": 316,
     "z": 1000,
-    "width": 420,
-    "height": 304
+    "width": 304,
+    "height": 80
   },
   "visual": {
-    "visualType": "donutChart",
+    "visualType": "card",
     "query": {
       "queryState": {
-        "Category": {
-          "projections": [
-            {
-              "field": {
-                "Column": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "Budget Line"
-                    }
-                  },
-                  "Property": "Cost Category"
-                }
-              },
-              "queryRef": "Budget Line.Cost Category"
-            }
-          ]
-        },
-        "Y": {
+        "Values": {
           "projections": [
             {
               "field": {
@@ -39,16 +22,47 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Budget Total"
+                  "Property": "Risk Rating"
                 }
               },
-              "queryRef": "_Measures.Budget Total"
+              "queryRef": "_Measures.Risk Rating"
             }
           ]
         }
       }
     },
     "drillFilterOtherVisuals": true,
+    "objects": {
+      "labels": [
+        {
+          "properties": {
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "24D"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Measure": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "_Measures"
+                        }
+                      },
+                      "Property": "Risk Rating Color"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
     "visualContainerObjects": {
       "title": [
         {
@@ -63,7 +77,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Budget mix by cost category'"
+                  "Value": "'Portfolio risk rating'"
                 }
               }
             }

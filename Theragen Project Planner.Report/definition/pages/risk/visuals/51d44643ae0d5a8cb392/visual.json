@@ -22,10 +22,10 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Open Response Actions"
+                  "Property": "Mitigation Coverage %"
                 }
               },
-              "queryRef": "_Measures.Open Response Actions"
+              "queryRef": "_Measures.Mitigation Coverage %"
             }
           ]
         }
@@ -61,7 +61,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Open actions'"
+                  "Value": "'Mitigation coverage'"
                 }
               }
             }

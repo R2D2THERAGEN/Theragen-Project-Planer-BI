@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
-  "name": "9b1701ba272b542ab03b",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "ac7839d5bbf4555687da",
   "position": {
-    "x": 864,
+    "x": 748,
     "y": 116,
     "z": 1000,
-    "height": 280,
-    "width": 408
+    "width": 524,
+    "height": 280
   },
   "visual": {
     "visualType": "clusteredColumnChart",
@@ -19,14 +19,13 @@
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "Risk Response"
+                      "Entity": "Risk"
                     }
                   },
-                  "Property": "Action Status"
+                  "Property": "Risk Category"
                 }
               },
-              "queryRef": "Risk Response.Action Status",
-              "active": true
+              "queryRef": "Risk.Risk Category"
             }
           ]
         },
@@ -40,15 +39,29 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Response Actions"
+                  "Property": "Avg Likelihood (Open)"
                 }
               },
-              "queryRef": "_Measures.Response Actions"
+              "queryRef": "_Measures.Avg Likelihood (Open)"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Avg Impact (Open)"
+                }
+              },
+              "queryRef": "_Measures.Avg Impact (Open)"
             }
           ]
         }
       }
     },
+    "drillFilterOtherVisuals": true,
     "visualContainerObjects": {
       "title": [
         {
@@ -63,14 +76,13 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Response actions by status'"
+                  "Value": "'Likelihood vs impact by category (open risks, 1-5)'"
                 }
               }
             }
           }
         }
       ]
-    },
-    "drillFilterOtherVisuals": true
+    }
   }
 }

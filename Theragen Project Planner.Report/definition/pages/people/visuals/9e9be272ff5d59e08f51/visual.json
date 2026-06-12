@@ -1,35 +1,17 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
   "name": "9e9be272ff5d59e08f51",
   "position": {
     "x": 270,
     "y": 116,
     "z": 1000,
-    "height": 240,
-    "width": 380
+    "width": 380,
+    "height": 240
   },
   "visual": {
     "visualType": "pivotTable",
     "query": {
       "queryState": {
-        "Columns": {
-          "projections": [
-            {
-              "field": {
-                "Column": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "Stakeholder"
-                    }
-                  },
-                  "Property": "Influence"
-                }
-              },
-              "queryRef": "Stakeholder.Influence",
-              "active": true
-            }
-          ]
-        },
         "Rows": {
           "projections": [
             {
@@ -43,8 +25,7 @@
                   "Property": "Interest"
                 }
               },
-              "queryRef": "Stakeholder.Interest",
-              "active": true
+              "queryRef": "Stakeholder.Interest"
             }
           ]
         },
@@ -64,9 +45,27 @@
               "queryRef": "_Measures.Stakeholders"
             }
           ]
+        },
+        "Columns": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Stakeholder"
+                    }
+                  },
+                  "Property": "Influence"
+                }
+              },
+              "queryRef": "Stakeholder.Influence"
+            }
+          ]
         }
       }
     },
+    "drillFilterOtherVisuals": true,
     "visualContainerObjects": {
       "title": [
         {
@@ -88,7 +87,6 @@
           }
         }
       ]
-    },
-    "drillFilterOtherVisuals": true
+    }
   }
 }

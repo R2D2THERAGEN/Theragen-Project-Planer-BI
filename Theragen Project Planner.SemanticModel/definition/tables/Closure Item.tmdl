@@ -44,7 +44,7 @@ table 'Closure Item'
 
 		annotation SummarizationSetBy = User
 
-	column Done
+	column 'Done'
 		dataType: boolean
 		lineageTag: 3929b9c5-9b6b-55d5-9470-e61770cbf624
 		summarizeBy: none
@@ -52,7 +52,7 @@ table 'Closure Item'
 
 		annotation SummarizationSetBy = User
 
-	column Evidence
+	column 'Evidence'
 		dataType: string
 		lineageTag: 2bb9342e-582b-5f2a-9301-c1456ca1086c
 		summarizeBy: none
@@ -74,4 +74,3 @@ table 'Closure Item'
 				    Renamed
 
 	annotation PBI_ResultType = Table
-

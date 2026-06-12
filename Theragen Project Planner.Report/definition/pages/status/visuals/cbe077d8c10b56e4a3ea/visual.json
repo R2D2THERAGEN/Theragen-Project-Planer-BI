@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
   "name": "cbe077d8c10b56e4a3ea",
   "position": {
-    "x": 1017.6569870090715,
-    "y": 8.13067144580571,
+    "x": 988,
+    "y": 8,
     "z": 1000,
-    "height": 72,
-    "width": 120
+    "width": 120,
+    "height": 72
   },
   "visual": {
     "visualType": "card",
@@ -31,6 +31,7 @@
         }
       }
     },
+    "drillFilterOtherVisuals": true,
     "objects": {
       "labels": [
         {
@@ -39,19 +40,6 @@
               "expr": {
                 "Literal": {
                   "Value": "12D"
-                }
-              }
-            }
-          }
-        }
-      ],
-      "categoryLabels": [
-        {
-          "properties": {
-            "show": {
-              "expr": {
-                "Literal": {
-                  "Value": "false"
                 }
               }
             }
@@ -80,25 +68,6 @@
           }
         }
       ]
-    },
-    "drillFilterOtherVisuals": true
-  },
-  "filterConfig": {
-    "filters": [
-      {
-        "name": "367d47d6633093bd4067",
-        "field": {
-          "Measure": {
-            "Expression": {
-              "SourceRef": {
-                "Entity": "_Measures"
-              }
-            },
-            "Property": "Report Date"
-          }
-        },
-        "type": "Advanced"
-      }
-    ]
+    }
   }
 }

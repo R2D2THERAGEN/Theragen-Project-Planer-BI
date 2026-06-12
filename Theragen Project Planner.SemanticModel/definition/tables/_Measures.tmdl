@@ -3,7 +3,7 @@ table _Measures
 	lineageTag: b9d3783d-5c24-599e-a34b-18d15b2f7b90
 
 	/// Count of projects in context.
-	measure Projects = COUNTROWS('Project')
+	measure 'Projects' = COUNTROWS('Project')
 		formatString: #,0
 		displayFolder: Portfolio
 		lineageTag: f308346b-1865-5886-a9b0-7c1a5ae8bd07
@@ -27,7 +27,7 @@ table _Measures
 		lineageTag: f13a2590-0a02-5218-b72d-13a75d0119b4
 
 	/// Count of schedule activities.
-	measure Activities = COUNTROWS('Schedule Activity')
+	measure 'Activities' = COUNTROWS('Schedule Activity')
 		formatString: #,0
 		displayFolder: Schedule
 		lineageTag: 13c0a6de-deb2-5251-b7f4-8a8bac3439d0
@@ -105,13 +105,13 @@ table _Measures
 		lineageTag: 345e0773-c2c2-5d04-b59c-e72209c1cf61
 
 	/// Schedule Performance Index = EV / PV. Below 1.0 = behind schedule. CPI/EAC require a cost-actuals feed (Phase 2 - not in THG-ENT-DBS-001 v1.0).
-	measure SPI = DIVIDE([Earned Value], [Planned Value])
+	measure 'SPI' = DIVIDE([Earned Value], [Planned Value])
 		formatString: 0.00
 		displayFolder: EVM
 		lineageTag: 1c3a2236-054e-593f-8b87-94927e127a19
 
 	/// Count of milestones.
-	measure Milestones = COUNTROWS('Milestone')
+	measure 'Milestones' = COUNTROWS('Milestone')
 		formatString: #,0
 		displayFolder: Milestones
 		lineageTag: 609e8f92-34af-50fc-8da0-37b542df32d7
@@ -207,7 +207,7 @@ table _Measures
 		lineageTag: e406b017-b166-5b38-a836-de821c9f3402
 
 	/// Count of risks.
-	measure Risks = COUNTROWS('Risk')
+	measure 'Risks' = COUNTROWS('Risk')
 		formatString: #,0
 		displayFolder: Risk
 		lineageTag: 2c601208-1930-5ae0-bf86-0147e98e8f92
@@ -265,6 +265,64 @@ table _Measures
 		formatString: #,0.0
 		displayFolder: Risk
 		lineageTag: a5865c0e-50e3-54dd-8128-0d4b07790b9e
+
+	/// Mean L x I score of open risks on the 1-25 scale. Gauge value.
+	measure 'Avg Risk Score (Open)' = CALCULATE(AVERAGE('Risk'[Risk Score]), 'Risk'[Risk Status] IN {"Open", "Mitigating", "Monitoring"})
+		formatString: #,0.0
+		displayFolder: Risk
+		lineageTag: 077a85b1-ab0b-5068-ae2e-5c8618e29eb6
+
+	/// Mean likelihood (1-5) of open risks.
+	measure 'Avg Likelihood (Open)' = CALCULATE(AVERAGE('Risk'[Likelihood]), 'Risk'[Risk Status] IN {"Open", "Mitigating", "Monitoring"})
+		formatString: #,0.0
+		displayFolder: Risk
+		lineageTag: 16e3fae0-c328-5398-9962-61c2acaf3118
+
+	/// Mean impact (1-5) of open risks.
+	measure 'Avg Impact (Open)' = CALCULATE(AVERAGE('Risk'[Impact]), 'Risk'[Risk Status] IN {"Open", "Mitigating", "Monitoring"})
+		formatString: #,0.0
+		displayFolder: Risk
+		lineageTag: 70b9afa3-cc9e-519f-85ad-afaa812d8de6
+
+	/// Mean residual score of open risks after planned mitigation.
+	measure 'Avg Residual Score (Open)' = CALCULATE(AVERAGE('Risk'[Residual Score]), 'Risk'[Risk Status] IN {"Open", "Mitigating", "Monitoring"})
+		formatString: #,0.0
+		displayFolder: Risk
+		lineageTag: 281deb74-cb7c-5943-b6b1-0981cb04f37c
+
+	/// Severity index: average open-risk score normalized to the 5x5 maximum (25).
+	measure 'Risk Index' = DIVIDE([Avg Risk Score (Open)], 25)
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: Risk
+		lineageTag: a98f53a9-a12a-59fe-850b-64db7c7432ba
+
+	/// Banded rating of the average open-risk score: <6 LOW, <12 MODERATE, <20 HIGH, else CRITICAL.
+	measure 'Risk Rating' = SWITCH(TRUE(), ISBLANK([Avg Risk Score (Open)]), "-", [Avg Risk Score (Open)] < 6, "LOW", [Avg Risk Score (Open)] < 12, "MODERATE", [Avg Risk Score (Open)] < 20, "HIGH", "CRITICAL")
+		displayFolder: Risk
+		lineageTag: 2e02615d-9e46-52d2-b94b-644592d47e44
+
+	/// Deck-aligned color for the Risk Rating band (conditional formatting).
+	measure 'Risk Rating Color' = SWITCH([Risk Rating], "LOW", "#00FF00", "MODERATE", "#D6D60D", "HIGH", "#FF0000", "CRITICAL", "#C00000", "#605E5C")
+		displayFolder: Risk
+		lineageTag: e010621b-6518-54d3-9d7d-2fd9fb4a8bfb
+
+	/// Maximum of the 5x5 risk matrix. Gauge maximum.
+	measure 'Risk Scale Max' = 25
+		formatString: #,0
+		displayFolder: Risk
+		lineageTag: 83d511bd-ec86-5fc2-8f43-26b0efd75fa1
+
+	/// Score at which a risk is rated High (>=12). Gauge target line.
+	measure 'High Risk Threshold' = 12
+		formatString: #,0
+		displayFolder: Risk
+		lineageTag: ea9e64fe-9b39-5558-b0bc-4fe2e9ca2b6a
+
+	/// Share of open risks that have at least one response action planned.
+	measure 'Mitigation Coverage %' = DIVIDE(COUNTROWS(FILTER(CALCULATETABLE('Risk', 'Risk'[Risk Status] IN {"Open", "Mitigating", "Monitoring"}), CALCULATE(COUNTROWS('Risk Response')) > 0)), [Open Risks])
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: Risk
+		lineageTag: 289f7f2f-d7ea-5719-b1cd-c9575dc4ca53
 
 	/// Risk response actions in context.
 	measure 'Response Actions' = COUNTROWS('Risk Response')
@@ -429,6 +487,11 @@ table _Measures
 		displayFolder: Status Page
 		lineageTag: 20ae75ec-02a7-54f8-bdf1-b0ccd4215a85
 
+	/// Deck-exact font color for the Health Check status column (conditional formatting).
+	measure 'Area Status Color' = SWITCH([Latest Area Status], "Green", "#00FF00", "Yellow", "#D6D60D", "Red", "#FF0000", "#252423")
+		displayFolder: Status Page
+		lineageTag: 958ebaa8-26df-5932-9b89-25f5f53be24d
+
 	/// Date of the latest status report.
 	measure 'Report Date' = VAR d = MAX('Status Report'[Period End]) RETURN IF(ISBLANK(d), "-", FORMAT(d, "M/D/YYYY"))
 		displayFolder: Status Page
@@ -456,6 +519,11 @@ table _Measures
 		displayFolder: Status Page
 		lineageTag: 7cfeaba1-105b-5d12-828a-439297e3a942
 
+	/// Deck-exact font color for the Key Project Areas status column (conditional formatting).
+	measure 'Workstream Status Color' = SWITCH([Workstream Status], "ON TRACK", "#00FF00", "AT RISK", "#D6D60D", "#252423")
+		displayFolder: Status Page
+		lineageTag: 47d79d39-a654-507b-9139-f95bfd2c439b
+
 	/// Legend for status letters (matches the Theragen status report key).
 	measure 'Status Key' = "KEY:   G = Green   |   Y = Yellow   |   R = Off Track   |   C = Completed   |   NS = Not Started   |   H = Hold   |   CN = Cancelled"
 		displayFolder: Status Page
@@ -467,7 +535,7 @@ table _Measures
 		lineageTag: 9cd09a2c-54f0-5651-bb63-f0b03d66200a
 
 	/// Stakeholder register entries.
-	measure Stakeholders = COUNTROWS('Stakeholder')
+	measure 'Stakeholders' = COUNTROWS('Stakeholder')
 		formatString: #,0
 		displayFolder: Stakeholders
 		lineageTag: 10aa4498-e4e9-5877-83ce-f429d8aeb748
@@ -515,7 +583,7 @@ table _Measures
 		lineageTag: 2368ff5b-06b2-5582-920b-1565ed3367d8
 
 	/// Lessons captured.
-	measure Lessons = COUNTROWS('Lesson Learned')
+	measure 'Lessons' = COUNTROWS('Lesson Learned')
 		formatString: #,0
 		displayFolder: Closing
 		lineageTag: 19cfe555-d868-5349-96bb-594c7b403b2c
@@ -550,16 +618,6 @@ table _Measures
 		displayFolder: Closing
 		lineageTag: 36753eb4-39b8-514e-89de-1a17d248c94f
 
-	/// Deck-exact font color for the Health Check status column (conditional formatting).
-	measure 'Area Status Color' = SWITCH([Latest Area Status], "Green", "#00FF00", "Yellow", "#D6D60D", "Red", "#FF0000", "#252423")
-		displayFolder: Status Page
-		lineageTag: 958ebaa8-26df-5932-9b89-25f5f53be24d
-
-	/// Deck-exact font color for the Key Project Areas status column (conditional formatting).
-	measure 'Workstream Status Color' = SWITCH([Workstream Status], "ON TRACK", "#00FF00", "AT RISK", "#D6D60D", "#252423")
-		displayFolder: Status Page
-		lineageTag: 47d79d39-a654-507b-9139-f95bfd2c439b
-
 	column Value
 		dataType: string
 		isHidden
@@ -579,4 +637,3 @@ table _Measures
 				    Typed
 
 	annotation PBI_ResultType = Table
-

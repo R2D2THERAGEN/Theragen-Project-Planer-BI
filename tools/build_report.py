@@ -96,6 +96,15 @@ def mrcard(page, key, measure, x, y, wd, ht, vtitle):
     return visual(vid(page, key), "multiRowCard", pos(x, y, wd, ht), qs, vtitle=vtitle)
 
 
+def gauge(page, key, value, vmax, target, x, y, wd, ht, vtitle=""):
+    qs = {
+        "Y": {"projections": [proj(mea(value), f"{MEAS}.{value}")]},
+        "MaxValue": {"projections": [proj(mea(vmax), f"{MEAS}.{vmax}")]},
+        "TargetValue": {"projections": [proj(mea(target), f"{MEAS}.{target}")]},
+    }
+    return visual(vid(page, key), "gauge", pos(x, y, wd, ht), qs, vtitle=vtitle)
+
+
 def logo_visual(page, key, x, y, wd, ht):
     return {
         "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
@@ -387,22 +396,25 @@ vis = []
 for i, (m, lbl) in enumerate([("Open Risks", None), ("High Risks", None),
                               ("Critical Risks", None), ("Risks Past Due", None),
                               ("Risk Reduction Pct", "Mitigation effect"),
-                              ("Open Response Actions", "Open actions")]):
+                              ("Mitigation Coverage %", "Mitigation coverage")]):
     vis.append(card(pg, f"c{i}", m, 8 + i * 212, 8, label=lbl))
 vis.append(matrix(pg, "heat",
                   [(col("Risk", "Likelihood"), "Risk.Likelihood")],
                   [(col("Risk", "Impact"), "Risk.Impact")],
                   [(mea("Risks"), f"{MEAS}.Risks")],
                   8, 116, 420, 280, vtitle="5x5 heat map - likelihood x impact"))
-vis.append(chart(pg, "cat", "barChart",
+# Industry-standard severity gauge: avg open-risk score on the 1-25 scale,
+# target line at the High threshold (12), with the banded rating below.
+vis.append(gauge(pg, "gauge", "Avg Risk Score (Open)", "Risk Scale Max",
+                 "High Risk Threshold", 436, 116, 304, 192,
+                 vtitle="Avg open-risk score (target = high threshold 12)"))
+vis.append(card(pg, "rating", "Risk Rating", 436, 316, wd=304, ht=80,
+                label="Portfolio risk rating", size=24,
+                color_measure="Risk Rating Color"))
+vis.append(chart(pg, "lxi", "clusteredColumnChart",
                  col("Risk", "Risk Category"), "Risk.Risk Category",
-                 ["Open Risks"], 436, 116, 420, 280,
-                 series=(col("Risk", "Severity"), "Risk.Severity"),
-                 vtitle="Open risks by category and severity", sort_desc_by="Open Risks"))
-vis.append(chart(pg, "resp", "clusteredColumnChart",
-                 col("Risk Response", "Action Status"), "Risk Response.Action Status",
-                 ["Response Actions"], 864, 116, 408, 280,
-                 vtitle="Response actions by status"))
+                 ["Avg Likelihood (Open)", "Avg Impact (Open)"], 748, 116, 524, 280,
+                 vtitle="Likelihood vs impact by category (open risks, 1-5)"))
 vis.append(table_vis(pg, "top", [
     (col("Risk", "Risk Code"), "Risk.Risk Code"),
     (col("Risk", "Project Code"), "Risk.Project Code"),
@@ -412,9 +424,14 @@ vis.append(table_vis(pg, "top", [
     (col("Risk", "Risk Status"), "Risk.Risk Status"),
     (col("Risk", "Owner"), "Risk.Owner"),
     (col("Risk", "Due Date"), "Risk.Due Date"),
-], 8, 404, 1264, 304, vtitle="Risk register (sorted by score)",
+], 8, 404, 836, 304, vtitle="Risk register (sorted by score)",
     sort={"sort": [{"field": col("Risk", "Risk Score"),
                     "direction": "Descending"}], "isDefaultSort": True}))
+vis.append(chart(pg, "cat", "barChart",
+                 col("Risk", "Risk Category"), "Risk.Risk Category",
+                 ["Open Risks"], 852, 404, 420, 304,
+                 series=(col("Risk", "Severity"), "Risk.Severity"),
+                 vtitle="Open risks by category and severity", sort_desc_by="Open Risks"))
 PAGE_DEFS.append((pg, "Risk Management", vis))
 
 # ---- Page 6: Change Control --------------------------------------------------

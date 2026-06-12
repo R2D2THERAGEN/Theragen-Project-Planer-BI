@@ -1,0 +1,29 @@
+{
+  "mcpServers": {
+    "fabric-core": {
+      "command": "C:\\Users\\Allen\\.local\\bin\\uv.exe",
+      "args": [
+        "--directory",
+        "c:/Users/Allen/OneDrive - Neurotech NA/Documents/GitHub/Theragen-Project-Planer-BI/mcp/.servers/fabric-core",
+        "run",
+        "fabric_mcp_stdio.py"
+      ],
+      "defer_loading": true
+    },
+    "powerbi-modeling": {
+      "type": "stdio",
+      "command": "C:\\Users\\Allen\\.vscode\\extensions\\analysis-services.powerbi-modeling-mcp-0.4.0-win32-x64\\server\\powerbi-modeling-mcp.exe",
+      "args": [
+        "--start"
+      ],
+      "defer_loading": true
+    },
+    "powerbi-translation-audit": {
+      "command": "c:\\Users\\Allen\\OneDrive - Neurotech NA\\Documents\\GitHub\\Theragen-Project-Planer-BI\\mcp\\.servers\\translation-audit\\.venv\\Scripts\\python.exe",
+      "args": [
+        "c:\\Users\\Allen\\OneDrive - Neurotech NA\\Documents\\GitHub\\Theragen-Project-Planer-BI\\mcp\\.servers\\translation-audit\\server.py"
+      ],
+      "defer_loading": true
+    }
+  }
+}

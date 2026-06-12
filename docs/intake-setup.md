@@ -9,6 +9,20 @@ in Task 4). Do not re-run the creator script.
 
 ---
 
+## Before you start
+
+Sign in to Forms, Power Automate, and SharePoint as **ai@theragen.com** — the same account
+that owns the SharePoint site and ran `create_intake_list.py`. Using a different account
+will cause permission errors when the Flow tries to write to the list.
+
+Confirm the account is licensed for:
+- **Microsoft Forms** — included in M365 E3/E5 and most business plans.
+- **Power Automate** with the **Office 365 Users** connector — this is a standard
+  (non-premium) connector included in M365 E3/E5 seeded plans. No separate Power Automate
+  per-user licence is required for this Flow.
+
+---
+
 ## A. Microsoft Form (~10 min)
 
 Go to [forms.office.com](https://forms.office.com) → **New Form**.
@@ -114,21 +128,25 @@ Action: **Microsoft Forms — Get response details**
 #### Step 2 — Resolve Sponsor to a user account
 
 Action: **Office 365 Users — Search for users (V2)**
-- Rename this action to `Search_sponsor`
+- Rename this action to `Search_sponsor` — click the action card's `...` (ellipsis) menu
+  → **Rename**. Expressions reference the action by this name with spaces converted to
+  underscores (e.g. `body('Search_sponsor')`), so the exact name matters.
 - Search term: dynamic content → **Sponsor — full name** (Q6 answer)
 - Top: `1`
 
 #### Step 3 — Resolve Project Manager to a user account
 
 Action: **Office 365 Users — Search for users (V2)**
-- Rename this action to `Search_pm`
+- Rename this action to `Search_pm` — same method: `...` menu → **Rename**.
 - Search term: dynamic content → **Project manager — full name** (Q7 answer)
 - Top: `1`
 
 #### Step 4 — Create SharePoint item
 
 Action: **SharePoint — Create item**
-- **Site address:** your root Theragen SharePoint site (e.g. `https://theragen.sharepoint.com`)
+- **Site address:** the URL shown in your browser when you open the SharePoint site
+  (e.g. `https://neurotechus.sharepoint.com`). This is the root tenant URL —
+  **not** the Graph site id stored in `db/.m365.local.json`.
 - **List name:** `Project Intake`
 
 Map the fields as follows:
@@ -144,8 +162,8 @@ Map the fields as follows:
 | PlannedFinish | Q9 — Planned finish answer |
 | EstimatedBudget | Q10 — Estimated budget answer |
 | EffortBucket | Q11 — Effort answer |
-| Sponsor Claims | `first(body('Search_sponsor')?['value'])?['UserPrincipalName']` |
-| ProjectManager Claims | `first(body('Search_pm')?['value'])?['UserPrincipalName']` |
+| Sponsor — Claims field | `first(body('Search_sponsor')?['value'])?['UserPrincipalName']` |
+| ProjectManager — Claims field | `first(body('Search_pm')?['value'])?['UserPrincipalName']` |
 | PHIFlag | `equals(outputs('Get_response_details')?['body/r<ID>'], 'Yes')` |
 | CFR11Flag | `equals(outputs('Get_response_details')?['body/r<ID>'], 'Yes')` |
 | ClinicalFlag | `equals(outputs('Get_response_details')?['body/r<ID>'], 'Yes')` |
@@ -162,14 +180,23 @@ Leave **TriageStatus** and **SyncStatus** at their column defaults (`Submitted` 
 `Pending`). Do not map IntakeID, ProjectCode, or SyncMessage — the sync script writes
 those.
 
+> **Person column inputs:** Each person column (Sponsor, ProjectManager) shows two inputs
+> in the Create item action: a display-name/people-picker field and a **Claims** sub-field.
+> The Claims sub-field may be hidden — click **Show advanced options** to reveal it.
+> The `first(body('Search_sponsor')?['value'])?['UserPrincipalName']` expression must go
+> in the **Claims** field, not the display-name picker. Entering it in the wrong field
+> causes a type mismatch at runtime and the Flow run fails.
+
 ### Person-field behaviour
 
 If a people search returns no results (name not found in the directory), the Sponsor or
 ProjectManager column on the List item is left empty. The next sync run will mark that
 item `SyncStatus = Error` with a message like
-`Sponsor <email> not in person directory`. The PMO fixes the people picker by hand and
-resets `SyncStatus` to `Pending` to trigger a re-sync. This is intentional: it acts as a
-data-quality gate before the record enters PostgreSQL.
+`Sponsor <email> not in person directory` or `PM <email> not in person directory`
+(the code uses `PM` for the project manager prefix, not `ProjectManager`).
+The PMO fixes the people picker by hand and resets `SyncStatus` to `Pending` to trigger
+a re-sync. This is intentional: it acts as a data-quality gate before the record enters
+PostgreSQL.
 
 ---
 
@@ -231,13 +258,34 @@ schtasks /Query /TN "Theragen\SyncIntake" /FO LIST
 
 Review `logs\intake_sync.log` each morning (or after a manual run) to confirm there were
 no errors. A successful run ends with exit code 0; any item-level error exits with code 1
-and the relevant line starts with `ERROR item <id>:`.
+and the relevant line contains `ERROR item <id>:` (each result line is printed with a
+two-space indent, so the log line reads `  ERROR item <id>: …`). Because of the indent,
+`grep "^ERROR"` finds nothing — use a non-anchored search instead:
+
+```cmd
+findstr "ERROR" logs\intake_sync.log
+```
+
+or on Linux/macOS:
+
+```sh
+grep ERROR logs/intake_sync.log
+```
+
+> **Scheduled runs and exit codes:** Task Scheduler's "last run result" reflects the
+> `cmd /c` wrapper, not Python's exit code directly. Python's exit code 1 is only clearly
+> visible on manual runs. For scheduled runs the **log file is the primary diagnostic** —
+> always check `logs\intake_sync.log` rather than relying solely on Task Scheduler's
+> last-run status.
 
 To trigger a manual refresh of the semantic model outside the 6:00 AM schedule:
 
 ```powershell
 python tools/service_refresh.py
 ```
+
+(Running `service_refresh.py` also rebinds the PostgreSQL credentials and re-applies the
+nightly schedule — it is harmless to re-run at any time.)
 
 ---
 
@@ -260,7 +308,7 @@ Follow these steps after the Form, Flow, and schedule are all wired up.
    ```
 
    You should see a line like:
-   `DRY item <id>: would create THG-2026-001 / THG-CLN-001 (<title>)`
+   `DRY item <id>: would create INT-2026-0001 / THG-CLN-001 (<title>)`
 
 4. **Real sync run** — run without `--dry-run`:
 
@@ -279,6 +327,18 @@ Follow these steps after the Form, Flow, and schedule are all wired up.
 
 6. **Confirm in Portfolio Overview** — open the Power BI report. The new submission
    should appear in the Portfolio Overview page as a **Proposed** project.
+
+7. **Clean up the test item** — in the **Project Intake** SharePoint List, set the test
+   item's `TriageStatus` to **Rejected**. Then re-run the sync (or wait for the 5:30 AM
+   scheduled run):
+
+   ```powershell
+   python tools/sync_intake.py
+   ```
+
+   The test project's status flips to `Cancelled` in PostgreSQL and it drops out of the
+   Proposed portfolio view on the next model refresh. Do not delete rows directly from
+   the database — use `TriageStatus` in the List as the authoritative signal.
 
 ---
 

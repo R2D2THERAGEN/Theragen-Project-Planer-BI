@@ -12,3 +12,6 @@ tools/.schema_cache/
 db/.pg.local.json
 db/.m365.local.json
 db/.graph_token_cache.json
+
+# Scheduled-task log output
+logs/

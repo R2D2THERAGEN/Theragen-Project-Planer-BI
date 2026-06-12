@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
   "name": "381af2d8bc26564d9af1",
   "position": {
     "x": 436,
     "y": 116,
     "z": 1000,
-    "height": 280,
-    "width": 420
+    "width": 420,
+    "height": 280
   },
   "visual": {
     "visualType": "barChart",
@@ -25,25 +25,7 @@
                   "Property": "Risk Category"
                 }
               },
-              "queryRef": "Risk.Risk Category",
-              "active": true
-            }
-          ]
-        },
-        "Series": {
-          "projections": [
-            {
-              "field": {
-                "Column": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "Risk"
-                    }
-                  },
-                  "Property": "Severity"
-                }
-              },
-              "queryRef": "Risk.Severity"
+              "queryRef": "Risk.Risk Category"
             }
           ]
         },
@@ -61,6 +43,23 @@
                 }
               },
               "queryRef": "_Measures.Open Risks"
+            }
+          ]
+        },
+        "Series": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Risk"
+                    }
+                  },
+                  "Property": "Severity"
+                }
+              },
+              "queryRef": "Risk.Severity"
             }
           ]
         }
@@ -84,6 +83,7 @@
         "isDefaultSort": true
       }
     },
+    "drillFilterOtherVisuals": true,
     "visualContainerObjects": {
       "title": [
         {
@@ -105,7 +105,6 @@
           }
         }
       ]
-    },
-    "drillFilterOtherVisuals": true
+    }
   }
 }

@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
   "name": "b0706b11c4675d1ea17e",
   "position": {
-    "x": 8,
-    "y": 54,
+    "x": 236,
+    "y": 8,
     "z": 1000,
-    "width": 416,
-    "height": 58
+    "width": 280,
+    "height": 72
   },
   "visual": {
     "visualType": "card",
@@ -32,6 +32,21 @@
       }
     },
     "drillFilterOtherVisuals": true,
+    "objects": {
+      "labels": [
+        {
+          "properties": {
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "14D"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
     "visualContainerObjects": {
       "title": [
         {
@@ -47,34 +62,6 @@
               "expr": {
                 "Literal": {
                   "Value": "'Theragen Project Name'"
-                }
-              }
-            }
-          }
-        }
-      ]
-    },
-    "objects": {
-      "labels": [
-        {
-          "properties": {
-            "fontSize": {
-              "expr": {
-                "Literal": {
-                  "Value": "14D"
-                }
-              }
-            }
-          }
-        }
-      ],
-      "categoryLabels": [
-        {
-          "properties": {
-            "show": {
-              "expr": {
-                "Literal": {
-                  "Value": "false"
                 }
               }
             }

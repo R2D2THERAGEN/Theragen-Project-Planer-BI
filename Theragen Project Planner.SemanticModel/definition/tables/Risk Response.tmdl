@@ -69,8 +69,6 @@ table 'Risk Response'
 
 		annotation SummarizationSetBy = User
 
-		annotation UnderlyingDateTimeDataType = Date
-
 	column 'Action Status'
 		dataType: string
 		lineageTag: d4aa0f7f-cc11-5ea9-bc63-865c09f80294
@@ -93,4 +91,3 @@ table 'Risk Response'
 				    Renamed
 
 	annotation PBI_ResultType = Table
-

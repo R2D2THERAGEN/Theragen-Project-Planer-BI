@@ -12,6 +12,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 NAME = "Theragen Project Planner"
 RPT = os.path.join(ROOT, f"{NAME}.Report")
 PAGES = os.path.join(RPT, "definition", "pages")
+LOGO_SRC = os.path.join(ROOT, "assets", "theragen-logo.jpeg")
+LOGO_RES = "theragen-logo.jpeg"
 NS = uuid.UUID("6ba7b810-9dad-11d1-80b4-00c04fd430c8")
 
 MEAS = "_Measures"
@@ -92,6 +94,22 @@ def card(page, key, measure, x, y, wd=204, ht=100, label=None, size=20,
 def mrcard(page, key, measure, x, y, wd, ht, vtitle):
     qs = {"Values": {"projections": [proj(mea(measure), f"{MEAS}.{measure}")]}}
     return visual(vid(page, key), "multiRowCard", pos(x, y, wd, ht), qs, vtitle=vtitle)
+
+
+def logo_visual(page, key, x, y, wd, ht):
+    return {
+        "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+        "name": vid(page, key),
+        "position": pos(x, y, wd, ht),
+        "visual": {
+            "visualType": "image",
+            "objects": {"general": [{"properties": {"imageUrl": {"expr": {
+                "ResourcePackageItem": {"PackageName": "RegisteredResources",
+                                        "PackageType": 1, "ItemName": LOGO_RES}}}}}]},
+            "visualContainerObjects": {"title": [{"properties": {"show": lit(False)}}]},
+            "drillFilterOtherVisuals": True,
+        },
+    }
 
 
 def chart(page, key, vtype, cat_field, cat_ref, y_measures, x, y, wd, ht,
@@ -204,19 +222,20 @@ PAGE_DEFS.append((pg, "Portfolio Overview", vis))
 # health check > RAID > key project areas > accomplishments + next steps > keys
 pg = "status"
 vis = []
-# Row A - verify the project (y8 h72)
+# Row A - logo + verify the project (y8 h72)
 vis.append(slicer(pg, "slc", col("Project", "Project Name"), "Project.Project Name",
                   8, 8, 220, 72, vtitle="Select project"))
-vis.append(card(pg, "hdr_name", "Theragen Project Name", 236, 8, wd=320, ht=72,
+vis.append(card(pg, "hdr_name", "Theragen Project Name", 236, 8, wd=280, ht=72,
                 label="Theragen Project Name", size=14))
-vis.append(card(pg, "hdr_pm", "Project Manager (Selected)", 564, 8, wd=200, ht=72,
+vis.append(card(pg, "hdr_pm", "Project Manager (Selected)", 524, 8, wd=170, ht=72,
                 label="Project Manager", size=14))
-vis.append(card(pg, "hdr_target", "Target Date Completion", 772, 8, wd=160, ht=72,
-                label="Target Date Completion", size=14))
-vis.append(card(pg, "hdr_phase", "Current Phase", 940, 8, wd=160, ht=72,
-                label="Current Phase", size=14))
-vis.append(card(pg, "hdr_date", "Report Date", 1108, 8, wd=164, ht=72,
-                label="Date of Report", size=14))
+vis.append(card(pg, "hdr_target", "Target Date Completion", 702, 8, wd=140, ht=72,
+                label="Target Date Completion", size=12))
+vis.append(card(pg, "hdr_phase", "Current Phase", 850, 8, wd=130, ht=72,
+                label="Current Phase", size=12))
+vis.append(card(pg, "hdr_date", "Report Date", 988, 8, wd=120, ht=72,
+                label="Date of Report", size=12))
+vis.append(logo_visual(pg, "logo", 1116, 8, 156, 72))
 # Row B - main status / description / business value / health check (y88 h190)
 vis.append(card(pg, "main_status", "Main Status", 8, 88, wd=170, ht=190,
                 label="MAIN STATUS", size=60, color_measure="Status Color"))
@@ -503,6 +522,10 @@ def main():
         "version": "2.0.0",
     })
     w(os.path.join(RPT, "StaticResources", "RegisteredResources", "Theragen.json"), THEME)
+    logo_dst = os.path.join(RPT, "StaticResources", "RegisteredResources", LOGO_RES)
+    os.makedirs(os.path.dirname(logo_dst), exist_ok=True)
+    shutil.copyfile(LOGO_SRC, logo_dst)
+    print(os.path.relpath(logo_dst, ROOT))
     w(os.path.join(RPT, "definition", "report.json"), {
         "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/report/1.0.0/schema.json",
         "themeCollection": {
@@ -518,7 +541,8 @@ def main():
                         "type": "BaseTheme"}]},
             {"name": "RegisteredResources", "type": "RegisteredResources",
              "items": [{"name": "Theragen.json", "path": "Theragen.json",
-                        "type": "CustomTheme"}]},
+                        "type": "CustomTheme"},
+                       {"name": LOGO_RES, "path": LOGO_RES, "type": "Image"}]},
         ],
         "settings": {"useStylableVisualContainerHeader": True},
     })

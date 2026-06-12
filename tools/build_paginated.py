@@ -9,18 +9,36 @@ After the semantic model is published, open the .rdl in Power BI Report
 Builder, repoint the data source to the published model, and publish to the
 same workspace.
 """
+import base64
 import os
 import uuid
 from xml.sax.saxutils import escape
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "paginated", "Theragen Status Report.rdl")
+LOGO = os.path.join(ROOT, "assets", "theragen-logo.jpeg")
 
 TEAL = "#219A80"
 INK = "#252423"
 GRID = "#DCE4E3"
 LIGHT = "#F4F7F6"
 FONT = "Segoe UI"
+
+# Status colors lifted from the Theragen status deck's text runs.
+DECK_GREEN, DECK_YELLOW, DECK_RED = "#00FF00", "#D6D60D", "#FF0000"
+DECK_KEY_YELLOW, DECK_HOLD, DECK_CANCEL = "#FFFF00", "#7030A0", "#00B0F0"
+
+AREA_COLOR = ('=Switch(Fields!AreaStatus.Value="Green","{g}",'
+              'Fields!AreaStatus.Value="Yellow","{y}",'
+              'Fields!AreaStatus.Value="Red","{r}",True,"#000000")').format(
+                  g=DECK_GREEN, y=DECK_YELLOW, r=DECK_RED)
+WS_COLOR = ('=Switch(Fields!WsStatus.Value="ON TRACK","{g}",'
+            'Fields!WsStatus.Value="AT RISK","{y}",True,"#000000")').format(
+                g=DECK_GREEN, y=DECK_YELLOW)
+SEV_COLOR = ('=Switch(Fields!Severity.Value="Critical","{r}",'
+             'Fields!Severity.Value="High","{r}",'
+             'Fields!Severity.Value="Medium","{y}",True,"#000000")').format(
+                 r=DECK_RED, y=DECK_YELLOW)
 
 # ---------------------------------------------------------------- datasets
 # Every output column is aliased through SELECTCOLUMNS/ROW so RDL field
@@ -153,7 +171,7 @@ def label_value_box(name, label, value_expr, left, top, width, height,
 
 def tablix(name, dataset, columns, left, top, width, *, header_bg=TEAL,
            detail_size="7.5pt", sort_field=None, sort_desc=False):
-    """columns: list of (header, field_expr, width_in, align, format?)"""
+    """columns: list of (header, field_expr, width_in, align[, format[, color[, bold]]])"""
     total_w = sum(c[2] for c in columns)
     scale = width / total_w
     cols_xml = "".join(f"<TablixColumn><Width>{c[2]*scale:.3f}in</Width></TablixColumn>"
@@ -162,6 +180,8 @@ def tablix(name, dataset, columns, left, top, width, *, header_bg=TEAL,
     for i, c in enumerate(columns):
         header, expr, _, align = c[0], c[1], c[2], c[3]
         fmt = c[4] if len(c) > 4 else None
+        color = c[5] if len(c) > 5 else INK
+        bold = c[6] if len(c) > 6 else False
         hdr_cells.append(
             "<TablixCell><CellContents>" + f"""<Textbox Name="{name}_h{i}">
               <CanGrow>true</CanGrow>
@@ -176,7 +196,7 @@ def tablix(name, dataset, columns, left, top, width, *, header_bg=TEAL,
         det_cells.append(
             "<TablixCell><CellContents>" + f"""<Textbox Name="{name}_d{i}">
               <CanGrow>true</CanGrow>
-              <Paragraphs>{para(textrun(expr, size=detail_size), align)}</Paragraphs>
+              <Paragraphs>{para(textrun(expr, size=detail_size, color=color, bold=bold), align)}</Paragraphs>
               <Style><Border><Color>{GRID}</Color><Style>Solid</Style></Border>
               {style_fmt}
               <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
@@ -232,23 +252,29 @@ def build():
     FH = '=First(Fields!{}.Value, "DsHeader")'.format
     body_items = []
 
-    # --- Row A: verify the project (top 0 .. 0.55) ------------------------
+    # --- Row A: logo + verify the project (top 0 .. 0.55) ------------------
+    body_items.append(
+        '<Image Name="LogoImg"><Source>Embedded</Source><Value>TheragenLogo</Value>'
+        '<Sizing>FitProportional</Sizing>'
+        '<Top>0.05in</Top><Left>0in</Left><Height>0.4in</Height><Width>1.5in</Width>'
+        '<Style><Border><Style>None</Style></Border></Style></Image>')
     body_items.append(label_value_box("HdrName", "THERAGEN PROJECT NAME",
-                                      FH("ProjectName"), 0, 0, 3.3, 0.5, vsize="11pt"))
+                                      FH("ProjectName"), 1.58, 0, 2.7, 0.5, vsize="11pt"))
     body_items.append(label_value_box("HdrPM", "PROJECT MANAGER",
-                                      FH("ProjectManager"), 3.38, 0, 1.9, 0.5))
+                                      FH("ProjectManager"), 4.36, 0, 1.6, 0.5))
     body_items.append(label_value_box("HdrTarget", "TARGET DATE COMPLETION",
-                                      FH("TargetDate"), 5.36, 0, 1.6, 0.5))
+                                      FH("TargetDate"), 6.04, 0, 1.45, 0.5))
     body_items.append(label_value_box("HdrPhase", "CURRENT PHASE",
-                                      FH("Phase"), 7.04, 0, 1.5, 0.5))
+                                      FH("Phase"), 7.57, 0, 1.3, 0.5))
     body_items.append(label_value_box("HdrDate", "DATE OF REPORT",
-                                      FH("ReportDate"), 8.62, 0, 1.68, 0.5))
+                                      FH("ReportDate"), 8.95, 0, 1.35, 0.5))
 
     # --- Row B: main status / description / value / health (0.62..2.1) ----
-    runs = (para(textrun("MAIN STATUS", size="6.5pt", bold=True, color="#FFFFFF"), "Center") +
-            para(textrun(FH("MainStatus"), size="44pt", bold=True, color="#FFFFFF"), "Center"))
+    # Deck style: big colored letter on white, not white-on-color.
+    runs = (para(textrun("MAIN STATUS", size="6.5pt", bold=True, color=TEAL), "Center") +
+            para(textrun(FH("MainStatus"), size="44pt", bold=True, color=FH("StatusColor")), "Center"))
     body_items.append(textbox("MainStatus", runs, 0, 0.62, 1.2, 1.45,
-                              bg=FH("StatusColor"), border=GRID, valign="Middle", grow=False))
+                              border=GRID, valign="Middle", grow=False))
     runs = (para(textrun("PROJECT DESCRIPTION", size="6.5pt", bold=True, color=TEAL)) +
             para(textrun(FH("Description"), size="8pt")))
     body_items.append(textbox("Descr", runs, 1.28, 0.62, 3.4, 1.45))
@@ -257,7 +283,7 @@ def build():
     body_items.append(textbox("Value", runs, 4.76, 0.62, 3.4, 1.45))
     body_items.append(tablix("HealthCheck", "DsHealth", [
         ("Health Check", F("KnowledgeArea"), 1.2, "Left"),
-        ("Status", F("AreaStatus"), 0.8, "Center"),
+        ("Status", F("AreaStatus"), 0.8, "Center", None, AREA_COLOR, True),
     ], 8.24, 0.62, 2.06))
 
     # --- Row C: RAID (2.2 ..) ---------------------------------------------
@@ -268,7 +294,7 @@ def build():
         ("Owner", F("Owner"), 1.3, "Left"),
         ("Target Date", F("DueDate"), 1.0, "Center", "yyyy-MM-dd"),
         ("Score", F("Score"), 0.6, "Center"),
-        ("Severity", F("Severity"), 0.9, "Center"),
+        ("Severity", F("Severity"), 0.9, "Center", None, SEV_COLOR, True),
         ("Status", F("RiskStatus"), 1.2, "Center"),
     ], 0, 2.2, 10.3, sort_field="Score", sort_desc=True))
 
@@ -278,7 +304,7 @@ def build():
         ("Start Date", F("StartDate"), 1.4, "Center", "yyyy-MM-dd"),
         ("Target Implementation Date", F("TargetDate"), 1.8, "Center", "yyyy-MM-dd"),
         ("% Complete", F("PctComplete"), 1.3, "Center", "0.0%"),
-        ("Current Status", F("WsStatus"), 1.8, "Center"),
+        ("Current Status", F("WsStatus"), 1.8, "Center", None, WS_COLOR, True),
     ], 0, 4.05, 10.3, sort_field="StartDate"))
 
     # --- Row E: accomplishments + next steps ---------------------------------
@@ -293,14 +319,24 @@ def build():
         ("Target Date", F("TargetDate"), 1.0, "Center", "yyyy-MM-dd"),
     ], 5.23, 5.55, 5.07, sort_field="TargetDate"))
 
-    # --- Row F: keys ----------------------------------------------------------
-    key = ("KEY:   G = Green   |   Y = Yellow   |   R = Off Track   |   C = Completed   |   "
-           "NS = Not Started   |   H = Hold   |   CN = Cancelled        "
-           "PHASES:   Initiating - Planning - Executing - Monitoring - Closing")
-    body_items.append(textbox("Keys", para(textrun(escape(key), size="6.5pt", color="#605E5C")),
-                              0, 7.05, 10.3, 0.25, bg=LIGHT))
+    # --- Row F: keys (multi-colored runs exactly like the deck) --------------
+    key_runs = "".join([
+        textrun("Key:    ", size="7pt", bold=True, color=TEAL),
+        textrun("G – Green   ", size="7pt", bold=True, color=DECK_GREEN),
+        textrun("Y – Yellow   ", size="7pt", bold=True, color=DECK_KEY_YELLOW),
+        textrun("R – Off Track   ", size="7pt", bold=True, color=DECK_RED),
+        textrun("C – Completed   ", size="7pt", bold=True, color="#000000"),
+        textrun("NS - Not Started   ", size="7pt", bold=True, color="#000000"),
+        textrun("H – Hold   ", size="7pt", bold=True, color=DECK_HOLD),
+        textrun("CN – Cancelled        ", size="7pt", bold=True, color=DECK_CANCEL),
+        textrun("Phase:  Initiating, Planning, Executing, Monitoring, Closing",
+                size="7pt", color="#605E5C"),
+    ])
+    body_items.append(textbox("Keys", para(key_runs), 0, 7.05, 10.3, 0.25, bg=LIGHT))
 
     datasets = "".join(dataset_xml(n, d) for n, d in DATASETS.items())
+    with open(LOGO, "rb") as f:
+        logo_b64 = base64.b64encode(f.read()).decode("ascii")
 
     rdl = f"""<?xml version="1.0" encoding="utf-8"?>
 <Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition"
@@ -316,6 +352,12 @@ def build():
     </DataSource>
   </DataSources>
   <DataSets>{datasets}</DataSets>
+  <EmbeddedImages>
+    <EmbeddedImage Name="TheragenLogo">
+      <MIMEType>image/jpeg</MIMEType>
+      <ImageData>{logo_b64}</ImageData>
+    </EmbeddedImage>
+  </EmbeddedImages>
   <ReportSections>
     <ReportSection>
       <Body>

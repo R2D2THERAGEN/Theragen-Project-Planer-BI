@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
   "name": "3091fc6419b5526b8d88",
   "position": {
     "x": 778,
     "y": 116,
     "z": 1000,
-    "height": 280,
-    "width": 494
+    "width": 494,
+    "height": 280
   },
   "visual": {
     "visualType": "barChart",
@@ -25,25 +25,7 @@
                   "Property": "Department"
                 }
               },
-              "queryRef": "Department.Department",
-              "active": true
-            }
-          ]
-        },
-        "Series": {
-          "projections": [
-            {
-              "field": {
-                "Column": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "Schedule Activity"
-                    }
-                  },
-                  "Property": "Activity Status"
-                }
-              },
-              "queryRef": "Schedule Activity.Activity Status"
+              "queryRef": "Department.Department"
             }
           ]
         },
@@ -63,9 +45,27 @@
               "queryRef": "_Measures.Activities"
             }
           ]
+        },
+        "Series": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Schedule Activity"
+                    }
+                  },
+                  "Property": "Activity Status"
+                }
+              },
+              "queryRef": "Schedule Activity.Activity Status"
+            }
+          ]
         }
       }
     },
+    "drillFilterOtherVisuals": true,
     "visualContainerObjects": {
       "title": [
         {
@@ -87,7 +87,6 @@
           }
         }
       ]
-    },
-    "drillFilterOtherVisuals": true
+    }
   }
 }

@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
   "name": "64312f4cbf18591c8951",
   "position": {
     "x": 436,
     "y": 116,
     "z": 1000,
-    "height": 280,
-    "width": 360
+    "width": 360,
+    "height": 280
   },
   "visual": {
     "visualType": "donutChart",
@@ -25,8 +25,7 @@
                   "Property": "Funding Source"
                 }
               },
-              "queryRef": "Budget Line.Funding Source",
-              "active": true
+              "queryRef": "Budget Line.Funding Source"
             }
           ]
         },
@@ -49,6 +48,7 @@
         }
       }
     },
+    "drillFilterOtherVisuals": true,
     "visualContainerObjects": {
       "title": [
         {
@@ -70,7 +70,6 @@
           }
         }
       ]
-    },
-    "drillFilterOtherVisuals": true
+    }
   }
 }

@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
   "name": "cbe077d8c10b56e4a3ea",
   "position": {
-    "x": 1029.7256857855361,
-    "y": 9.8753117206982548,
+    "x": 988,
+    "y": 8,
     "z": 1000,
-    "height": 40.399002493765586,
-    "width": 242.3940149625935
+    "width": 120,
+    "height": 72
   },
   "visual": {
     "visualType": "card",
@@ -31,6 +31,7 @@
         }
       }
     },
+    "drillFilterOtherVisuals": true,
     "objects": {
       "labels": [
         {
@@ -38,20 +39,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "14D"
-                }
-              }
-            }
-          }
-        }
-      ],
-      "categoryLabels": [
-        {
-          "properties": {
-            "show": {
-              "expr": {
-                "Literal": {
-                  "Value": "false"
+                  "Value": "12D"
                 }
               }
             }
@@ -80,7 +68,6 @@
           }
         }
       ]
-    },
-    "drillFilterOtherVisuals": true
+    }
   }
 }

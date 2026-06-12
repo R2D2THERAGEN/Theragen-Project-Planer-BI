@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
   "name": "93528acc3cea5cfb9b1b",
   "position": {
     "x": 8,
     "y": 116,
     "z": 1000,
-    "height": 280,
-    "width": 420
+    "width": 420,
+    "height": 280
   },
   "visual": {
     "visualType": "clusteredBarChart",
@@ -25,8 +25,7 @@
                   "Property": "Cost Category"
                 }
               },
-              "queryRef": "Budget Line.Cost Category",
-              "active": true
+              "queryRef": "Budget Line.Cost Category"
             }
           ]
         },
@@ -67,6 +66,7 @@
         "isDefaultSort": true
       }
     },
+    "drillFilterOtherVisuals": true,
     "visualContainerObjects": {
       "title": [
         {
@@ -88,7 +88,6 @@
           }
         }
       ]
-    },
-    "drillFilterOtherVisuals": true
+    }
   }
 }

@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
   "name": "b4dfac65528b5ddeaf84",
   "position": {
     "x": 8,
     "y": 8,
     "z": 1000,
-    "height": 220,
-    "width": 250
+    "width": 250,
+    "height": 220
   },
   "visual": {
     "visualType": "slicer",
@@ -25,13 +25,13 @@
                   "Property": "Project Name"
                 }
               },
-              "queryRef": "Project.Project Name",
-              "active": true
+              "queryRef": "Project.Project Name"
             }
           ]
         }
       }
     },
+    "drillFilterOtherVisuals": true,
     "visualContainerObjects": {
       "title": [
         {
@@ -53,7 +53,6 @@
           }
         }
       ]
-    },
-    "drillFilterOtherVisuals": true
+    }
   }
 }

@@ -40,7 +40,10 @@ def iter_targets():
         if os.path.isfile(target):
             yield target
             continue
-        for dirpath, _, filenames in os.walk(target):
+        for dirpath, dirnames, filenames in os.walk(target):
+            # .pbi folders hold Desktop-managed local state (localSettings,
+            # cache) - gitignored and not part of the published definition.
+            dirnames[:] = [d for d in dirnames if d != ".pbi"]
             for fn in filenames:
                 if fn.endswith((".json", ".pbir", ".pbism", ".pbip", ".platform")):
                     yield os.path.join(dirpath, fn)

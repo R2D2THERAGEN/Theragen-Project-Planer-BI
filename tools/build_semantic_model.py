@@ -775,9 +775,10 @@ add("Status Page", "Main Status",
     "SWITCH([Latest Overall Status], \"Green\", \"G\", \"Yellow\", \"Y\", \"Red\", \"R\", BLANK())", "",
     "Traffic-light letter from the latest status report: G / Y / R.")
 add("Status Page", "Status Color",
-    "SWITCH([Latest Overall Status], \"Green\", \"#107C10\", \"Yellow\", \"#E8A800\", "
-    "\"Red\", \"#D64550\", \"#605E5C\")", "",
-    "Hex color for conditional formatting of the Main Status traffic light.")
+    "SWITCH([Latest Overall Status], \"Green\", \"#00FF00\", \"Yellow\", \"#D6D60D\", "
+    "\"Red\", \"#FF0000\", \"#605E5C\")", "",
+    "Hex color for the Main Status traffic light. Values match the Theragen "
+    "status deck exactly (G #00FF00 / Y #D6D60D / R #FF0000).")
 add("Status Page", "Project Description (Selected)",
     "SELECTEDVALUE('Project'[Project Description], \"Select a single project\")", "",
     "Project description text block.")

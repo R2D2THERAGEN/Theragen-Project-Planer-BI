@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
   "name": "fca011fcefb55aff8c3b",
   "position": {
     "x": 436,
     "y": 116,
     "z": 1000,
-    "height": 280,
-    "width": 420
+    "width": 420,
+    "height": 280
   },
   "visual": {
     "visualType": "columnChart",
@@ -25,25 +25,7 @@
                   "Property": "CR Class"
                 }
               },
-              "queryRef": "Change Request.CR Class",
-              "active": true
-            }
-          ]
-        },
-        "Series": {
-          "projections": [
-            {
-              "field": {
-                "Column": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "Change Request"
-                    }
-                  },
-                  "Property": "Decision"
-                }
-              },
-              "queryRef": "Change Request.Decision"
+              "queryRef": "Change Request.CR Class"
             }
           ]
         },
@@ -63,9 +45,27 @@
               "queryRef": "_Measures.Change Requests"
             }
           ]
+        },
+        "Series": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Change Request"
+                    }
+                  },
+                  "Property": "Decision"
+                }
+              },
+              "queryRef": "Change Request.Decision"
+            }
+          ]
         }
       }
     },
+    "drillFilterOtherVisuals": true,
     "visualContainerObjects": {
       "title": [
         {
@@ -87,7 +87,6 @@
           }
         }
       ]
-    },
-    "drillFilterOtherVisuals": true
+    }
   }
 }

@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
   "name": "8022f6323b8c5c08a073",
   "position": {
     "x": 864,
     "y": 116,
     "z": 1000,
-    "height": 260,
-    "width": 408
+    "width": 408,
+    "height": 260
   },
   "visual": {
     "visualType": "barChart",
@@ -25,25 +25,7 @@
                   "Property": "Project Code"
                 }
               },
-              "queryRef": "Closure Item.Project Code",
-              "active": true
-            }
-          ]
-        },
-        "Series": {
-          "projections": [
-            {
-              "field": {
-                "Column": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "Closure Item"
-                    }
-                  },
-                  "Property": "Done"
-                }
-              },
-              "queryRef": "Closure Item.Done"
+              "queryRef": "Closure Item.Project Code"
             }
           ]
         },
@@ -63,9 +45,27 @@
               "queryRef": "_Measures.Closure Items"
             }
           ]
+        },
+        "Series": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Closure Item"
+                    }
+                  },
+                  "Property": "Done"
+                }
+              },
+              "queryRef": "Closure Item.Done"
+            }
+          ]
         }
       }
     },
+    "drillFilterOtherVisuals": true,
     "visualContainerObjects": {
       "title": [
         {
@@ -87,7 +87,6 @@
           }
         }
       ]
-    },
-    "drillFilterOtherVisuals": true
+    }
   }
 }

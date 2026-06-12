@@ -1,48 +1,26 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/report/3.3.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/report/1.0.0/schema.json",
   "themeCollection": {
     "baseTheme": {
-      "name": "Fluent2-CY26SU05",
-      "reportVersionAtImport": {
-        "visual": "2.9.0",
-        "report": "3.3.0",
-        "page": "2.3.1"
-      },
+      "name": "CY24SU10",
+      "reportVersionAtImport": "5.55",
       "type": "SharedResources"
     },
     "customTheme": {
       "name": "Theragen.json",
-      "reportVersionAtImport": {
-        "visual": "2.10.0",
-        "report": "3.4.0",
-        "page": "2.3.1"
-      },
+      "reportVersionAtImport": "5.55",
       "type": "RegisteredResources"
     }
   },
-  "objects": {
-    "outspacePane": [
-      {
-        "properties": {
-          "expanded": {
-            "expr": {
-              "Literal": {
-                "Value": "false"
-              }
-            }
-          }
-        }
-      }
-    ]
-  },
+  "layoutOptimization": "None",
   "resourcePackages": [
     {
       "name": "SharedResources",
       "type": "SharedResources",
       "items": [
         {
-          "name": "Fluent2-CY26SU05",
-          "path": "BaseThemes/Fluent2-CY26SU05.json",
+          "name": "CY24SU10",
+          "path": "BaseThemes/CY24SU10.json",
           "type": "BaseTheme"
         }
       ]
@@ -52,20 +30,19 @@
       "type": "RegisteredResources",
       "items": [
         {
-          "name": "TheraGen_LOGO9499934091828127.png",
-          "path": "TheraGen_LOGO9499934091828127.png",
-          "type": "Image"
-        },
-        {
           "name": "Theragen.json",
           "path": "Theragen.json",
           "type": "CustomTheme"
+        },
+        {
+          "name": "theragen-logo.jpeg",
+          "path": "theragen-logo.jpeg",
+          "type": "Image"
         }
       ]
     }
   ],
   "settings": {
-    "useStylableVisualContainerHeader": true,
-    "useEnhancedTooltips": false
+    "useStylableVisualContainerHeader": true
   }
 }

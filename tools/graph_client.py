@@ -20,10 +20,17 @@ SCOPES = ["Sites.ReadWrite.All", "User.Read"]
 BASE = "https://graph.microsoft.com/v1.0"
 
 
+def _raise(r):
+    if not r.ok:
+        raise requests.HTTPError(f"{r.status_code} {r.reason}: {r.text[:500]}", response=r)
+
+
 def get_token():
     cache = msal.SerializableTokenCache()
     if os.path.exists(CACHE):
-        cache.deserialize(open(CACHE, encoding="utf-8").read())
+        with open(CACHE, encoding="utf-8") as f:
+            cache.deserialize(f.read())
+    os.makedirs(os.path.dirname(CACHE), exist_ok=True)
     atexit.register(lambda: open(CACHE, "w", encoding="utf-8").write(cache.serialize())
                     if cache.has_state_changed else None)
     app = msal.PublicClientApplication(CLIENT_ID, authority=AUTHORITY,
@@ -46,15 +53,15 @@ class Graph:
 
     def get(self, path, **params):
         r = self.s.get(f"{BASE}{path}", params=params or None, timeout=30)
-        r.raise_for_status()
+        _raise(r)
         return r.json()
 
     def post(self, path, body):
         r = self.s.post(f"{BASE}{path}", json=body, timeout=30)
-        r.raise_for_status()
+        _raise(r)
         return r.json()
 
     def patch(self, path, body):
         r = self.s.patch(f"{BASE}{path}", json=body, timeout=30)
-        r.raise_for_status()
+        _raise(r)
         return r.json() if r.text else {}

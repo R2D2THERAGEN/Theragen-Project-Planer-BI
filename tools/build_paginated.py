@@ -164,11 +164,13 @@ def textrun(value, *, size="8pt", bold=False, color=INK, italic=False):
 
 def textbox(name, runs_xml, left, top, width, height, *, bg=None, border=GRID,
             align="Left", valign="Top", pad="2pt", grow=True):
+    if bg is None:
+        bg = "#FFFFFF"   # white card on the tinted frame background
     style = [f"<Border><Color>{border}</Color><Style>{'Solid' if border else 'None'}</Style></Border>",
              f"<PaddingLeft>{pad}</PaddingLeft><PaddingRight>{pad}</PaddingRight>",
              "<PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom>",
              f"<VerticalAlign>{valign}</VerticalAlign>"]
-    if bg:
+    if bg and bg != "none":
         style.insert(1, f"<BackgroundColor>{bg}</BackgroundColor>")
     return f"""<Textbox Name="{name}">
   <CanGrow>{'true' if grow else 'false'}</CanGrow>
@@ -225,6 +227,7 @@ def tablix(name, dataset, columns, left, top, width, *, header_bg=TEAL,
               <CanGrow>true</CanGrow>
               <Paragraphs>{para(textrun(expr, size=detail_size, color=color, bold=bold), align)}</Paragraphs>
               <Style><Border><Color>{GRID}</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
               {style_fmt}
               <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
@@ -325,6 +328,47 @@ def risk_gauge(left, top, width, height):
 </GaugePanel>"""
 
 
+def severity_bar(left, top, width, height):
+    """Gauge replacement that cannot fail to render: a 25-segment band bar
+    (PMI colors) with a needle marker row driven by Avg Risk Score (Open)."""
+    n = 25
+    seg = width / n
+    def band(i):
+        if i < 6: return DECK_GREEN
+        if i < 12: return DECK_YELLOW
+        if i < 20: return DECK_RED
+        return DECK_DARKRED
+    cols = "".join(f"<TablixColumn><Width>{seg:.4f}in</Width></TablixColumn>" for _ in range(n))
+    marker_cells = "".join(
+        f"""<TablixCell><CellContents><Textbox Name="sevm{i}">
+          <CanGrow>false</CanGrow>
+          <Paragraphs>{para(textrun(
+              f'=IIF(Floor(First(Fields!AvgScore.Value)+0.5)={i},"▼","")',
+              size="6pt", bold=True, color=INK), "Center")}</Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell>""" for i in range(n))
+    band_cells = "".join(
+        f"""<TablixCell><CellContents><Textbox Name="sevb{i}">
+          <CanGrow>false</CanGrow>
+          <Paragraphs>{para(textrun(" ", size="2pt"), "Center")}</Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>{band(i)}</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell>""" for i in range(n))
+    return f"""<Tablix Name="SeverityBar">
+  <TablixBody>
+    <TablixColumns>{cols}</TablixColumns>
+    <TablixRows>
+      <TablixRow><Height>0.12in</Height><TablixCells>{marker_cells}</TablixCells></TablixRow>
+      <TablixRow><Height>0.13in</Height><TablixCells>{band_cells}</TablixCells></TablixRow>
+    </TablixRows>
+  </TablixBody>
+  <TablixColumnHierarchy><TablixMembers>{'<TablixMember />' * n}</TablixMembers></TablixColumnHierarchy>
+  <TablixRowHierarchy><TablixMembers><TablixMember /><TablixMember /></TablixMembers></TablixRowHierarchy>
+  <DataSetName>DsGauge</DataSetName>
+  <Top>{top}in</Top><Left>{left}in</Left><Height>0.25in</Height><Width>{width}in</Width>
+  <Style><Border><Style>None</Style></Border></Style>
+</Tablix>"""
+
 def dataset_xml(name, d):
     qp = ("""<QueryParameters><QueryParameter Name="ProjectCode">
             <Value>=Parameters!ProjectCode.Value</Value>
@@ -388,16 +432,24 @@ def build():
     runs = (para(textrun("BUSINESS VALUE", size="6.5pt", bold=True, color=TEAL)) +
             para(textrun(FH("BusinessValue"), size="8pt")))
     body_items.append(textbox("Value", runs, 3.86, 0.62, 2.5, 1.45))
-    # Severity score block (same calculations as the interactive gauge; the
-    # service renderer draws GaugePanels as empty boxes, so the paginated
-    # version shows the score itself, colored by the PMI band).
-    runs = (para(textrun("AVG RISK SCORE", size="6.5pt", bold=True, color=TEAL), "Center") +
-            para(textrun('=Format(First(Fields!AvgScore.Value, "DsGauge"), "0.0")',
-                         size="26pt", bold=True,
-                         color='=First(Fields!RatingColor.Value, "DsGauge")'), "Center") +
-            para(textrun("of 25  ·  High ≥ 12", size="6.5pt", color="#605E5C"), "Center"))
-    body_items.append(textbox("AvgScoreBox", runs, 6.44, 0.62, 1.6, 1.0,
-                              border=GRID, valign="Middle", grow=False))
+    # Severity gauge block: band bar with needle marker (tablix - always
+    # renders), scale labels, score colored by PMI band, rating beneath.
+    body_items.append(textbox("GaugeCard", para(textrun(" ", size="2pt")),
+                              6.44, 0.62, 1.6, 1.0, border=GRID, grow=False))
+    body_items.append(textbox("GaugeTitle",
+                              para(textrun("AVG RISK SCORE", size="6.5pt", bold=True, color=TEAL), "Center"),
+                              6.5, 0.66, 1.48, 0.12, border="", bg="none", grow=False))
+    body_items.append(severity_bar(6.5, 0.80, 1.48, 0.25))
+    for frac, lab in [(0.0, "0"), (6/25, "6"), (12/25, "12"), (20/25, "20"), (0.93, "25")]:
+        body_items.append(textbox(f"sevlab{lab}",
+                                  para(textrun(lab, size="5.5pt", color="#605E5C"), "Center"),
+                                  round(6.44 + 0.06 + frac * 1.38, 3), 1.06, 0.12, 0.1,
+                                  border="", bg="none", grow=False))
+    runs = (para(textrun('=Format(First(Fields!AvgScore.Value, "DsGauge"), "0.0") &amp; "  of 25"',
+                         size="13pt", bold=True,
+                         color='=First(Fields!RatingColor.Value, "DsGauge")'), "Center"))
+    body_items.append(textbox("AvgScoreBox", runs, 6.5, 1.2, 1.48, 0.36,
+                              border="", bg="none", valign="Middle", grow=False))
     runs = (para(textrun("RISK RATING", size="6.5pt", bold=True, color=TEAL), "Center") +
             para(textrun('=First(Fields!RiskRating.Value, "DsGauge")', size="11pt", bold=True,
                          color='=First(Fields!RatingColor.Value, "DsGauge")'), "Center"))
@@ -486,7 +538,17 @@ def build():
   <ReportSections>
     <ReportSection>
       <Body>
-        <ReportItems>{''.join(body_items)}</ReportItems>
+        <ReportItems>
+          <Rectangle Name="Frame">
+            <ReportItems>{''.join(body_items)}</ReportItems>
+            <KeepTogether>true</KeepTogether>
+            <Top>0in</Top><Left>0in</Left><Height>6.5in</Height><Width>10.3in</Width>
+            <Style>
+              <Border><Color>{TEAL}</Color><Style>Solid</Style><Width>2pt</Width></Border>
+              <BackgroundColor>#F2F7F6</BackgroundColor>
+            </Style>
+          </Rectangle>
+        </ReportItems>
         <Height>6.55in</Height>
         <Style />
       </Body>

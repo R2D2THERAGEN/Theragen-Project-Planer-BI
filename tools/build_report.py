@@ -194,8 +194,8 @@ THEME = {
             "border": [{"show": True, "color": {"solid": {"color": "#DCE4E3"}}, "radius": 4}],
         }},
         "page": {"*": {
-            "background": [{"color": {"solid": {"color": "#F4F7F6"}}, "transparency": 0}],
-            "outspace": [{"color": {"solid": {"color": "#E9EFEE"}}, "transparency": 0}],
+            "background": [{"color": {"solid": {"color": "#F2F7F6"}}, "transparency": 0}],
+            "outspace": [{"color": {"solid": {"color": "#E2ECE9"}}, "transparency": 0}],
         }},
     },
 }

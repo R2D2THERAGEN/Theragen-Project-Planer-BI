@@ -94,66 +94,348 @@
   <ReportSections>
     <ReportSection>
       <Body>
-        <ReportItems><Image Name="LogoImg"><Source>Embedded</Source><Value>TheragenLogo</Value><Sizing>FitProportional</Sizing><Top>0.05in</Top><Left>0in</Left><Height>0.4in</Height><Width>1.5in</Width><Style><Border><Style>None</Style></Border></Style></Image><Textbox Name="HdrName">
+        <ReportItems>
+          <Rectangle Name="Frame">
+            <ReportItems><Image Name="LogoImg"><Source>Embedded</Source><Value>TheragenLogo</Value><Sizing>FitProportional</Sizing><Top>0.05in</Top><Left>0in</Left><Height>0.4in</Height><Width>1.5in</Width><Style><Border><Style>None</Style></Border></Style></Image><Textbox Name="HdrName">
   <CanGrow>true</CanGrow>
   <KeepTogether>true</KeepTogether>
   <Paragraphs><Paragraph><TextRuns><TextRun><Value>THERAGEN PROJECT NAME</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6.5pt</FontSize><Color>#219A80</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value>=First(Fields!ProjectName.Value, "DsHeader")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>11pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
   <Top>0in</Top><Left>1.58in</Left><Height>0.5in</Height><Width>2.7in</Width>
-  <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+  <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><BackgroundColor>#FFFFFF</BackgroundColor><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
 </Textbox><Textbox Name="HdrPM">
   <CanGrow>true</CanGrow>
   <KeepTogether>true</KeepTogether>
   <Paragraphs><Paragraph><TextRuns><TextRun><Value>PROJECT MANAGER</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6.5pt</FontSize><Color>#219A80</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value>=First(Fields!ProjectManager.Value, "DsHeader")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>10pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
   <Top>0in</Top><Left>4.36in</Left><Height>0.5in</Height><Width>1.6in</Width>
-  <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+  <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><BackgroundColor>#FFFFFF</BackgroundColor><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
 </Textbox><Textbox Name="HdrTarget">
   <CanGrow>true</CanGrow>
   <KeepTogether>true</KeepTogether>
   <Paragraphs><Paragraph><TextRuns><TextRun><Value>TARGET DATE COMPLETION</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6.5pt</FontSize><Color>#219A80</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value>=First(Fields!TargetDate.Value, "DsHeader")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>10pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
   <Top>0in</Top><Left>6.04in</Left><Height>0.5in</Height><Width>1.45in</Width>
-  <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+  <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><BackgroundColor>#FFFFFF</BackgroundColor><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
 </Textbox><Textbox Name="HdrPhase">
   <CanGrow>true</CanGrow>
   <KeepTogether>true</KeepTogether>
   <Paragraphs><Paragraph><TextRuns><TextRun><Value>CURRENT PHASE</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6.5pt</FontSize><Color>#219A80</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value>=First(Fields!Phase.Value, "DsHeader")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>10pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
   <Top>0in</Top><Left>7.57in</Left><Height>0.5in</Height><Width>1.3in</Width>
-  <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+  <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><BackgroundColor>#FFFFFF</BackgroundColor><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
 </Textbox><Textbox Name="HdrDate">
   <CanGrow>true</CanGrow>
   <KeepTogether>true</KeepTogether>
   <Paragraphs><Paragraph><TextRuns><TextRun><Value>DATE OF REPORT</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6.5pt</FontSize><Color>#219A80</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value>=First(Fields!ReportDate.Value, "DsHeader")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>10pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
   <Top>0in</Top><Left>8.95in</Left><Height>0.5in</Height><Width>1.35in</Width>
-  <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+  <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><BackgroundColor>#FFFFFF</BackgroundColor><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
 </Textbox><Textbox Name="MainStatus">
   <CanGrow>false</CanGrow>
   <KeepTogether>true</KeepTogether>
   <Paragraphs><Paragraph><TextRuns><TextRun><Value>MAIN STATUS</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6.5pt</FontSize><Color>#219A80</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value>=First(Fields!MainStatus.Value, "DsHeader")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>44pt</FontSize><Color>=First(Fields!StatusColor.Value, "DsHeader")</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
   <Top>0.62in</Top><Left>0in</Left><Height>1.45in</Height><Width>1.2in</Width>
-  <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Middle</VerticalAlign></Style>
+  <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><BackgroundColor>#FFFFFF</BackgroundColor><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Middle</VerticalAlign></Style>
 </Textbox><Textbox Name="Descr">
   <CanGrow>true</CanGrow>
   <KeepTogether>true</KeepTogether>
   <Paragraphs><Paragraph><TextRuns><TextRun><Value>PROJECT DESCRIPTION</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6.5pt</FontSize><Color>#219A80</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value>=First(Fields!Description.Value, "DsHeader")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>8pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
   <Top>0.62in</Top><Left>1.28in</Left><Height>1.45in</Height><Width>2.5in</Width>
-  <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+  <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><BackgroundColor>#FFFFFF</BackgroundColor><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
 </Textbox><Textbox Name="Value">
   <CanGrow>true</CanGrow>
   <KeepTogether>true</KeepTogether>
   <Paragraphs><Paragraph><TextRuns><TextRun><Value>BUSINESS VALUE</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6.5pt</FontSize><Color>#219A80</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value>=First(Fields!BusinessValue.Value, "DsHeader")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>8pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
   <Top>0.62in</Top><Left>3.86in</Left><Height>1.45in</Height><Width>2.5in</Width>
-  <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+  <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><BackgroundColor>#FFFFFF</BackgroundColor><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+</Textbox><Textbox Name="GaugeCard">
+  <CanGrow>false</CanGrow>
+  <KeepTogether>true</KeepTogether>
+  <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
+  <Top>0.62in</Top><Left>6.44in</Left><Height>1.0in</Height><Width>1.6in</Width>
+  <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><BackgroundColor>#FFFFFF</BackgroundColor><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+</Textbox><Textbox Name="GaugeTitle">
+  <CanGrow>false</CanGrow>
+  <KeepTogether>true</KeepTogether>
+  <Paragraphs><Paragraph><TextRuns><TextRun><Value>AVG RISK SCORE</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6.5pt</FontSize><Color>#219A80</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+  <Top>0.66in</Top><Left>6.5in</Left><Height>0.12in</Height><Width>1.48in</Width>
+  <Style><Border><Color></Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+</Textbox><Tablix Name="SeverityBar">
+  <TablixBody>
+    <TablixColumns><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn></TablixColumns>
+    <TablixRows>
+      <TablixRow><Height>0.12in</Height><TablixCells><TablixCell><CellContents><Textbox Name="sevm0">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=0,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm1">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=1,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm2">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=2,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm3">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=3,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm4">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=4,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm5">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=5,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm6">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=6,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm7">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=7,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm8">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=8,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm9">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=9,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm10">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=10,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm11">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=11,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm12">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=12,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm13">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=13,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm14">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=14,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm15">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=15,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm16">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=16,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm17">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=17,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm18">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=18,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm19">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=19,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm20">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=20,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm21">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=21,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm22">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=22,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm23">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=23,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevm24">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Floor(First(Fields!AvgScore.Value)+0.5)=24,"▼","")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Style>None</Style></Border></Style>
+        </Textbox></CellContents></TablixCell></TablixCells></TablixRow>
+      <TablixRow><Height>0.13in</Height><TablixCells><TablixCell><CellContents><Textbox Name="sevb0">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#107C10</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb1">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#107C10</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb2">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#107C10</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb3">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#107C10</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb4">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#107C10</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb5">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#107C10</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb6">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#C19C00</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb7">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#C19C00</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb8">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#C19C00</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb9">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#C19C00</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb10">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#C19C00</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb11">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#C19C00</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb12">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#C0392B</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb13">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#C0392B</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb14">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#C0392B</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb15">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#C0392B</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb16">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#C0392B</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb17">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#C0392B</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb18">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#C0392B</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb19">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#C0392B</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb20">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#8B1A1A</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb21">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#8B1A1A</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb22">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#8B1A1A</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb23">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#8B1A1A</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="sevb24">
+          <CanGrow>false</CanGrow>
+          <Paragraphs><Paragraph><TextRuns><TextRun><Value> </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>2pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+          <Style><Border><Color>#FFFFFF</Color><Style>Solid</Style><Width>0.25pt</Width></Border>
+          <BackgroundColor>#8B1A1A</BackgroundColor></Style>
+        </Textbox></CellContents></TablixCell></TablixCells></TablixRow>
+    </TablixRows>
+  </TablixBody>
+  <TablixColumnHierarchy><TablixMembers><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /></TablixMembers></TablixColumnHierarchy>
+  <TablixRowHierarchy><TablixMembers><TablixMember /><TablixMember /></TablixMembers></TablixRowHierarchy>
+  <DataSetName>DsGauge</DataSetName>
+  <Top>0.8in</Top><Left>6.5in</Left><Height>0.25in</Height><Width>1.48in</Width>
+  <Style><Border><Style>None</Style></Border></Style>
+</Tablix><Textbox Name="sevlab0">
+  <CanGrow>false</CanGrow>
+  <KeepTogether>true</KeepTogether>
+  <Paragraphs><Paragraph><TextRuns><TextRun><Value>0</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>5.5pt</FontSize><Color>#605E5C</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+  <Top>1.06in</Top><Left>6.5in</Left><Height>0.1in</Height><Width>0.12in</Width>
+  <Style><Border><Color></Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+</Textbox><Textbox Name="sevlab6">
+  <CanGrow>false</CanGrow>
+  <KeepTogether>true</KeepTogether>
+  <Paragraphs><Paragraph><TextRuns><TextRun><Value>6</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>5.5pt</FontSize><Color>#605E5C</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+  <Top>1.06in</Top><Left>6.831in</Left><Height>0.1in</Height><Width>0.12in</Width>
+  <Style><Border><Color></Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+</Textbox><Textbox Name="sevlab12">
+  <CanGrow>false</CanGrow>
+  <KeepTogether>true</KeepTogether>
+  <Paragraphs><Paragraph><TextRuns><TextRun><Value>12</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>5.5pt</FontSize><Color>#605E5C</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+  <Top>1.06in</Top><Left>7.162in</Left><Height>0.1in</Height><Width>0.12in</Width>
+  <Style><Border><Color></Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+</Textbox><Textbox Name="sevlab20">
+  <CanGrow>false</CanGrow>
+  <KeepTogether>true</KeepTogether>
+  <Paragraphs><Paragraph><TextRuns><TextRun><Value>20</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>5.5pt</FontSize><Color>#605E5C</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+  <Top>1.06in</Top><Left>7.604in</Left><Height>0.1in</Height><Width>0.12in</Width>
+  <Style><Border><Color></Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+</Textbox><Textbox Name="sevlab25">
+  <CanGrow>false</CanGrow>
+  <KeepTogether>true</KeepTogether>
+  <Paragraphs><Paragraph><TextRuns><TextRun><Value>25</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>5.5pt</FontSize><Color>#605E5C</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+  <Top>1.06in</Top><Left>7.783in</Left><Height>0.1in</Height><Width>0.12in</Width>
+  <Style><Border><Color></Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
 </Textbox><Textbox Name="AvgScoreBox">
   <CanGrow>false</CanGrow>
   <KeepTogether>true</KeepTogether>
-  <Paragraphs><Paragraph><TextRuns><TextRun><Value>AVG RISK SCORE</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6.5pt</FontSize><Color>#219A80</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value>=Format(First(Fields!AvgScore.Value, "DsGauge"), "0.0")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>26pt</FontSize><Color>=First(Fields!RatingColor.Value, "DsGauge")</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value>of 25  ·  High ≥ 12</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6.5pt</FontSize><Color>#605E5C</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
-  <Top>0.62in</Top><Left>6.44in</Left><Height>1.0in</Height><Width>1.6in</Width>
-  <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Middle</VerticalAlign></Style>
+  <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Format(First(Fields!AvgScore.Value, "DsGauge"), "0.0") &amp; "  of 25"</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>13pt</FontSize><Color>=First(Fields!RatingColor.Value, "DsGauge")</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+  <Top>1.2in</Top><Left>6.5in</Left><Height>0.36in</Height><Width>1.48in</Width>
+  <Style><Border><Color></Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Middle</VerticalAlign></Style>
 </Textbox><Textbox Name="RiskRatingBox">
   <CanGrow>false</CanGrow>
   <KeepTogether>true</KeepTogether>
   <Paragraphs><Paragraph><TextRuns><TextRun><Value>RISK RATING</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6.5pt</FontSize><Color>#219A80</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value>=First(Fields!RiskRating.Value, "DsGauge")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>11pt</FontSize><Color>=First(Fields!RatingColor.Value, "DsGauge")</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
   <Top>1.66in</Top><Left>6.44in</Left><Height>0.41in</Height><Width>1.6in</Width>
-  <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Middle</VerticalAlign></Style>
+  <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><BackgroundColor>#FFFFFF</BackgroundColor><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Middle</VerticalAlign></Style>
 </Textbox><Tablix Name="HealthCheck">
   <TablixBody>
     <TablixColumns><TablixColumn><Width>1.308in</Width></TablixColumn><TablixColumn><Width>0.872in</Width></TablixColumn></TablixColumns>
@@ -179,6 +461,7 @@
               <CanGrow>true</CanGrow>
               <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!KnowledgeArea.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
               <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
               
               <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
@@ -186,6 +469,7 @@
               <CanGrow>true</CanGrow>
               <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!AreaStatus.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>=Switch(Fields!AreaStatus.Value="Green","#107C10",Fields!AreaStatus.Value="Yellow","#C19C00",Fields!AreaStatus.Value="Red","#C0392B",True,"#000000")</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
               <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
               
               <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
@@ -266,6 +550,7 @@
               <CanGrow>true</CanGrow>
               <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!RaidType.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
               <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
               
               <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
@@ -273,6 +558,7 @@
               <CanGrow>true</CanGrow>
               <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!Description.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
               <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
               
               <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
@@ -280,6 +566,7 @@
               <CanGrow>true</CanGrow>
               <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!Owner.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
               <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
               
               <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
@@ -287,6 +574,7 @@
               <CanGrow>true</CanGrow>
               <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Format(Fields!DueDate.Value, "yyyy-MM-dd")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
               <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
               
               <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
@@ -294,6 +582,7 @@
               <CanGrow>true</CanGrow>
               <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!Score.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
               <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
               
               <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
@@ -301,6 +590,7 @@
               <CanGrow>true</CanGrow>
               <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!Severity.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>=Switch(Fields!Severity.Value="Critical","#8B1A1A",Fields!Severity.Value="High","#C0392B",Fields!Severity.Value="Medium","#C19C00",True,"#000000")</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
               <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
               
               <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
@@ -308,6 +598,7 @@
               <CanGrow>true</CanGrow>
               <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!RiskStatus.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
               <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
               
               <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
@@ -372,6 +663,7 @@
               <CanGrow>true</CanGrow>
               <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!Deliverable.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
               <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
               
               <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
@@ -379,6 +671,7 @@
               <CanGrow>true</CanGrow>
               <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Format(Fields!StartDate.Value, "yyyy-MM-dd")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
               <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
               
               <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
@@ -386,6 +679,7 @@
               <CanGrow>true</CanGrow>
               <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Format(Fields!TargetDate.Value, "yyyy-MM-dd")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
               <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
               
               <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
@@ -393,6 +687,7 @@
               <CanGrow>true</CanGrow>
               <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Format(Fields!PctComplete.Value, "0.0%")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
               <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
               
               <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
@@ -400,6 +695,7 @@
               <CanGrow>true</CanGrow>
               <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!WsStatus.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>=Switch(Fields!WsStatus.Value="ON TRACK","#107C10",Fields!WsStatus.Value="AT RISK","#C19C00",True,"#000000")</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
               <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
               
               <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
@@ -448,6 +744,7 @@
               <CanGrow>true</CanGrow>
               <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!Accomplishment.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
               <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
               
               <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
@@ -455,6 +752,7 @@
               <CanGrow>true</CanGrow>
               <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!Source.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
               <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
               
               <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
@@ -462,6 +760,7 @@
               <CanGrow>true</CanGrow>
               <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Format(Fields!CompletedDate.Value, "yyyy-MM-dd")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
               <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
               
               <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
@@ -510,6 +809,7 @@
               <CanGrow>true</CanGrow>
               <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!NextStep.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
               <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
               
               <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
@@ -517,6 +817,7 @@
               <CanGrow>true</CanGrow>
               <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!Owner.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
               <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
               
               <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
@@ -524,6 +825,7 @@
               <CanGrow>true</CanGrow>
               <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Format(Fields!TargetDate.Value, "yyyy-MM-dd")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
               <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
+              <BackgroundColor>#FFFFFF</BackgroundColor>
               
               <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
@@ -546,6 +848,14 @@
   <Top>6.15in</Top><Left>0in</Left><Height>0.25in</Height><Width>10.3in</Width>
   <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><BackgroundColor>#F4F7F6</BackgroundColor><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
 </Textbox></ReportItems>
+            <KeepTogether>true</KeepTogether>
+            <Top>0in</Top><Left>0in</Left><Height>6.5in</Height><Width>10.3in</Width>
+            <Style>
+              <Border><Color>#219A80</Color><Style>Solid</Style><Width>2pt</Width></Border>
+              <BackgroundColor>#F2F7F6</BackgroundColor>
+            </Style>
+          </Rectangle>
+        </ReportItems>
         <Height>6.55in</Height>
         <Style />
       </Body>

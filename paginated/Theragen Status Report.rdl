@@ -7,7 +7,7 @@
       <rd:SecurityType>None</rd:SecurityType>
       <ConnectionProperties>
         <DataProvider>PBIDATASET</DataProvider>
-        <ConnectString>Data Source=pbiazure://api.powerbi.com/;Identity Provider="https://login.microsoftonline.com/organizations, https://analysis.windows.net/powerbi/api, f0b72488-7082-488a-a7e8-eada97bd842d";Initial Catalog=sobe_wowvirtualserver-00000000-0000-0000-0000-000000000000;Integrated Security=ClaimsToken</ConnectString>
+        <ConnectString>Data Source=pbiazure://api.powerbi.com/;Identity Provider="https://login.microsoftonline.com/organizations, https://analysis.windows.net/powerbi/api, f0b72488-7082-488a-a7e8-eada97bd842d";Initial Catalog=sobe_wowvirtualserver-e3e1f151-0f7d-4bbe-8428-d74dcfa640d4;Integrated Security=ClaimsToken</ConnectString>
       </ConnectionProperties>
       <rd:DataSourceID>493bf767-e040-579e-97ca-1cfe78fd24eb</rd:DataSourceID>
       <rd:PowerBIWorkspaceName>Playground</rd:PowerBIWorkspaceName>

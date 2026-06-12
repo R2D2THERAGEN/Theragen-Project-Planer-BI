@@ -25,7 +25,7 @@ LOGO = os.path.join(ROOT, "assets", "theragen-logo.jpeg")
 TENANT_ID = "f0b72488-7082-488a-a7e8-eada97bd842d"
 WORKSPACE_NAME = "Playground"
 DATASET_NAME = "Theragen Project Planner"
-DATASET_GUID = "00000000-0000-0000-0000-000000000000"  # TODO: real model GUID
+DATASET_GUID = "e3e1f151-0f7d-4bbe-8428-d74dcfa640d4"  # Playground / Theragen Project Planner
 
 TEAL = "#219A80"
 INK = "#252423"

@@ -32,14 +32,16 @@ def derive_envelope(amount):
 
 
 def next_intake_id(existing, year):
+    # Overflow past the padded width (9999/999) widens the number rather than truncating.
     pat = re.compile(rf"INT-{year}-(\d{{4}})$")
-    nums = [int(m.group(1)) for s in existing if (m := pat.match(s))]
+    nums = [int(m.group(1)) for s in existing if s and (m := pat.match(s))]
     return f"INT-{year}-{(max(nums) + 1 if nums else 1):04d}"
 
 
 def next_project_code(dept_code, existing):
+    # Overflow past the padded width (9999/999) widens the number rather than truncating.
     pat = re.compile(rf"THG-{re.escape(dept_code)}-(\d{{3}})$")
-    nums = [int(m.group(1)) for s in existing if (m := pat.match(s))]
+    nums = [int(m.group(1)) for s in existing if s and (m := pat.match(s))]
     return f"THG-{dept_code}-{(max(nums) + 1 if nums else 1):03d}"
 
 
@@ -50,6 +52,6 @@ def triage_to_status(triage):
 def validate_item(fields):
     errors = []
     for key, label in REQUIRED:
-        if not (fields.get(key) or "").strip():
+        if not str(fields.get(key) or "").strip():
             errors.append(f"Missing: {label}")
     return errors

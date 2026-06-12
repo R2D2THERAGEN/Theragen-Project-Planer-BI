@@ -18,12 +18,12 @@ def test_next_intake_id_first_of_year():
 
 
 def test_next_intake_id_increments_within_year():
-    existing = ["INT-2026-0042", "INT-2026-0063", "INT-2025-0117"]
+    existing = ["INT-2026-0042", None, "INT-2026-0063", "INT-2025-0117"]
     assert il.next_intake_id(existing, 2026) == "INT-2026-0064"
 
 
 def test_next_project_code_per_department():
-    existing = ["THG-CLN-014", "THG-RND-007", "THG-CLN-002"]
+    existing = ["THG-CLN-014", None, "THG-RND-007", "THG-CLN-002"]
     assert il.next_project_code("CLN", existing) == "THG-CLN-015"
     assert il.next_project_code("OPS", existing) == "THG-OPS-001"
 
@@ -54,3 +54,12 @@ def test_validate_item_flags_missing_people_and_title():
     assert "Title" in joined
     assert "Sponsor" in joined
     assert "Project Manager" in joined
+
+
+def test_validate_item_handles_whitespace_and_nonstring():
+    errs = il.validate_item({"Title": "   ", "RequestType": 7,
+                             "Department": "HR / People",
+                             "BusinessProblem": "x", "DesiredOutcome": "y"})
+    joined = " | ".join(errs)
+    assert "Title" in joined          # whitespace-only is missing
+    assert "Request Type" not in joined  # non-string but truthy passes via str()

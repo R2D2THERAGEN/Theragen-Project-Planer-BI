@@ -196,7 +196,7 @@ def label_value_box(name, label, value_expr, left, top, width, height,
 
 
 def tablix(name, dataset, columns, left, top, width, *, header_bg=TEAL,
-           detail_size="7.5pt", sort_field=None, sort_desc=False):
+           detail_size="7.5pt", sort_field=None, sort_desc=False, design_h=0.42):
     """columns: list of (header, field_expr, width_in, align[, format[, color[, bold]]])"""
     total_w = sum(c[2] for c in columns)
     scale = width / total_w
@@ -254,7 +254,7 @@ def tablix(name, dataset, columns, left, top, width, *, header_bg=TEAL,
   </TablixMembers></TablixRowHierarchy>
   <DataSetName>{dataset}</DataSetName>
   <NoRowsMessage>No rows for the selected Project parameter.</NoRowsMessage>
-  <Top>{top}in</Top><Left>{left}in</Left><Height>0.42in</Height><Width>{width:.3f}in</Width>
+  <Top>{top}in</Top><Left>{left}in</Left><Height>{design_h}in</Height><Width>{width:.3f}in</Width>
   <Style><Border><Style>None</Style></Border></Style>
 </Tablix>"""
 
@@ -426,41 +426,50 @@ def build():
     # Deck style: big colored letter on white, not white-on-color.
     runs = (para(textrun("MAIN STATUS", size="6.5pt", bold=True, color=TEAL), "Center") +
             para(textrun(FH("MainStatus"), size="44pt", bold=True, color=FH("StatusColor")), "Center"))
-    body_items.append(textbox("MainStatus", runs, 0, 0.62, 1.2, 1.45,
+    body_items.append(textbox("MainStatus", runs, 0, 0.62, 1.2, 2.02,
                               border=GRID, valign="Middle", grow=False))
     runs = (para(textrun("PROJECT DESCRIPTION", size="6.5pt", bold=True, color=TEAL)) +
             para(textrun(FH("Description"), size="8pt")))
-    body_items.append(textbox("Descr", runs, 1.28, 0.62, 2.5, 1.45))
+    body_items.append(textbox("Descr", runs, 1.28, 0.62, 2.5, 2.02, grow=False))
     runs = (para(textrun("BUSINESS VALUE", size="6.5pt", bold=True, color=TEAL)) +
             para(textrun(FH("BusinessValue"), size="8pt")))
-    body_items.append(textbox("Value", runs, 3.86, 0.62, 2.5, 1.45))
-    # Severity gauge block: band bar with needle marker (tablix - always
-    # renders), scale labels, score colored by PMI band, rating beneath.
-    body_items.append(textbox("GaugeCard", para(textrun(" ", size="2pt")),
-                              6.44, 0.62, 1.6, 1.0, border=GRID, grow=False))
-    body_items.append(textbox("GaugeTitle",
+    body_items.append(textbox("Value", runs, 3.86, 0.62, 2.5, 2.02, grow=False))
+    # Severity gauge block, locked: a single Rectangle container holds the
+    # title, band bar, scale labels, score and rating, so neighboring tables
+    # can never push its pieces apart (child coordinates are container-local).
+    gauge_kids = []
+    gauge_kids.append(textbox("GaugeTitle",
                               para(textrun("AVG RISK SCORE", size="6.5pt", bold=True, color=TEAL), "Center"),
-                              6.5, 0.66, 1.48, 0.12, border="", bg="none", grow=False))
-    body_items.append(severity_bar(6.5, 0.80, 1.48, 0.25))
-    for frac, lab in [(0.0, "0"), (6/25, "6"), (12/25, "12"), (20/25, "20"), (0.93, "25")]:
-        body_items.append(textbox(f"sevlab{lab}",
+                              0.05, 0.06, 1.5, 0.14, border="", bg="none", grow=False))
+    gauge_kids.append(severity_bar(0.06, 0.24, 1.48, 0.25))
+    for frac, lab in [(0.0, "0"), (6/25, "6"), (12/25, "12"), (20/25, "20"), (0.89, "25")]:
+        gauge_kids.append(textbox(f"sevlab{lab}",
                                   para(textrun(lab, size="5.5pt", color="#605E5C"), "Center"),
-                                  round(6.44 + 0.06 + frac * 1.38, 3), 1.06, 0.12, 0.1,
+                                  round(0.06 + frac * 1.33, 3), 0.51, 0.15, 0.1,
                                   border="", bg="none", grow=False))
-    runs = (para(textrun('=Format(First(Fields!AvgScore.Value, "DsGauge"), "0.0") &amp; "  of 25"',
-                         size="13pt", bold=True,
-                         color='=First(Fields!RatingColor.Value, "DsGauge")'), "Center"))
-    body_items.append(textbox("AvgScoreBox", runs, 6.5, 1.2, 1.48, 0.36,
-                              border="", bg="none", valign="Middle", grow=False))
-    runs = (para(textrun("RISK RATING", size="6.5pt", bold=True, color=TEAL), "Center") +
-            para(textrun('=First(Fields!RiskRating.Value, "DsGauge")', size="11pt", bold=True,
-                         color='=First(Fields!RatingColor.Value, "DsGauge")'), "Center"))
-    body_items.append(textbox("RiskRatingBox", runs, 6.44, 1.66, 1.6, 0.41,
-                              border=GRID, valign="Middle", grow=False))
+    gauge_kids.append(textbox("AvgScoreBox",
+                              para(textrun('=Format(First(Fields!AvgScore.Value, "DsGauge"), "0.0") &amp; "  of 25"',
+                                           size="13pt", bold=True,
+                                           color='=First(Fields!RatingColor.Value, "DsGauge")'), "Center"),
+                              0.06, 0.66, 1.48, 0.3, border="", bg="none", valign="Middle", grow=False))
+    gauge_kids.append(textbox("RatingTitle",
+                              para(textrun("RISK RATING", size="6.5pt", bold=True, color=TEAL), "Center"),
+                              0.05, 1.18, 1.5, 0.14, border="", bg="none", grow=False))
+    gauge_kids.append(textbox("RatingValue",
+                              para(textrun('=First(Fields!RiskRating.Value, "DsGauge")',
+                                           size="13pt", bold=True,
+                                           color='=First(Fields!RatingColor.Value, "DsGauge")'), "Center"),
+                              0.06, 1.36, 1.48, 0.3, border="", bg="none", valign="Middle", grow=False))
+    body_items.append(
+        '<Rectangle Name="GaugeCard"><ReportItems>' + "".join(gauge_kids) +
+        '</ReportItems><KeepTogether>true</KeepTogether>'
+        '<Top>0.62in</Top><Left>6.44in</Left><Height>2.02in</Height><Width>1.6in</Width>'
+        f'<Style><Border><Color>{GRID}</Color><Style>Solid</Style></Border>'
+        '<BackgroundColor>#FFFFFF</BackgroundColor></Style></Rectangle>')
     body_items.append(tablix("HealthCheck", "DsHealth", [
         ("Health Check", F("KnowledgeArea"), 1.2, "Left"),
         ("Status", F("AreaStatus"), 0.8, "Center", None, AREA_COLOR, True),
-    ], 8.12, 0.62, 2.18))
+    ], 8.12, 0.62, 2.18, design_h=2.02))
 
     # --- Row C: RAID (2.2 ..) ---------------------------------------------
     body_items.append(tablix("Raid", "DsRaid", [
@@ -472,7 +481,7 @@ def build():
         ("Score", F("Score"), 0.6, "Center"),
         ("Severity", F("Severity"), 0.9, "Center", None, SEV_COLOR, True),
         ("Status", F("RiskStatus"), 1.2, "Center"),
-    ], 0, 2.2, 10.3, sort_field="Score", sort_desc=True))
+    ], 0, 2.74, 10.3, sort_field="Score", sort_desc=True))
 
     # --- Row D: key project areas -------------------------------------------
     body_items.append(tablix("Workstreams", "DsWorkstreams", [
@@ -481,19 +490,19 @@ def build():
         ("Target Implementation Date", F("TargetDate"), 1.8, "Center", "yyyy-MM-dd"),
         ("% Complete", F("PctComplete"), 1.3, "Center", "0.0%"),
         ("Current Status", F("WsStatus"), 1.8, "Center", None, WS_COLOR, True),
-    ], 0, 3.45, 10.3, sort_field="StartDate"))
+    ], 0, 3.5, 10.3, sort_field="StartDate"))
 
     # --- Row E: accomplishments + next steps ---------------------------------
     body_items.append(tablix("Accomplishments", "DsAccomplishments", [
         ("Accomplishments", F("Accomplishment"), 3.4, "Left"),
         ("Source", F("Source"), 0.8, "Center"),
         ("Completed Date", F("CompletedDate"), 1.0, "Center", "yyyy-MM-dd"),
-    ], 0, 4.55, 5.07, sort_field="CompletedDate", sort_desc=True))
+    ], 0, 4.6, 5.07, sort_field="CompletedDate", sort_desc=True))
     body_items.append(tablix("NextSteps", "DsNextSteps", [
         ("Next Steps", F("NextStep"), 3.2, "Left"),
         ("Owner", F("Owner"), 1.1, "Left"),
         ("Target Date", F("TargetDate"), 1.0, "Center", "yyyy-MM-dd"),
-    ], 5.23, 4.55, 5.07, sort_field="TargetDate"))
+    ], 5.23, 4.6, 5.07, sort_field="TargetDate"))
 
     # --- Row F: keys (multi-colored runs exactly like the deck) --------------
     key_runs = "".join([
@@ -508,7 +517,7 @@ def build():
         textrun("Phase:  Initiating, Planning, Executing, Monitoring, Closing",
                 size="7pt", color="#605E5C"),
     ])
-    body_items.append(textbox("Keys", para(key_runs), 0, 6.15, 10.3, 0.25, bg=LIGHT))
+    body_items.append(textbox("Keys", para(key_runs), 0, 6.25, 10.3, 0.25, bg=LIGHT))
 
     datasets = "".join(dataset_xml(n, d) for n, d in DATASETS.items())
     with open(LOGO, "rb") as f:
@@ -544,14 +553,14 @@ def build():
           <Rectangle Name="Frame">
             <ReportItems>{''.join(body_items)}</ReportItems>
             <KeepTogether>true</KeepTogether>
-            <Top>0in</Top><Left>0in</Left><Height>6.5in</Height><Width>10.3in</Width>
+            <Top>0in</Top><Left>0in</Left><Height>6.6in</Height><Width>10.3in</Width>
             <Style>
               <Border><Color>{TEAL}</Color><Style>Solid</Style><Width>2pt</Width></Border>
               <BackgroundColor>#F2F7F6</BackgroundColor>
             </Style>
           </Rectangle>
         </ReportItems>
-        <Height>6.55in</Height>
+        <Height>6.65in</Height>
         <Style />
       </Body>
       <Width>10.3in</Width>

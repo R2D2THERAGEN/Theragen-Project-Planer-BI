@@ -59,7 +59,8 @@ for path in iter_targets():
     if not url or "developer.microsoft.com" not in url:
         # StaticResources hold arbitrary registered files (themes, images) that
         # Desktop reads by resource type, not by versioned definition schema.
-        if f"{os.sep}StaticResources{os.sep}" in path:
+        # diagramLayout.json is a Desktop-owned sidecar written without one.
+        if f"{os.sep}StaticResources{os.sep}" in path or rel.endswith("diagramLayout.json"):
             continue
         errors += 1
         print(f"FAIL {rel}: no Microsoft $schema declared - Desktop rejects unversioned sidecar JSONs")

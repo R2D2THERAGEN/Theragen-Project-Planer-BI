@@ -171,11 +171,11 @@ def slicer(page, key, field, ref, x, y, wd=250, ht=140, vtitle=""):
 # #6EBDAC); good/neutral/bad match the Status Color measure exactly.
 THEME = {
     "name": "Theragen",
-    "dataColors": ["#219A80", "#44546A", "#6EBDAC", "#E8A800",
-                   "#5B9BD5", "#A5A5A5", "#D64550", "#70AD47"],
+    "dataColors": ["#219A80", "#44546A", "#6EBDAC", "#C19C00",
+                   "#5B9BD5", "#A5A5A5", "#C0392B", "#70AD47"],
     "good": "#107C10",
-    "neutral": "#E8A800",
-    "bad": "#D64550",
+    "neutral": "#C19C00",
+    "bad": "#C0392B",
     "background": "#FFFFFF",
     "foreground": "#252423",
     "tableAccent": "#219A80",

@@ -722,9 +722,9 @@ add("Risk", "Risk Rating",
     "[Avg Risk Score (Open)] < 20, \"HIGH\", \"CRITICAL\")", "",
     "Banded rating of the average open-risk score: <6 LOW, <12 MODERATE, <20 HIGH, else CRITICAL.")
 add("Risk", "Risk Rating Color",
-    "SWITCH([Risk Rating], \"LOW\", \"#00FF00\", \"MODERATE\", \"#D6D60D\", "
-    "\"HIGH\", \"#FF0000\", \"CRITICAL\", \"#C00000\", \"#605E5C\")", "",
-    "Deck-aligned color for the Risk Rating band (conditional formatting).")
+    "SWITCH([Risk Rating], \"LOW\", \"#107C10\", \"MODERATE\", \"#C19C00\", "
+    "\"HIGH\", \"#C0392B\", \"CRITICAL\", \"#8B1A1A\", \"#605E5C\")", "",
+    "Theragen-palette color for the Risk Rating band (conditional formatting).")
 add("Risk", "Risk Scale Max", "25", C_WHOLE,
     "Maximum of the 5x5 risk matrix. Gauge maximum.")
 add("Risk", "High Risk Threshold", "12", C_WHOLE,
@@ -808,10 +808,10 @@ add("Status Page", "Main Status",
     "SWITCH([Latest Overall Status], \"Green\", \"G\", \"Yellow\", \"Y\", \"Red\", \"R\", BLANK())", "",
     "Traffic-light letter from the latest status report: G / Y / R.")
 add("Status Page", "Status Color",
-    "SWITCH([Latest Overall Status], \"Green\", \"#00FF00\", \"Yellow\", \"#D6D60D\", "
-    "\"Red\", \"#FF0000\", \"#605E5C\")", "",
-    "Hex color for the Main Status traffic light. Values match the Theragen "
-    "status deck exactly (G #00FF00 / Y #D6D60D / R #FF0000).")
+    "SWITCH([Latest Overall Status], \"Green\", \"#107C10\", \"Yellow\", \"#C19C00\", "
+    "\"Red\", \"#C0392B\", \"#605E5C\")", "",
+    "Theragen status palette for the Main Status traffic light "
+    "(muted green/amber/red, brand-aligned).")
 add("Status Page", "Project Description (Selected)",
     "SELECTEDVALUE('Project'[Project Description], \"Select a single project\")", "",
     "Project description text block.")
@@ -823,9 +823,9 @@ add("Status Page", "Latest Area Status",
     "CALCULATE(MAX('Status Report Area'[Area Status]), 'Status Report'[Period End] = d0)", "",
     "Health-check status of a knowledge area from the most recent report.")
 add("Status Page", "Area Status Color",
-    "SWITCH([Latest Area Status], \"Green\", \"#00FF00\", \"Yellow\", \"#D6D60D\", "
-    "\"Red\", \"#FF0000\", \"#252423\")", "",
-    "Deck-exact font color for the Health Check status column (conditional formatting).")
+    "SWITCH([Latest Area Status], \"Green\", \"#107C10\", \"Yellow\", \"#C19C00\", "
+    "\"Red\", \"#C0392B\", \"#252423\")", "",
+    "Theragen-palette font color for the Health Check status column (conditional formatting).")
 add("Status Page", "Report Date",
     "VAR d = MAX('Status Report'[Period End]) RETURN IF(ISBLANK(d), \"-\", FORMAT(d, \"M/D/YYYY\"))", "",
     "Date of the latest status report.")
@@ -847,9 +847,9 @@ add("Status Page", "Workstream Status",
     "atRisk > 0, \"AT RISK\", started = 0, \"NOT STARTED\", \"ON TRACK\")", "",
     "Roll-up status per workstream: COMPLETED / AT RISK / NOT STARTED / ON TRACK.")
 add("Status Page", "Workstream Status Color",
-    "SWITCH([Workstream Status], \"ON TRACK\", \"#00FF00\", \"AT RISK\", \"#D6D60D\", "
+    "SWITCH([Workstream Status], \"ON TRACK\", \"#107C10\", \"AT RISK\", \"#C19C00\", "
     "\"#252423\")", "",
-    "Deck-exact font color for the Key Project Areas status column (conditional formatting).")
+    "Theragen-palette font color for the Key Project Areas status column (conditional formatting).")
 add("Status Page", "Status Key",
     "\"KEY:   G = Green   |   Y = Yellow   |   R = Off Track   |   C = Completed   |   "
     "NS = Not Started   |   H = Hold   |   CN = Cancelled\"", "",

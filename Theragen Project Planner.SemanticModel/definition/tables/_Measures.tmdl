@@ -409,8 +409,8 @@ table _Measures
 		displayFolder: Status Page
 		lineageTag: e8cb2cb1-0c75-5467-9a4b-105d6795f90d
 
-	/// Hex color for the Main Status traffic light. Values match the Theragen status deck exactly (G #00FF00 / Y #D6D60D / R #FF0000).
-	measure 'Status Color' = SWITCH([Latest Overall Status], "Green", "#00FF00", "Yellow", "#D6D60D", "Red", "#FF0000", "#605E5C")
+	/// Hex color for the Main Status traffic light. Values match the Theragen status deck exactly (G #107C10 / Y #C19C00 / R #C0392B).
+	measure 'Status Color' = SWITCH([Latest Overall Status], "Green", "#107C10", "Yellow", "#C19C00", "Red", "#C0392B", "#605E5C")
 		displayFolder: Status Page
 		lineageTag: 495d00ce-0523-5917-9d70-ec78cda231c7
 
@@ -586,7 +586,7 @@ table _Measures
 		lineageTag: 2e02615d-9e46-52d2-b94b-644592d47e44
 
 	/// Deck-aligned color for the Risk Rating band (conditional formatting).
-	measure 'Risk Rating Color' = SWITCH([Risk Rating], "LOW", "#00FF00", "MODERATE", "#D6D60D", "HIGH", "#FF0000", "CRITICAL", "#C00000", "#605E5C")
+	measure 'Risk Rating Color' = SWITCH([Risk Rating], "LOW", "#107C10", "MODERATE", "#C19C00", "HIGH", "#C0392B", "CRITICAL", "#8B1A1A", "#605E5C")
 		displayFolder: Risk
 		lineageTag: e010621b-6518-54d3-9d7d-2fd9fb4a8bfb
 
@@ -609,12 +609,12 @@ table _Measures
 		lineageTag: 289f7f2f-d7ea-5719-b1cd-c9575dc4ca53
 
 	/// Deck-exact font color for the Health Check status column (conditional formatting).
-	measure 'Area Status Color' = SWITCH([Latest Area Status], "Green", "#00FF00", "Yellow", "#D6D60D", "Red", "#FF0000", "#252423")
+	measure 'Area Status Color' = SWITCH([Latest Area Status], "Green", "#107C10", "Yellow", "#C19C00", "Red", "#C0392B", "#252423")
 		displayFolder: Status Page
 		lineageTag: 958ebaa8-26df-5932-9b89-25f5f53be24d
 
 	/// Deck-exact font color for the Key Project Areas status column (conditional formatting).
-	measure 'Workstream Status Color' = SWITCH([Workstream Status], "ON TRACK", "#00FF00", "AT RISK", "#D6D60D", "#252423")
+	measure 'Workstream Status Color' = SWITCH([Workstream Status], "ON TRACK", "#107C10", "AT RISK", "#C19C00", "#252423")
 		displayFolder: Status Page
 		lineageTag: 47d79d39-a654-507b-9139-f95bfd2c439b
 

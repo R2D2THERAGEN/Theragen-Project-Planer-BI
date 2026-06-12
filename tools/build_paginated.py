@@ -33,9 +33,10 @@ GRID = "#DCE4E3"
 LIGHT = "#F4F7F6"
 FONT = "Segoe UI"
 
-# Status colors lifted from the Theragen status deck's text runs.
-DECK_GREEN, DECK_YELLOW, DECK_RED = "#00FF00", "#D6D60D", "#FF0000"
-DECK_KEY_YELLOW, DECK_HOLD, DECK_CANCEL = "#FFFF00", "#7030A0", "#00B0F0"
+# Theragen status palette: muted, brand-aligned (replaces the deck's neon).
+DECK_GREEN, DECK_YELLOW, DECK_RED = "#107C10", "#C19C00", "#C0392B"
+DECK_DARKRED = "#8B1A1A"
+DECK_KEY_YELLOW, DECK_HOLD, DECK_CANCEL = "#C19C00", "#6B3FA0", "#2E86AB"
 
 AREA_COLOR = ('=Switch(Fields!AreaStatus.Value="Green","{g}",'
               'Fields!AreaStatus.Value="Yellow","{y}",'
@@ -44,10 +45,10 @@ AREA_COLOR = ('=Switch(Fields!AreaStatus.Value="Green","{g}",'
 WS_COLOR = ('=Switch(Fields!WsStatus.Value="ON TRACK","{g}",'
             'Fields!WsStatus.Value="AT RISK","{y}",True,"#000000")').format(
                 g=DECK_GREEN, y=DECK_YELLOW)
-SEV_COLOR = ('=Switch(Fields!Severity.Value="Critical","{r}",'
+SEV_COLOR = ('=Switch(Fields!Severity.Value="Critical","{c}",'
              'Fields!Severity.Value="High","{r}",'
              'Fields!Severity.Value="Medium","{y}",True,"#000000")').format(
-                 r=DECK_RED, y=DECK_YELLOW)
+                 c=DECK_DARKRED, r=DECK_RED, y=DECK_YELLOW)
 
 # ---------------------------------------------------------------- datasets
 # Every output column is aliased through SELECTCOLUMNS/ROW so RDL field
@@ -258,7 +259,7 @@ def risk_gauge(left, top, width, height):
     (LOW <6, MODERATE <12, HIGH <20, CRITICAL <=25) and needle pointer.
     Full explicit geometry - gauges with bare defaults render empty."""
     bands = [("BandLow", 0, 6, DECK_GREEN), ("BandModerate", 6, 12, DECK_YELLOW),
-             ("BandHigh", 12, 20, DECK_RED), ("BandCritical", 20, 25, "#C00000")]
+             ("BandHigh", 12, 20, DECK_RED), ("BandCritical", 20, 25, DECK_DARKRED)]
     ranges = "".join(
         f"""<ScaleRange Name="{n}">
               <DistanceFromScale>10</DistanceFromScale>

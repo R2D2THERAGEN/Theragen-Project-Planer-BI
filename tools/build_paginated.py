@@ -230,6 +230,7 @@ def tablix(name, dataset, columns, left, top, width, *, header_bg=TEAL,
     <TablixMember><Group Name="{name}_Details" />{sort_xml}</TablixMember>
   </TablixMembers></TablixRowHierarchy>
   <DataSetName>{dataset}</DataSetName>
+  <NoRowsMessage>No rows for the selected Project parameter.</NoRowsMessage>
   <Top>{top}in</Top><Left>{left}in</Left><Height>0.42in</Height><Width>{width:.3f}in</Width>
   <Style><Border><Style>None</Style></Border></Style>
 </Tablix>"""
@@ -435,6 +436,12 @@ def build():
   <ReportParameters>
     <ReportParameter Name="ProjectCode">
       <DataType>String</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DsProjectList</DataSetName>
+          <ValueField>ProjectCode</ValueField>
+        </DataSetReference>
+      </DefaultValue>
       <Prompt>Project</Prompt>
       <ValidValues>
         <DataSetReference>

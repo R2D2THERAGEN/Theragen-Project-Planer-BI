@@ -233,6 +233,7 @@
     <TablixMember><Group Name="HealthCheck_Details" /></TablixMember>
   </TablixMembers></TablixRowHierarchy>
   <DataSetName>DsHealth</DataSetName>
+  <NoRowsMessage>No rows for the selected Project parameter.</NoRowsMessage>
   <Top>0.62in</Top><Left>8.12in</Left><Height>0.42in</Height><Width>2.180in</Width>
   <Style><Border><Style>None</Style></Border></Style>
 </Tablix><Tablix Name="Raid">
@@ -354,6 +355,7 @@
     <TablixMember><Group Name="Raid_Details" /><SortExpressions><SortExpression><Value>=Fields!Score.Value</Value><Direction>Descending</Direction></SortExpression></SortExpressions></TablixMember>
   </TablixMembers></TablixRowHierarchy>
   <DataSetName>DsRaid</DataSetName>
+  <NoRowsMessage>No rows for the selected Project parameter.</NoRowsMessage>
   <Top>2.2in</Top><Left>0in</Left><Height>0.42in</Height><Width>10.300in</Width>
   <Style><Border><Style>None</Style></Border></Style>
 </Tablix><Tablix Name="Workstreams">
@@ -445,6 +447,7 @@
     <TablixMember><Group Name="Workstreams_Details" /><SortExpressions><SortExpression><Value>=Fields!StartDate.Value</Value></SortExpression></SortExpressions></TablixMember>
   </TablixMembers></TablixRowHierarchy>
   <DataSetName>DsWorkstreams</DataSetName>
+  <NoRowsMessage>No rows for the selected Project parameter.</NoRowsMessage>
   <Top>4.05in</Top><Left>0in</Left><Height>0.42in</Height><Width>10.300in</Width>
   <Style><Border><Style>None</Style></Border></Style>
 </Tablix><Tablix Name="Accomplishments">
@@ -506,6 +509,7 @@
     <TablixMember><Group Name="Accomplishments_Details" /><SortExpressions><SortExpression><Value>=Fields!CompletedDate.Value</Value><Direction>Descending</Direction></SortExpression></SortExpressions></TablixMember>
   </TablixMembers></TablixRowHierarchy>
   <DataSetName>DsAccomplishments</DataSetName>
+  <NoRowsMessage>No rows for the selected Project parameter.</NoRowsMessage>
   <Top>5.55in</Top><Left>0in</Left><Height>0.42in</Height><Width>5.070in</Width>
   <Style><Border><Style>None</Style></Border></Style>
 </Tablix><Tablix Name="NextSteps">
@@ -567,6 +571,7 @@
     <TablixMember><Group Name="NextSteps_Details" /><SortExpressions><SortExpression><Value>=Fields!TargetDate.Value</Value></SortExpression></SortExpressions></TablixMember>
   </TablixMembers></TablixRowHierarchy>
   <DataSetName>DsNextSteps</DataSetName>
+  <NoRowsMessage>No rows for the selected Project parameter.</NoRowsMessage>
   <Top>5.55in</Top><Left>5.23in</Left><Height>0.42in</Height><Width>5.070in</Width>
   <Style><Border><Style>None</Style></Border></Style>
 </Tablix><Textbox Name="Keys">
@@ -594,6 +599,12 @@
   <ReportParameters>
     <ReportParameter Name="ProjectCode">
       <DataType>String</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DsProjectList</DataSetName>
+          <ValueField>ProjectCode</ValueField>
+        </DataSetReference>
+      </DefaultValue>
       <Prompt>Project</Prompt>
       <ValidValues>
         <DataSetReference>

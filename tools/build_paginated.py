@@ -402,7 +402,7 @@ def build():
     <DataSource Name="TheragenModel">
       <ConnectionProperties>
         <DataProvider>PBISERVICE</DataProvider>
-        <ConnectString>Data Source=powerbi://api.powerbi.com/v1.0/myorg/YOUR_WORKSPACE;Initial Catalog=Theragen Project Planner</ConnectString>
+        <ConnectString>Data Source=powerbi://api.powerbi.com/v1.0/myorg/Playground;Initial Catalog=Theragen Project Planner</ConnectString>
       </ConnectionProperties>
       <rd:SecurityType>None</rd:SecurityType>
     </DataSource>

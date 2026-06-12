@@ -11,7 +11,7 @@ table 'Recent Accomplishment'
 
 		annotation SummarizationSetBy = User
 
-	column 'Accomplishment'
+	column Accomplishment
 		dataType: string
 		lineageTag: 796453ad-110d-5c72-8c0c-95817cf9566c
 		summarizeBy: none
@@ -28,7 +28,7 @@ table 'Recent Accomplishment'
 
 		annotation SummarizationSetBy = User
 
-	column 'Source'
+	column Source
 		dataType: string
 		lineageTag: d5c4f33c-a0d2-55bd-842e-30fffeb76a2c
 		summarizeBy: none
@@ -41,3 +41,4 @@ table 'Recent Accomplishment'
 		source = UNION(SELECTCOLUMNS(FILTER('Schedule Activity', 'Schedule Activity'[Activity Status] = "Done" && NOT ISBLANK('Schedule Activity'[Actual Finish]) && 'Schedule Activity'[Actual Finish] >= TODAY() - 35), "Project ID", 'Schedule Activity'[Project ID], "Accomplishment", 'Schedule Activity'[Activity Name], "Completed Date", 'Schedule Activity'[Actual Finish], "Source", "Activity"), SELECTCOLUMNS(FILTER('Milestone', 'Milestone'[Milestone Status] = "Achieved" && NOT ISBLANK('Milestone'[Actual Date]) && 'Milestone'[Actual Date] >= TODAY() - 35), "Project ID", 'Milestone'[Project ID], "Accomplishment", 'Milestone'[Milestone], "Completed Date", 'Milestone'[Actual Date], "Source", "Milestone"))
 
 	annotation PBI_ResultType = Table
+

@@ -107,7 +107,7 @@ table 'Schedule Activity'
 
 		annotation SummarizationSetBy = User
 
-	column 'Owner'
+	column Owner
 		dataType: string
 		lineageTag: e5a447d2-3250-5807-93ef-238a8ed39bfe
 		summarizeBy: none
@@ -115,7 +115,7 @@ table 'Schedule Activity'
 
 		annotation SummarizationSetBy = User
 
-	column 'Department'
+	column Department
 		dataType: string
 		lineageTag: 1ca4cedf-ab3e-5b1b-bfea-aeddc3186585
 		summarizeBy: none
@@ -154,3 +154,4 @@ table 'Schedule Activity'
 				    Renamed
 
 	annotation PBI_ResultType = Table
+

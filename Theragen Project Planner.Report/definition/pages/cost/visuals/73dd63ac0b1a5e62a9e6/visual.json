@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "73dd63ac0b1a5e62a9e6",
   "position": {
     "x": 8,
     "y": 404,
     "z": 1000,
-    "width": 836,
-    "height": 304
+    "height": 304,
+    "width": 836
   },
   "visual": {
     "visualType": "pivotTable",
@@ -25,7 +25,8 @@
                   "Property": "Project Code"
                 }
               },
-              "queryRef": "Project.Project Code"
+              "queryRef": "Project.Project Code",
+              "active": true
             },
             {
               "field": {
@@ -38,7 +39,8 @@
                   "Property": "Deliverable"
                 }
               },
-              "queryRef": "WBS Element.Deliverable"
+              "queryRef": "WBS Element.Deliverable",
+              "active": false
             }
           ]
         },
@@ -113,7 +115,6 @@
         }
       }
     },
-    "drillFilterOtherVisuals": true,
     "visualContainerObjects": {
       "title": [
         {
@@ -135,6 +136,7 @@
           }
         }
       ]
-    }
+    },
+    "drillFilterOtherVisuals": true
   }
 }

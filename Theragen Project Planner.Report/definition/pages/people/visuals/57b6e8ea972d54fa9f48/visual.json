@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "57b6e8ea972d54fa9f48",
   "position": {
-    "x": 8,
-    "y": 8,
+    "x": 8.0798004987531176,
+    "y": 8.0798004987531176,
     "z": 1000,
-    "width": 250,
-    "height": 220
+    "height": 347.43142144638404,
+    "width": 249.57605985037407
   },
   "visual": {
     "visualType": "slicer",
@@ -25,13 +25,13 @@
                   "Property": "Project Name"
                 }
               },
-              "queryRef": "Project.Project Name"
+              "queryRef": "Project.Project Name",
+              "active": true
             }
           ]
         }
       }
     },
-    "drillFilterOtherVisuals": true,
     "visualContainerObjects": {
       "title": [
         {
@@ -53,6 +53,7 @@
           }
         }
       ]
-    }
+    },
+    "drillFilterOtherVisuals": true
   }
 }

@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "b5cf7bcfea6255aeb95e",
   "position": {
-    "x": 702,
-    "y": 8,
+    "x": 702.04488778054861,
+    "y": 8.0798004987531176,
     "z": 1000,
-    "width": 140,
-    "height": 72
+    "height": 71.820448877805489,
+    "width": 163.39152119700748
   },
   "visual": {
     "visualType": "card",
@@ -31,7 +31,6 @@
         }
       }
     },
-    "drillFilterOtherVisuals": true,
     "objects": {
       "labels": [
         {
@@ -40,6 +39,19 @@
               "expr": {
                 "Literal": {
                   "Value": "12D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "categoryLabels": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
                 }
               }
             }
@@ -68,6 +80,25 @@
           }
         }
       ]
-    }
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "3ee086d9e10095800a0c",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "_Measures"
+              }
+            },
+            "Property": "Target Date Completion"
+          }
+        },
+        "type": "Advanced"
+      }
+    ]
   }
 }

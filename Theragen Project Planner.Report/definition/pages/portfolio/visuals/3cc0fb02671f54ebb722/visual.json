@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "3cc0fb02671f54ebb722",
   "position": {
     "x": 8,
     "y": 404,
     "z": 1000,
-    "width": 420,
-    "height": 304
+    "height": 304,
+    "width": 420
   },
   "visual": {
     "visualType": "clusteredColumnChart",
@@ -25,7 +25,8 @@
                   "Property": "Lifecycle Phase"
                 }
               },
-              "queryRef": "Project.Lifecycle Phase"
+              "queryRef": "Project.Lifecycle Phase",
+              "active": true
             }
           ]
         },
@@ -48,7 +49,6 @@
         }
       }
     },
-    "drillFilterOtherVisuals": true,
     "visualContainerObjects": {
       "title": [
         {
@@ -70,6 +70,7 @@
           }
         }
       ]
-    }
+    },
+    "drillFilterOtherVisuals": true
   }
 }

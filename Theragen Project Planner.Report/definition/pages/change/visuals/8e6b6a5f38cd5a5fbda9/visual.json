@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "8e6b6a5f38cd5a5fbda9",
   "position": {
     "x": 864,
     "y": 116,
     "z": 1000,
-    "width": 408,
-    "height": 280
+    "height": 280,
+    "width": 408
   },
   "visual": {
     "visualType": "lineChart",
@@ -25,7 +25,8 @@
                   "Property": "Year Month"
                 }
               },
-              "queryRef": "Date.Year Month"
+              "queryRef": "Date.Year Month",
+              "active": true
             }
           ]
         },
@@ -48,7 +49,6 @@
         }
       }
     },
-    "drillFilterOtherVisuals": true,
     "visualContainerObjects": {
       "title": [
         {
@@ -70,6 +70,7 @@
           }
         }
       ]
-    }
+    },
+    "drillFilterOtherVisuals": true
   }
 }

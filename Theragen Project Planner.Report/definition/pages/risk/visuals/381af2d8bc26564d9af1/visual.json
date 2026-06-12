@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "381af2d8bc26564d9af1",
   "position": {
     "x": 852,
     "y": 404,
     "z": 1000,
-    "width": 420,
-    "height": 304
+    "height": 304,
+    "width": 420
   },
   "visual": {
     "visualType": "barChart",
@@ -25,24 +25,8 @@
                   "Property": "Risk Category"
                 }
               },
-              "queryRef": "Risk.Risk Category"
-            }
-          ]
-        },
-        "Y": {
-          "projections": [
-            {
-              "field": {
-                "Measure": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "_Measures"
-                    }
-                  },
-                  "Property": "Open Risks"
-                }
-              },
-              "queryRef": "_Measures.Open Risks"
+              "queryRef": "Risk.Risk Category",
+              "active": true
             }
           ]
         },
@@ -60,6 +44,23 @@
                 }
               },
               "queryRef": "Risk.Severity"
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Open Risks"
+                }
+              },
+              "queryRef": "_Measures.Open Risks"
             }
           ]
         }
@@ -83,7 +84,6 @@
         "isDefaultSort": true
       }
     },
-    "drillFilterOtherVisuals": true,
     "visualContainerObjects": {
       "title": [
         {
@@ -105,6 +105,7 @@
           }
         }
       ]
-    }
+    },
+    "drillFilterOtherVisuals": true
   }
 }

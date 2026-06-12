@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "394443b7b4d45110ae7a",
   "position": {
     "x": 716,
     "y": 364,
     "z": 1000,
-    "width": 556,
-    "height": 344
+    "height": 344,
+    "width": 556
   },
   "visual": {
     "visualType": "clusteredBarChart",
@@ -25,7 +25,8 @@
                   "Property": "Department"
                 }
               },
-              "queryRef": "Department.Department"
+              "queryRef": "Department.Department",
+              "active": true
             }
           ]
         },
@@ -66,7 +67,6 @@
         "isDefaultSort": true
       }
     },
-    "drillFilterOtherVisuals": true,
     "visualContainerObjects": {
       "title": [
         {
@@ -88,6 +88,7 @@
           }
         }
       ]
-    }
+    },
+    "drillFilterOtherVisuals": true
   }
 }

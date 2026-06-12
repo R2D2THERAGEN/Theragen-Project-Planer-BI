@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "4f82bcfbdb545e20aa8e",
   "position": {
     "x": 864,
     "y": 404,
     "z": 1000,
-    "width": 408,
-    "height": 304
+    "height": 304,
+    "width": 408
   },
   "visual": {
     "visualType": "clusteredBarChart",
@@ -25,7 +25,8 @@
                   "Property": "Risk Category"
                 }
               },
-              "queryRef": "Risk.Risk Category"
+              "queryRef": "Risk.Risk Category",
+              "active": true
             }
           ]
         },
@@ -66,7 +67,6 @@
         "isDefaultSort": true
       }
     },
-    "drillFilterOtherVisuals": true,
     "visualContainerObjects": {
       "title": [
         {
@@ -88,6 +88,7 @@
           }
         }
       ]
-    }
+    },
+    "drillFilterOtherVisuals": true
   }
 }

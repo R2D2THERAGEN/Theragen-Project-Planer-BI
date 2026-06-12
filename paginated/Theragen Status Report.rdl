@@ -54,7 +54,7 @@
     <QueryParameters><QueryParameter Name="ProjectCode">
             <Value>=Parameters!ProjectCode.Value</Value>
           </QueryParameter></QueryParameters>
-    <CommandText>EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('WBS Element'[Deliverable], TREATAS({@ProjectCode}, 'Project'[Project Code]), "StartDateM", [Workstream Start], "TargetDateM", [Workstream Target], "PctCompleteM", [Pct Complete (Duration Weighted)], "WsStatusM", [Workstream Status]), "Deliverable", 'WBS Element'[Deliverable], "StartDate", [StartDateM], "TargetDate", [TargetDateM], "PctComplete", [PctCompleteM], "WsStatus", [WsStatusM]) ORDER BY [StartDate]</CommandText>
+    <CommandText>EVALUATE FILTER(SELECTCOLUMNS(SUMMARIZECOLUMNS('WBS Element'[Deliverable], TREATAS({@ProjectCode}, 'Project'[Project Code]), "StartDateM", [Workstream Start], "TargetDateM", [Workstream Target], "PctCompleteM", [Pct Complete (Duration Weighted)], "WsStatusM", [Workstream Status]), "Deliverable", 'WBS Element'[Deliverable], "StartDate", [StartDateM], "TargetDate", [TargetDateM], "PctComplete", [PctCompleteM], "WsStatus", [WsStatusM]), NOT ISBLANK([StartDate])) ORDER BY [StartDate]</CommandText>
   </Query>
   <Fields><Field Name="Deliverable"><rd:TypeName>System.String</rd:TypeName><DataField>[Deliverable]</DataField></Field><Field Name="StartDate"><rd:TypeName>System.DateTime</rd:TypeName><DataField>[StartDate]</DataField></Field><Field Name="TargetDate"><rd:TypeName>System.DateTime</rd:TypeName><DataField>[TargetDate]</DataField></Field><Field Name="PctComplete"><rd:TypeName>System.Decimal</rd:TypeName><DataField>[PctComplete]</DataField></Field><Field Name="WsStatus"><rd:TypeName>System.String</rd:TypeName><DataField>[WsStatus]</DataField></Field></Fields>
 </DataSet><DataSet Name="DsAccomplishments">
@@ -151,36 +151,73 @@
             <RadialPointer Name="RiskPointer">
               <GaugeInputValue><Value>=First(Fields!AvgScore.Value)</Value></GaugeInputValue>
               <Type>Needle</Type>
-              <Style><Border><Style>None</Style></Border><BackgroundColor>#252423</BackgroundColor></Style>
+              <NeedleStyle>Triangular</NeedleStyle>
+              <Placement>Cross</Placement>
+              <Width>4</Width>
+              <DistanceFromScale>-15</DistanceFromScale>
+              <Style><Border><Color>#404040</Color><Style>Solid</Style></Border><BackgroundColor>#252423</BackgroundColor></Style>
             </RadialPointer>
           </GaugePointers>
           <ScaleRanges><ScaleRange Name="BandLow">
+              <DistanceFromScale>10</DistanceFromScale>
               <StartValue><Value>0</Value></StartValue>
               <EndValue><Value>6</Value></EndValue>
-              <StartWidth>8</StartWidth><EndWidth>8</EndWidth>
+              <StartWidth>14</StartWidth><EndWidth>14</EndWidth>
+              <BackgroundGradientType>None</BackgroundGradientType>
               <Style><Border><Style>None</Style></Border><BackgroundColor>#00FF00</BackgroundColor></Style>
             </ScaleRange><ScaleRange Name="BandModerate">
+              <DistanceFromScale>10</DistanceFromScale>
               <StartValue><Value>6</Value></StartValue>
               <EndValue><Value>12</Value></EndValue>
-              <StartWidth>8</StartWidth><EndWidth>8</EndWidth>
+              <StartWidth>14</StartWidth><EndWidth>14</EndWidth>
+              <BackgroundGradientType>None</BackgroundGradientType>
               <Style><Border><Style>None</Style></Border><BackgroundColor>#D6D60D</BackgroundColor></Style>
             </ScaleRange><ScaleRange Name="BandHigh">
+              <DistanceFromScale>10</DistanceFromScale>
               <StartValue><Value>12</Value></StartValue>
               <EndValue><Value>20</Value></EndValue>
-              <StartWidth>8</StartWidth><EndWidth>8</EndWidth>
+              <StartWidth>14</StartWidth><EndWidth>14</EndWidth>
+              <BackgroundGradientType>None</BackgroundGradientType>
               <Style><Border><Style>None</Style></Border><BackgroundColor>#FF0000</BackgroundColor></Style>
             </ScaleRange><ScaleRange Name="BandCritical">
+              <DistanceFromScale>10</DistanceFromScale>
               <StartValue><Value>20</Value></StartValue>
               <EndValue><Value>25</Value></EndValue>
-              <StartWidth>8</StartWidth><EndWidth>8</EndWidth>
+              <StartWidth>14</StartWidth><EndWidth>14</EndWidth>
+              <BackgroundGradientType>None</BackgroundGradientType>
               <Style><Border><Style>None</Style></Border><BackgroundColor>#C00000</BackgroundColor></Style>
             </ScaleRange></ScaleRanges>
+          <GaugeMajorTickMarks>
+            <Interval>5</Interval>
+            <Placement>Inside</Placement>
+            <Length>8</Length>
+            <Width>2</Width>
+            <Shape>Rectangle</Shape>
+            <Style><Border><Style>None</Style></Border><BackgroundColor>#666666</BackgroundColor></Style>
+          </GaugeMajorTickMarks>
+          <ScaleLabels>
+            <Placement>Inside</Placement>
+            <FontAngle>0</FontAngle>
+            <Style><Border><Style>None</Style></Border><FontFamily>Segoe UI</FontFamily><FontSize>6pt</FontSize><Color>#252423</Color></Style>
+          </ScaleLabels>
           <MaximumValue><Value>25</Value></MaximumValue>
           <MinimumValue><Value>0</Value></MinimumValue>
           <Interval>5</Interval>
-          <Style><Border><Style>None</Style></Border><FontSize>6pt</FontSize></Style>
+          <Radius>38</Radius>
+          <StartAngle>30</StartAngle>
+          <SweepAngle>300</SweepAngle>
+          <Width>5</Width>
+          <Style><Border><Style>None</Style></Border><BackgroundColor>#B0B0B0</BackgroundColor></Style>
         </RadialScale>
       </GaugeScales>
+      <BackFrame>
+        <FrameStyle>None</FrameStyle>
+        <FrameShape>Circular</FrameShape>
+        <FrameBackground><Style><Border><Style>None</Style></Border></Style></FrameBackground>
+      </BackFrame>
+      <PivotX>50</PivotX>
+      <PivotY>50</PivotY>
+      <ClipContent>true</ClipContent>
     </RadialGauge>
   </RadialGauges>
   <DataSetName>DsGauge</DataSetName>
@@ -323,9 +360,9 @@
               <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
             </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Raid_d3">
               <CanGrow>true</CanGrow>
-              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!DueDate.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Format(Fields!DueDate.Value, "yyyy-MM-dd")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
               <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
-              <Format>yyyy-MM-dd</Format>
+              
               <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
             </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Raid_d4">
@@ -415,23 +452,23 @@
               <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
             </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Workstreams_d1">
               <CanGrow>true</CanGrow>
-              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!StartDate.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Format(Fields!StartDate.Value, "yyyy-MM-dd")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
               <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
-              <Format>yyyy-MM-dd</Format>
+              
               <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
             </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Workstreams_d2">
               <CanGrow>true</CanGrow>
-              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!TargetDate.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Format(Fields!TargetDate.Value, "yyyy-MM-dd")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
               <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
-              <Format>yyyy-MM-dd</Format>
+              
               <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
             </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Workstreams_d3">
               <CanGrow>true</CanGrow>
-              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!PctComplete.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Format(Fields!PctComplete.Value, "0.0%")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
               <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
-              <Format>0.0%</Format>
+              
               <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
             </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Workstreams_d4">
@@ -451,7 +488,7 @@
   </TablixMembers></TablixRowHierarchy>
   <DataSetName>DsWorkstreams</DataSetName>
   <NoRowsMessage>No rows for the selected Project parameter.</NoRowsMessage>
-  <Top>4.05in</Top><Left>0in</Left><Height>0.42in</Height><Width>10.300in</Width>
+  <Top>3.45in</Top><Left>0in</Left><Height>0.42in</Height><Width>10.300in</Width>
   <Style><Border><Style>None</Style></Border></Style>
 </Tablix><Tablix Name="Accomplishments">
   <TablixBody>
@@ -498,9 +535,9 @@
               <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
             </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Accomplishments_d2">
               <CanGrow>true</CanGrow>
-              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!CompletedDate.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Format(Fields!CompletedDate.Value, "yyyy-MM-dd")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
               <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
-              <Format>yyyy-MM-dd</Format>
+              
               <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
             </Textbox></CellContents></TablixCell></TablixCells></TablixRow>
@@ -513,7 +550,7 @@
   </TablixMembers></TablixRowHierarchy>
   <DataSetName>DsAccomplishments</DataSetName>
   <NoRowsMessage>No rows for the selected Project parameter.</NoRowsMessage>
-  <Top>5.55in</Top><Left>0in</Left><Height>0.42in</Height><Width>5.070in</Width>
+  <Top>4.55in</Top><Left>0in</Left><Height>0.42in</Height><Width>5.070in</Width>
   <Style><Border><Style>None</Style></Border></Style>
 </Tablix><Tablix Name="NextSteps">
   <TablixBody>
@@ -560,9 +597,9 @@
               <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
             </Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="NextSteps_d2">
               <CanGrow>true</CanGrow>
-              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!TargetDate.Value</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+              <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Format(Fields!TargetDate.Value, "yyyy-MM-dd")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7.5pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
               <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border>
-              <Format>yyyy-MM-dd</Format>
+              
               <PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
             </Textbox></CellContents></TablixCell></TablixCells></TablixRow>
@@ -575,16 +612,16 @@
   </TablixMembers></TablixRowHierarchy>
   <DataSetName>DsNextSteps</DataSetName>
   <NoRowsMessage>No rows for the selected Project parameter.</NoRowsMessage>
-  <Top>5.55in</Top><Left>5.23in</Left><Height>0.42in</Height><Width>5.070in</Width>
+  <Top>4.55in</Top><Left>5.23in</Left><Height>0.42in</Height><Width>5.070in</Width>
   <Style><Border><Style>None</Style></Border></Style>
 </Tablix><Textbox Name="Keys">
   <CanGrow>true</CanGrow>
   <KeepTogether>true</KeepTogether>
   <Paragraphs><Paragraph><TextRuns><TextRun><Value>Key:    </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#219A80</Color><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value>G – Green   </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#00FF00</Color><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value>Y – Yellow   </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#FFFF00</Color><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value>R – Off Track   </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#FF0000</Color><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value>C – Completed   </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#000000</Color><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value>NS - Not Started   </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#000000</Color><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value>H – Hold   </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#7030A0</Color><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value>CN – Cancelled        </Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#00B0F0</Color><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value>Phase:  Initiating, Planning, Executing, Monitoring, Closing</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>7pt</FontSize><Color>#605E5C</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
-  <Top>7.05in</Top><Left>0in</Left><Height>0.25in</Height><Width>10.3in</Width>
+  <Top>6.15in</Top><Left>0in</Left><Height>0.25in</Height><Width>10.3in</Width>
   <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><BackgroundColor>#F4F7F6</BackgroundColor><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
 </Textbox></ReportItems>
-        <Height>7.45in</Height>
+        <Height>6.55in</Height>
         <Style />
       </Body>
       <Width>10.3in</Width>

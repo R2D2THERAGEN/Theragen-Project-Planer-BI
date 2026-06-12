@@ -102,8 +102,10 @@ DATASETS = {
         fields=["RaidType", "Description", "Owner", "DueDate", "Score", "Severity",
                 "RiskStatus"], params=True),
     "DsWorkstreams": dict(
+        # [Workstream Status] returns "-" for empty workstreams, which defeats
+        # SUMMARIZECOLUMNS blank-row pruning - filter to rows with activities.
         dax=(
-            "EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('WBS Element'[Deliverable], "
+            "EVALUATE FILTER(SELECTCOLUMNS(SUMMARIZECOLUMNS('WBS Element'[Deliverable], "
             "TREATAS({@ProjectCode}, 'Project'[Project Code]), "
             "\"StartDateM\", [Workstream Start], "
             "\"TargetDateM\", [Workstream Target], "
@@ -111,7 +113,8 @@ DATASETS = {
             "\"WsStatusM\", [Workstream Status]), "
             "\"Deliverable\", 'WBS Element'[Deliverable], "
             "\"StartDate\", [StartDateM], \"TargetDate\", [TargetDateM], "
-            "\"PctComplete\", [PctCompleteM], \"WsStatus\", [WsStatusM]) "
+            "\"PctComplete\", [PctCompleteM], \"WsStatus\", [WsStatusM]), "
+            "NOT ISBLANK([StartDate])) "
             "ORDER BY [StartDate]"
         ),
         fields=["Deliverable", "StartDate", "TargetDate", "PctComplete", "WsStatus"],
@@ -200,6 +203,11 @@ def tablix(name, dataset, columns, left, top, width, *, header_bg=TEAL,
         fmt = c[4] if len(c) > 4 else None
         color = c[5] if len(c) > 5 else INK
         bold = c[6] if len(c) > 6 else False
+        # Style-level <Format> is unreliable across renderers - format in the
+        # expression itself (and never print 12:00:00 AM on pure dates).
+        if fmt and expr.startswith("="):
+            expr = f'=Format({expr[1:]}, "{fmt}")'
+            fmt = None
         hdr_cells.append(
             "<TablixCell><CellContents>" + f"""<Textbox Name="{name}_h{i}">
               <CanGrow>true</CanGrow>
@@ -247,14 +255,17 @@ def tablix(name, dataset, columns, left, top, width, *, header_bg=TEAL,
 
 def risk_gauge(left, top, width, height):
     """Radial severity gauge: avg open-risk score on 0-25 with PMI band colors
-    (LOW <6, MODERATE <12, HIGH <20, CRITICAL <=25) and needle pointer."""
+    (LOW <6, MODERATE <12, HIGH <20, CRITICAL <=25) and needle pointer.
+    Full explicit geometry - gauges with bare defaults render empty."""
     bands = [("BandLow", 0, 6, DECK_GREEN), ("BandModerate", 6, 12, DECK_YELLOW),
              ("BandHigh", 12, 20, DECK_RED), ("BandCritical", 20, 25, "#C00000")]
     ranges = "".join(
         f"""<ScaleRange Name="{n}">
+              <DistanceFromScale>10</DistanceFromScale>
               <StartValue><Value>{a}</Value></StartValue>
               <EndValue><Value>{b}</Value></EndValue>
-              <StartWidth>8</StartWidth><EndWidth>8</EndWidth>
+              <StartWidth>14</StartWidth><EndWidth>14</EndWidth>
+              <BackgroundGradientType>None</BackgroundGradientType>
               <Style><Border><Style>None</Style></Border><BackgroundColor>{c}</BackgroundColor></Style>
             </ScaleRange>""" for n, a, b, c in bands)
     return f"""<GaugePanel Name="RiskGauge">
@@ -266,16 +277,45 @@ def risk_gauge(left, top, width, height):
             <RadialPointer Name="RiskPointer">
               <GaugeInputValue><Value>=First(Fields!AvgScore.Value)</Value></GaugeInputValue>
               <Type>Needle</Type>
-              <Style><Border><Style>None</Style></Border><BackgroundColor>{INK}</BackgroundColor></Style>
+              <NeedleStyle>Triangular</NeedleStyle>
+              <Placement>Cross</Placement>
+              <Width>4</Width>
+              <DistanceFromScale>-15</DistanceFromScale>
+              <Style><Border><Color>#404040</Color><Style>Solid</Style></Border><BackgroundColor>{INK}</BackgroundColor></Style>
             </RadialPointer>
           </GaugePointers>
           <ScaleRanges>{ranges}</ScaleRanges>
+          <GaugeMajorTickMarks>
+            <Interval>5</Interval>
+            <Placement>Inside</Placement>
+            <Length>8</Length>
+            <Width>2</Width>
+            <Shape>Rectangle</Shape>
+            <Style><Border><Style>None</Style></Border><BackgroundColor>#666666</BackgroundColor></Style>
+          </GaugeMajorTickMarks>
+          <ScaleLabels>
+            <Placement>Inside</Placement>
+            <FontAngle>0</FontAngle>
+            <Style><Border><Style>None</Style></Border><FontFamily>{FONT}</FontFamily><FontSize>6pt</FontSize><Color>{INK}</Color></Style>
+          </ScaleLabels>
           <MaximumValue><Value>25</Value></MaximumValue>
           <MinimumValue><Value>0</Value></MinimumValue>
           <Interval>5</Interval>
-          <Style><Border><Style>None</Style></Border><FontSize>6pt</FontSize></Style>
+          <Radius>38</Radius>
+          <StartAngle>30</StartAngle>
+          <SweepAngle>300</SweepAngle>
+          <Width>5</Width>
+          <Style><Border><Style>None</Style></Border><BackgroundColor>#B0B0B0</BackgroundColor></Style>
         </RadialScale>
       </GaugeScales>
+      <BackFrame>
+        <FrameStyle>None</FrameStyle>
+        <FrameShape>Circular</FrameShape>
+        <FrameBackground><Style><Border><Style>None</Style></Border></Style></FrameBackground>
+      </BackFrame>
+      <PivotX>50</PivotX>
+      <PivotY>50</PivotY>
+      <ClipContent>true</ClipContent>
     </RadialGauge>
   </RadialGauges>
   <DataSetName>DsGauge</DataSetName>
@@ -378,19 +418,19 @@ def build():
         ("Target Implementation Date", F("TargetDate"), 1.8, "Center", "yyyy-MM-dd"),
         ("% Complete", F("PctComplete"), 1.3, "Center", "0.0%"),
         ("Current Status", F("WsStatus"), 1.8, "Center", None, WS_COLOR, True),
-    ], 0, 4.05, 10.3, sort_field="StartDate"))
+    ], 0, 3.45, 10.3, sort_field="StartDate"))
 
     # --- Row E: accomplishments + next steps ---------------------------------
     body_items.append(tablix("Accomplishments", "DsAccomplishments", [
         ("Accomplishments", F("Accomplishment"), 3.4, "Left"),
         ("Source", F("Source"), 0.8, "Center"),
         ("Completed Date", F("CompletedDate"), 1.0, "Center", "yyyy-MM-dd"),
-    ], 0, 5.55, 5.07, sort_field="CompletedDate", sort_desc=True))
+    ], 0, 4.55, 5.07, sort_field="CompletedDate", sort_desc=True))
     body_items.append(tablix("NextSteps", "DsNextSteps", [
         ("Next Steps", F("NextStep"), 3.2, "Left"),
         ("Owner", F("Owner"), 1.1, "Left"),
         ("Target Date", F("TargetDate"), 1.0, "Center", "yyyy-MM-dd"),
-    ], 5.23, 5.55, 5.07, sort_field="TargetDate"))
+    ], 5.23, 4.55, 5.07, sort_field="TargetDate"))
 
     # --- Row F: keys (multi-colored runs exactly like the deck) --------------
     key_runs = "".join([
@@ -405,7 +445,7 @@ def build():
         textrun("Phase:  Initiating, Planning, Executing, Monitoring, Closing",
                 size="7pt", color="#605E5C"),
     ])
-    body_items.append(textbox("Keys", para(key_runs), 0, 7.05, 10.3, 0.25, bg=LIGHT))
+    body_items.append(textbox("Keys", para(key_runs), 0, 6.15, 10.3, 0.25, bg=LIGHT))
 
     datasets = "".join(dataset_xml(n, d) for n, d in DATASETS.items())
     with open(LOGO, "rb") as f:
@@ -438,7 +478,7 @@ def build():
     <ReportSection>
       <Body>
         <ReportItems>{''.join(body_items)}</ReportItems>
-        <Height>7.45in</Height>
+        <Height>6.55in</Height>
         <Style />
       </Body>
       <Width>10.3in</Width>

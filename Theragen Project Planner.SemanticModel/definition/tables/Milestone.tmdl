@@ -1,5 +1,5 @@
 /// Fact - milestones (PMBOK P11). Baseline vs forecast vs actual dates.
-table 'Milestone'
+table Milestone
 	lineageTag: 1f186523-e114-5d40-871a-a58126c5bd94
 
 	column 'Milestone ID'
@@ -28,7 +28,7 @@ table 'Milestone'
 
 		annotation SummarizationSetBy = User
 
-	column 'Milestone'
+	column Milestone
 		dataType: string
 		lineageTag: 52e77264-cf70-53f7-920e-9bf6f2fcf960
 		summarizeBy: none
@@ -45,6 +45,8 @@ table 'Milestone'
 
 		annotation SummarizationSetBy = User
 
+		annotation UnderlyingDateTimeDataType = Date
+
 	column 'Forecast Date'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -54,6 +56,8 @@ table 'Milestone'
 
 		annotation SummarizationSetBy = User
 
+		annotation UnderlyingDateTimeDataType = Date
+
 	column 'Actual Date'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -62,6 +66,8 @@ table 'Milestone'
 		sourceColumn: Actual Date
 
 		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
 
 	column 'Milestone Status'
 		dataType: string
@@ -87,7 +93,7 @@ table 'Milestone'
 
 		annotation SummarizationSetBy = User
 
-	partition 'Milestone' = m
+	partition Milestone = m
 		mode: import
 		source =
 				let
@@ -101,3 +107,4 @@ table 'Milestone'
 				    Renamed
 
 	annotation PBI_ResultType = Table
+

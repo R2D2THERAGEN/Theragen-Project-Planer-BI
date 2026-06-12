@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "4c614f0abcbb51aba8e8",
   "position": {
     "x": 642,
     "y": 590,
     "z": 1000,
-    "width": 630,
-    "height": 88
+    "height": 88,
+    "width": 630
   },
   "visual": {
     "visualType": "tableEx",
@@ -71,11 +71,9 @@
             },
             "direction": "Ascending"
           }
-        ],
-        "isDefaultSort": true
+        ]
       }
     },
-    "drillFilterOtherVisuals": true,
     "visualContainerObjects": {
       "title": [
         {
@@ -97,6 +95,53 @@
           }
         }
       ]
-    }
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "511331c57b6c021b11d3",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Upcoming Next Step"
+              }
+            },
+            "Property": "Next Step"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "3fac2ae0e6207455d030",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Upcoming Next Step"
+              }
+            },
+            "Property": "Owner"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "d7ed0530520a062c0bec",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Upcoming Next Step"
+              }
+            },
+            "Property": "Target Date"
+          }
+        },
+        "type": "Categorical"
+      }
+    ]
   }
 }

@@ -3,7 +3,7 @@ table _Measures
 	lineageTag: b9d3783d-5c24-599e-a34b-18d15b2f7b90
 
 	/// Count of projects in context.
-	measure 'Projects' = COUNTROWS('Project')
+	measure Projects = COUNTROWS('Project')
 		formatString: #,0
 		displayFolder: Portfolio
 		lineageTag: f308346b-1865-5886-a9b0-7c1a5ae8bd07
@@ -27,7 +27,7 @@ table _Measures
 		lineageTag: f13a2590-0a02-5218-b72d-13a75d0119b4
 
 	/// Count of schedule activities.
-	measure 'Activities' = COUNTROWS('Schedule Activity')
+	measure Activities = COUNTROWS('Schedule Activity')
 		formatString: #,0
 		displayFolder: Schedule
 		lineageTag: 13c0a6de-deb2-5251-b7f4-8a8bac3439d0
@@ -105,13 +105,13 @@ table _Measures
 		lineageTag: 345e0773-c2c2-5d04-b59c-e72209c1cf61
 
 	/// Schedule Performance Index = EV / PV. Below 1.0 = behind schedule. CPI/EAC require a cost-actuals feed (Phase 2 - not in THG-ENT-DBS-001 v1.0).
-	measure 'SPI' = DIVIDE([Earned Value], [Planned Value])
+	measure SPI = DIVIDE([Earned Value], [Planned Value])
 		formatString: 0.00
 		displayFolder: EVM
 		lineageTag: 1c3a2236-054e-593f-8b87-94927e127a19
 
 	/// Count of milestones.
-	measure 'Milestones' = COUNTROWS('Milestone')
+	measure Milestones = COUNTROWS('Milestone')
 		formatString: #,0
 		displayFolder: Milestones
 		lineageTag: 609e8f92-34af-50fc-8da0-37b542df32d7
@@ -207,7 +207,7 @@ table _Measures
 		lineageTag: e406b017-b166-5b38-a836-de821c9f3402
 
 	/// Count of risks.
-	measure 'Risks' = COUNTROWS('Risk')
+	measure Risks = COUNTROWS('Risk')
 		formatString: #,0
 		displayFolder: Risk
 		lineageTag: 2c601208-1930-5ae0-bf86-0147e98e8f92
@@ -409,8 +409,8 @@ table _Measures
 		displayFolder: Status Page
 		lineageTag: e8cb2cb1-0c75-5467-9a4b-105d6795f90d
 
-	/// Hex color for conditional formatting of the Main Status traffic light.
-	measure 'Status Color' = SWITCH([Latest Overall Status], "Green", "#107C10", "Yellow", "#E8A800", "Red", "#D64550", "#605E5C")
+	/// Hex color for conditional formatting of the Main Status traffic light. Brand sentiment palette.
+	measure 'Status Color' = SWITCH([Latest Overall Status], "Green", "#1B9E77", "Yellow", "#F4D25A", "Red", "#BB4A4A", "#6B7A80")
 		displayFolder: Status Page
 		lineageTag: 495d00ce-0523-5917-9d70-ec78cda231c7
 
@@ -467,7 +467,7 @@ table _Measures
 		lineageTag: 9cd09a2c-54f0-5651-bb63-f0b03d66200a
 
 	/// Stakeholder register entries.
-	measure 'Stakeholders' = COUNTROWS('Stakeholder')
+	measure Stakeholders = COUNTROWS('Stakeholder')
 		formatString: #,0
 		displayFolder: Stakeholders
 		lineageTag: 10aa4498-e4e9-5877-83ce-f429d8aeb748
@@ -515,7 +515,7 @@ table _Measures
 		lineageTag: 2368ff5b-06b2-5582-920b-1565ed3367d8
 
 	/// Lessons captured.
-	measure 'Lessons' = COUNTROWS('Lesson Learned')
+	measure Lessons = COUNTROWS('Lesson Learned')
 		formatString: #,0
 		displayFolder: Closing
 		lineageTag: 19cfe555-d868-5349-96bb-594c7b403b2c
@@ -550,6 +550,41 @@ table _Measures
 		displayFolder: Closing
 		lineageTag: 36753eb4-39b8-514e-89de-1a17d248c94f
 
+	/// Hex color for a risk score cell: red >= 20 (critical), amber >= 12 (high), else green. Brand sentiment palette.
+	measure 'Risk Score Color' = VAR s = MAX('Risk'[Risk Score]) RETURN SWITCH(TRUE(), ISBLANK(s), "#6B7A80", s >= 20, "#BB4A4A", s >= 12, "#F4D25A", "#1B9E77")
+		displayFolder: Risk
+		lineageTag: 5c3e1b24-9d66-4a83-bf4f-2c3d718e9ea2
+
+	/// Hex color for a risk severity label. Brand sentiment palette.
+	measure 'Risk Severity Color' = SWITCH(UPPER(MAX('Risk'[Severity])), "CRITICAL", "#BB4A4A", "HIGH", "#BB4A4A", "MEDIUM", "#F4D25A", "LOW", "#1B9E77", "#6B7A80")
+		displayFolder: Risk
+		lineageTag: 6d4f2c35-ae77-4b94-c05f-3d4e829faf03
+
+	/// Hex color for an area's health-check status (Green/Yellow/Red). Brand sentiment palette.
+	measure 'Area Status Color' = SWITCH([Latest Area Status], "Green", "#1B9E77", "Yellow", "#F4D25A", "Red", "#BB4A4A", "#6B7A80")
+		displayFolder: Status Page
+		lineageTag: 3a1c9f02-7b44-4e61-9c2d-0a1e5f6b7c80
+
+	/// Hex color for a workstream's roll-up status. Brand sentiment palette.
+	measure 'Workstream Status Color' = SWITCH([Workstream Status], "COMPLETED", "#1B9E77", "ON TRACK", "#1B9E77", "AT RISK", "#BB4A4A", "NOT STARTED", "#F4D25A", "#6B7A80")
+		displayFolder: Status Page
+		lineageTag: 4b2d0a13-8c55-4f72-ad3e-1b2f607c8d91
+
+	/// Report title for the cover page.
+	measure 'Report Title' = "Theragen Project Planner"
+		displayFolder: Cover
+		lineageTag: 7e5a1c46-bf88-4ca5-9d61-4e5f93a0b1c4
+
+	/// Report subtitle / tagline for the cover page.
+	measure 'Report Subtitle' = "Enterprise Project Portfolio & PMBOK Status Reporting"
+		displayFolder: Cover
+		lineageTag: 8f6b2d57-c099-4db6-ae72-5f6a04b1c2d5
+
+	/// "As of" line for the cover page, using the latest status report date.
+	measure 'Report As Of' = "As of " & [Report Date]
+		displayFolder: Cover
+		lineageTag: 9a7c3e68-d1aa-4ec7-bf83-6a7b15c2d3e6
+
 	column Value
 		dataType: string
 		isHidden
@@ -569,3 +604,4 @@ table _Measures
 				    Typed
 
 	annotation PBI_ResultType = Table
+

@@ -62,6 +62,8 @@ table 'Schedule Activity'
 
 		annotation SummarizationSetBy = User
 
+		annotation UnderlyingDateTimeDataType = Date
+
 	column 'Planned Finish'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -70,6 +72,8 @@ table 'Schedule Activity'
 		sourceColumn: Planned Finish
 
 		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
 
 	column 'Actual Start'
 		dataType: dateTime
@@ -80,6 +84,8 @@ table 'Schedule Activity'
 
 		annotation SummarizationSetBy = User
 
+		annotation UnderlyingDateTimeDataType = Date
+
 	column 'Actual Finish'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -88,6 +94,8 @@ table 'Schedule Activity'
 		sourceColumn: Actual Finish
 
 		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
 
 	column 'Duration Days'
 		dataType: int64
@@ -107,7 +115,7 @@ table 'Schedule Activity'
 
 		annotation SummarizationSetBy = User
 
-	column 'Owner'
+	column Owner
 		dataType: string
 		lineageTag: e5a447d2-3250-5807-93ef-238a8ed39bfe
 		summarizeBy: none
@@ -115,7 +123,7 @@ table 'Schedule Activity'
 
 		annotation SummarizationSetBy = User
 
-	column 'Department'
+	column Department
 		dataType: string
 		lineageTag: 1ca4cedf-ab3e-5b1b-bfea-aeddc3186585
 		summarizeBy: none
@@ -154,3 +162,4 @@ table 'Schedule Activity'
 				    Renamed
 
 	annotation PBI_ResultType = Table
+

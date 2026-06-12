@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "0565f59e381c5e25bc2a",
   "position": {
     "x": 962,
-    "y": 88,
+    "y": 118,
     "z": 1000,
-    "width": 310,
-    "height": 190
+    "height": 164,
+    "width": 310
   },
   "visual": {
     "visualType": "tableEx",
@@ -44,7 +44,6 @@
         }
       }
     },
-    "drillFilterOtherVisuals": true,
     "visualContainerObjects": {
       "title": [
         {
@@ -66,6 +65,39 @@
           }
         }
       ]
-    }
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "66910a4623a01287e8d5",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Knowledge Area"
+              }
+            },
+            "Property": "Knowledge Area"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "88a2868f7a3d1a916452",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "_Measures"
+              }
+            },
+            "Property": "Latest Area Status"
+          }
+        },
+        "type": "Advanced"
+      }
+    ]
   }
 }

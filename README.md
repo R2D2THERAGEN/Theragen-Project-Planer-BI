@@ -22,6 +22,7 @@ Theragen Project Planner.pbip            Project pointer (open this)
 Theragen Project Planner.SemanticModel/  TMDL model: 21 tables, 94 measures, 36 relationships
 Theragen Project Planner.Report/         PBIR report: 8 pages, 85 visuals
 SampleData/                              Seeded 6-project portfolio (17 CSVs, schema-faithful)
+paginated/                               Constant-layout .rdl status report (DAX on the model)
 docs/MODEL_DESIGN.md                     Star-schema design decisions and source mapping
 _source_extracts/                        Schema spec sheets extracted to TSV (reference)
 tools/                                   Bootstrap generators + PBIR schema validator

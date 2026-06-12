@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "b8f2e61522935633b3b0",
   "position": {
     "x": 436,
     "y": 116,
     "z": 1000,
-    "width": 420,
-    "height": 260
+    "height": 260,
+    "width": 420
   },
   "visual": {
     "visualType": "clusteredColumnChart",
@@ -25,7 +25,8 @@
                   "Property": "Lesson Status"
                 }
               },
-              "queryRef": "Lesson Learned.Lesson Status"
+              "queryRef": "Lesson Learned.Lesson Status",
+              "active": true
             }
           ]
         },
@@ -48,7 +49,6 @@
         }
       }
     },
-    "drillFilterOtherVisuals": true,
     "visualContainerObjects": {
       "title": [
         {
@@ -70,6 +70,7 @@
           }
         }
       ]
-    }
+    },
+    "drillFilterOtherVisuals": true
   }
 }

@@ -81,7 +81,7 @@ table 'Budget Line'
 
 		annotation SummarizationSetBy = User
 
-	column 'Subtotal'
+	column Subtotal
 		dataType: decimal
 		formatString: \$#,##0;(\$#,##0);\$0
 		lineageTag: 95821974-1008-510b-bf2e-0eb9506ed464
@@ -99,7 +99,7 @@ table 'Budget Line'
 
 		annotation SummarizationSetBy = User
 
-	column 'Total'
+	column Total
 		dataType: decimal
 		formatString: \$#,##0;(\$#,##0);\$0
 		lineageTag: a6b48238-d0c1-5f0d-a0b0-b287ec4383d5
@@ -130,3 +130,4 @@ table 'Budget Line'
 				    Renamed
 
 	annotation PBI_ResultType = Table
+

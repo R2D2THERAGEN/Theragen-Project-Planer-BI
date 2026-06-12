@@ -1,26 +1,48 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/report/1.0.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/report/3.3.0/schema.json",
   "themeCollection": {
     "baseTheme": {
-      "name": "CY24SU10",
-      "reportVersionAtImport": "5.55",
+      "name": "Fluent2-CY26SU05",
+      "reportVersionAtImport": {
+        "visual": "2.9.0",
+        "report": "3.3.0",
+        "page": "2.3.1"
+      },
       "type": "SharedResources"
     },
     "customTheme": {
       "name": "Theragen.json",
-      "reportVersionAtImport": "5.55",
+      "reportVersionAtImport": {
+        "visual": "2.10.0",
+        "report": "3.4.0",
+        "page": "2.3.1"
+      },
       "type": "RegisteredResources"
     }
   },
-  "layoutOptimization": "None",
+  "objects": {
+    "outspacePane": [
+      {
+        "properties": {
+          "expanded": {
+            "expr": {
+              "Literal": {
+                "Value": "false"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
   "resourcePackages": [
     {
       "name": "SharedResources",
       "type": "SharedResources",
       "items": [
         {
-          "name": "CY24SU10",
-          "path": "BaseThemes/CY24SU10.json",
+          "name": "Fluent2-CY26SU05",
+          "path": "BaseThemes/Fluent2-CY26SU05.json",
           "type": "BaseTheme"
         }
       ]
@@ -30,6 +52,11 @@
       "type": "RegisteredResources",
       "items": [
         {
+          "name": "TheraGen_LOGO9499934091828127.png",
+          "path": "TheraGen_LOGO9499934091828127.png",
+          "type": "Image"
+        },
+        {
           "name": "Theragen.json",
           "path": "Theragen.json",
           "type": "CustomTheme"
@@ -38,6 +65,7 @@
     }
   ],
   "settings": {
-    "useStylableVisualContainerHeader": true
+    "useStylableVisualContainerHeader": true,
+    "useEnhancedTooltips": false
   }
 }

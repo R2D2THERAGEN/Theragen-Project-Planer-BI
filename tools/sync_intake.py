@@ -59,6 +59,8 @@ def _load_user_cache(g):
                      "$select": "id,displayName"})
     uil_id = next((l["id"] for l in lists.get("value", [])), None)
     if not uil_id:
+        print("WARNING: User Information List not found - person fields will be empty",
+              file=sys.stderr)
         return
     # Fetch all user entries; Id is the SharePoint LookupId.
     url = f"/sites/{site}/lists/{uil_id}/items"
@@ -75,6 +77,15 @@ def _load_user_cache(g):
         if url:
             url = url.replace("https://graph.microsoft.com/v1.0", "")
             params = {}
+
+
+def _coerce_bool(v):
+    """Graph booleans are JSON true/false; non-UI writers may send strings."""
+    if isinstance(v, bool):
+        return v
+    if isinstance(v, str):
+        return v.strip().lower() not in ("", "0", "false", "no")
+    return bool(v)
 
 
 def person_email(lookup_id_str, g):
@@ -121,7 +132,7 @@ def normalize(item, g):
         "PlannedFinish": (f.get("PlannedFinish") or "")[:10] or None,
         "EstimatedBudget": f.get("EstimatedBudget"),
         "EffortBucket": f.get("EffortBucket") or "Large (3-12 mo)",
-        "Flags": {k: bool(f.get(k)) for k in
+        "Flags": {k: _coerce_bool(f.get(k)) for k in
                   ("PHIFlag", "CFR11Flag", "ClinicalFlag", "VendorFlag",
                    "DataSharingFlag")},
         "StrategicObjective": f.get("StrategicObjective") or None,
@@ -130,6 +141,7 @@ def normalize(item, g):
     }
 
 
+# TODO(Task 6): branch on `dry` - real writes land here; DRY prefix only when dry.
 def process_new(conn, g, it, dry):
     errs = il.validate_item(it)
     if errs:
@@ -147,25 +159,24 @@ def main():
     args = ap.parse_args()
 
     g = Graph()
-    conn = psycopg.connect(host=PG["server"], dbname=PG["database"],
-                           user=PG["user"], password=PG["password"],
-                           sslmode="require")
-    raw_items = fetch_items(g)
-    print(f"{len(raw_items)} list item(s) fetched")
+    with psycopg.connect(host=PG["server"], dbname=PG["database"],
+                         user=PG["user"], password=PG["password"],
+                         sslmode="require") as conn:
+        raw_items = fetch_items(g)
+        print(f"{len(raw_items)} list item(s) fetched")
 
-    items = [normalize(i, g) for i in raw_items]
+        items = [normalize(i, g) for i in raw_items]
 
-    synced = dict(conn.execute(
-        "SELECT external_ref, intake_id FROM doc_mgmt.intake_submission "
-        "WHERE external_ref IS NOT NULL").fetchall())
+        synced = dict(conn.execute(
+            "SELECT external_ref, intake_id FROM doc_mgmt.intake_submission "
+            "WHERE external_ref IS NOT NULL").fetchall())
 
-    results = []
-    for it in items:
-        if it["item_id"] not in synced:
-            results.append(process_new(conn, g, it, args.dry_run))
-        else:
-            results.append(process_triage(conn, g, it, args.dry_run))
-    conn.close()
+        results = []
+        for it in items:
+            if it["item_id"] not in synced:
+                results.append(process_new(conn, g, it, args.dry_run))
+            else:
+                results.append(process_triage(conn, g, it, args.dry_run))
     for r in results:
         print(" ", r)
     bad = [r for r in results if r.startswith("ERROR")]

@@ -155,7 +155,7 @@
   <KeepTogether>true</KeepTogether>
   <Paragraphs><Paragraph><TextRuns><TextRun><Value>AVG RISK SCORE</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6.5pt</FontSize><Color>#219A80</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
   <Top>0.66in</Top><Left>6.5in</Left><Height>0.12in</Height><Width>1.48in</Width>
-  <Style><Border><Color></Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+  <Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
 </Textbox><Tablix Name="SeverityBar">
   <TablixBody>
     <TablixColumns><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn><TablixColumn><Width>0.0592in</Width></TablixColumn></TablixColumns>
@@ -399,37 +399,37 @@
   <KeepTogether>true</KeepTogether>
   <Paragraphs><Paragraph><TextRuns><TextRun><Value>0</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>5.5pt</FontSize><Color>#605E5C</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
   <Top>1.06in</Top><Left>6.5in</Left><Height>0.1in</Height><Width>0.12in</Width>
-  <Style><Border><Color></Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+  <Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
 </Textbox><Textbox Name="sevlab6">
   <CanGrow>false</CanGrow>
   <KeepTogether>true</KeepTogether>
   <Paragraphs><Paragraph><TextRuns><TextRun><Value>6</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>5.5pt</FontSize><Color>#605E5C</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
   <Top>1.06in</Top><Left>6.831in</Left><Height>0.1in</Height><Width>0.12in</Width>
-  <Style><Border><Color></Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+  <Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
 </Textbox><Textbox Name="sevlab12">
   <CanGrow>false</CanGrow>
   <KeepTogether>true</KeepTogether>
   <Paragraphs><Paragraph><TextRuns><TextRun><Value>12</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>5.5pt</FontSize><Color>#605E5C</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
   <Top>1.06in</Top><Left>7.162in</Left><Height>0.1in</Height><Width>0.12in</Width>
-  <Style><Border><Color></Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+  <Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
 </Textbox><Textbox Name="sevlab20">
   <CanGrow>false</CanGrow>
   <KeepTogether>true</KeepTogether>
   <Paragraphs><Paragraph><TextRuns><TextRun><Value>20</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>5.5pt</FontSize><Color>#605E5C</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
   <Top>1.06in</Top><Left>7.604in</Left><Height>0.1in</Height><Width>0.12in</Width>
-  <Style><Border><Color></Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+  <Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
 </Textbox><Textbox Name="sevlab25">
   <CanGrow>false</CanGrow>
   <KeepTogether>true</KeepTogether>
   <Paragraphs><Paragraph><TextRuns><TextRun><Value>25</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>5.5pt</FontSize><Color>#605E5C</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
   <Top>1.06in</Top><Left>7.783in</Left><Height>0.1in</Height><Width>0.12in</Width>
-  <Style><Border><Color></Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+  <Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
 </Textbox><Textbox Name="AvgScoreBox">
   <CanGrow>false</CanGrow>
   <KeepTogether>true</KeepTogether>
   <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Format(First(Fields!AvgScore.Value, "DsGauge"), "0.0") &amp; "  of 25"</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>13pt</FontSize><Color>=First(Fields!RatingColor.Value, "DsGauge")</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
   <Top>1.2in</Top><Left>6.5in</Left><Height>0.36in</Height><Width>1.48in</Width>
-  <Style><Border><Color></Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Middle</VerticalAlign></Style>
+  <Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Middle</VerticalAlign></Style>
 </Textbox><Textbox Name="RiskRatingBox">
   <CanGrow>false</CanGrow>
   <KeepTogether>true</KeepTogether>

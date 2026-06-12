@@ -166,7 +166,9 @@ def textbox(name, runs_xml, left, top, width, height, *, bg=None, border=GRID,
             align="Left", valign="Top", pad="2pt", grow=True):
     if bg is None:
         bg = "#FFFFFF"   # white card on the tinted frame background
-    style = [f"<Border><Color>{border}</Color><Style>{'Solid' if border else 'None'}</Style></Border>",
+    border_xml = (f"<Border><Color>{border}</Color><Style>Solid</Style></Border>"
+                  if border else "<Border><Style>None</Style></Border>")
+    style = [border_xml,
              f"<PaddingLeft>{pad}</PaddingLeft><PaddingRight>{pad}</PaddingRight>",
              "<PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom>",
              f"<VerticalAlign>{valign}</VerticalAlign>"]

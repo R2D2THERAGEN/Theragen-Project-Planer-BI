@@ -16,7 +16,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CACHE = os.path.join(ROOT, "db", ".graph_token_cache.json")
 CLIENT_ID = "14d82eec-204b-4c2f-b7e8-296a70dab67e"  # Microsoft Graph CLI (public)
 AUTHORITY = "https://login.microsoftonline.com/organizations"
-SCOPES = ["Sites.ReadWrite.All", "User.Read"]
+# Sites.Manage.All is required to CREATE lists/columns (ReadWrite covers items only).
+SCOPES = ["Sites.ReadWrite.All", "Sites.Manage.All", "User.Read"]
 BASE = "https://graph.microsoft.com/v1.0"
 
 

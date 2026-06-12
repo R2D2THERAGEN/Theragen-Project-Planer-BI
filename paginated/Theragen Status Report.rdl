@@ -20,7 +20,7 @@
     
     <CommandText>EVALUATE SELECTCOLUMNS('Project', "ProjectCode", 'Project'[Project Code], "ProjectName", 'Project'[Project Name]) ORDER BY [ProjectName]</CommandText>
   </Query>
-  <Fields><Field Name="ProjectCode"><DataField>ProjectCode</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="ProjectName"><DataField>ProjectName</DataField><rd:TypeName>System.Object</rd:TypeName></Field></Fields>
+  <Fields><Field Name="ProjectCode"><rd:TypeName>System.String</rd:TypeName><DataField>[ProjectCode]</DataField></Field><Field Name="ProjectName"><rd:TypeName>System.String</rd:TypeName><DataField>[ProjectName]</DataField></Field></Fields>
 </DataSet><DataSet Name="DsHeader">
   <Query>
     <DataSourceName>TheragenModel</DataSourceName>
@@ -29,7 +29,7 @@
           </QueryParameter></QueryParameters>
     <CommandText>EVALUATE CALCULATETABLE(ROW("ProjectName", SELECTEDVALUE('Project'[Project Name]), "ProjectManager", [Project Manager (Selected)], "TargetDate", [Target Date Completion], "Phase", [Current Phase], "MainStatus", [Main Status], "StatusColor", [Status Color], "Description", [Project Description (Selected)], "BusinessValue", [Business Value (Selected)], "ReportDate", [Report Date], "DecisionsNeeded", [Decisions Needed (Latest)]), TREATAS({@ProjectCode}, 'Project'[Project Code]))</CommandText>
   </Query>
-  <Fields><Field Name="ProjectName"><DataField>ProjectName</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="ProjectManager"><DataField>ProjectManager</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="TargetDate"><DataField>TargetDate</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="Phase"><DataField>Phase</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="MainStatus"><DataField>MainStatus</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="StatusColor"><DataField>StatusColor</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="Description"><DataField>Description</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="BusinessValue"><DataField>BusinessValue</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="ReportDate"><DataField>ReportDate</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="DecisionsNeeded"><DataField>DecisionsNeeded</DataField><rd:TypeName>System.Object</rd:TypeName></Field></Fields>
+  <Fields><Field Name="ProjectName"><rd:TypeName>System.String</rd:TypeName><DataField>[ProjectName]</DataField></Field><Field Name="ProjectManager"><rd:TypeName>System.String</rd:TypeName><DataField>[ProjectManager]</DataField></Field><Field Name="TargetDate"><rd:TypeName>System.DateTime</rd:TypeName><DataField>[TargetDate]</DataField></Field><Field Name="Phase"><rd:TypeName>System.String</rd:TypeName><DataField>[Phase]</DataField></Field><Field Name="MainStatus"><rd:TypeName>System.String</rd:TypeName><DataField>[MainStatus]</DataField></Field><Field Name="StatusColor"><rd:TypeName>System.String</rd:TypeName><DataField>[StatusColor]</DataField></Field><Field Name="Description"><rd:TypeName>System.String</rd:TypeName><DataField>[Description]</DataField></Field><Field Name="BusinessValue"><rd:TypeName>System.String</rd:TypeName><DataField>[BusinessValue]</DataField></Field><Field Name="ReportDate"><rd:TypeName>System.String</rd:TypeName><DataField>[ReportDate]</DataField></Field><Field Name="DecisionsNeeded"><rd:TypeName>System.String</rd:TypeName><DataField>[DecisionsNeeded]</DataField></Field></Fields>
 </DataSet><DataSet Name="DsHealth">
   <Query>
     <DataSourceName>TheragenModel</DataSourceName>
@@ -38,7 +38,7 @@
           </QueryParameter></QueryParameters>
     <CommandText>EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Knowledge Area'[Knowledge Area], 'Knowledge Area'[KA Sort], TREATAS({@ProjectCode}, 'Project'[Project Code]), "AreaStatusM", [Latest Area Status]), "KnowledgeArea", 'Knowledge Area'[Knowledge Area], "KASort", 'Knowledge Area'[KA Sort], "AreaStatus", [AreaStatusM]) ORDER BY [KASort]</CommandText>
   </Query>
-  <Fields><Field Name="KnowledgeArea"><DataField>KnowledgeArea</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="KASort"><DataField>KASort</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="AreaStatus"><DataField>AreaStatus</DataField><rd:TypeName>System.Object</rd:TypeName></Field></Fields>
+  <Fields><Field Name="KnowledgeArea"><rd:TypeName>System.String</rd:TypeName><DataField>[KnowledgeArea]</DataField></Field><Field Name="KASort"><rd:TypeName>System.Int64</rd:TypeName><DataField>[KASort]</DataField></Field><Field Name="AreaStatus"><rd:TypeName>System.String</rd:TypeName><DataField>[AreaStatus]</DataField></Field></Fields>
 </DataSet><DataSet Name="DsRaid">
   <Query>
     <DataSourceName>TheragenModel</DataSourceName>
@@ -47,7 +47,7 @@
           </QueryParameter></QueryParameters>
     <CommandText>EVALUATE SELECTCOLUMNS(CALCULATETABLE('Risk', TREATAS({@ProjectCode}, 'Project'[Project Code])), "RaidType", 'Risk'[RAID Type], "Description", 'Risk'[Risk Description], "Owner", 'Risk'[Owner], "DueDate", 'Risk'[Due Date], "Score", 'Risk'[Risk Score], "Severity", 'Risk'[Severity], "RiskStatus", 'Risk'[Risk Status]) ORDER BY [Score] DESC</CommandText>
   </Query>
-  <Fields><Field Name="RaidType"><DataField>RaidType</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="Description"><DataField>Description</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="Owner"><DataField>Owner</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="DueDate"><DataField>DueDate</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="Score"><DataField>Score</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="Severity"><DataField>Severity</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="RiskStatus"><DataField>RiskStatus</DataField><rd:TypeName>System.Object</rd:TypeName></Field></Fields>
+  <Fields><Field Name="RaidType"><rd:TypeName>System.String</rd:TypeName><DataField>[RaidType]</DataField></Field><Field Name="Description"><rd:TypeName>System.String</rd:TypeName><DataField>[Description]</DataField></Field><Field Name="Owner"><rd:TypeName>System.String</rd:TypeName><DataField>[Owner]</DataField></Field><Field Name="DueDate"><rd:TypeName>System.DateTime</rd:TypeName><DataField>[DueDate]</DataField></Field><Field Name="Score"><rd:TypeName>System.Int64</rd:TypeName><DataField>[Score]</DataField></Field><Field Name="Severity"><rd:TypeName>System.String</rd:TypeName><DataField>[Severity]</DataField></Field><Field Name="RiskStatus"><rd:TypeName>System.String</rd:TypeName><DataField>[RiskStatus]</DataField></Field></Fields>
 </DataSet><DataSet Name="DsWorkstreams">
   <Query>
     <DataSourceName>TheragenModel</DataSourceName>
@@ -56,7 +56,7 @@
           </QueryParameter></QueryParameters>
     <CommandText>EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('WBS Element'[Deliverable], TREATAS({@ProjectCode}, 'Project'[Project Code]), "StartDateM", [Workstream Start], "TargetDateM", [Workstream Target], "PctCompleteM", [Pct Complete (Duration Weighted)], "WsStatusM", [Workstream Status]), "Deliverable", 'WBS Element'[Deliverable], "StartDate", [StartDateM], "TargetDate", [TargetDateM], "PctComplete", [PctCompleteM], "WsStatus", [WsStatusM]) ORDER BY [StartDate]</CommandText>
   </Query>
-  <Fields><Field Name="Deliverable"><DataField>Deliverable</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="StartDate"><DataField>StartDate</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="TargetDate"><DataField>TargetDate</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="PctComplete"><DataField>PctComplete</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="WsStatus"><DataField>WsStatus</DataField><rd:TypeName>System.Object</rd:TypeName></Field></Fields>
+  <Fields><Field Name="Deliverable"><rd:TypeName>System.String</rd:TypeName><DataField>[Deliverable]</DataField></Field><Field Name="StartDate"><rd:TypeName>System.DateTime</rd:TypeName><DataField>[StartDate]</DataField></Field><Field Name="TargetDate"><rd:TypeName>System.DateTime</rd:TypeName><DataField>[TargetDate]</DataField></Field><Field Name="PctComplete"><rd:TypeName>System.Decimal</rd:TypeName><DataField>[PctComplete]</DataField></Field><Field Name="WsStatus"><rd:TypeName>System.String</rd:TypeName><DataField>[WsStatus]</DataField></Field></Fields>
 </DataSet><DataSet Name="DsAccomplishments">
   <Query>
     <DataSourceName>TheragenModel</DataSourceName>
@@ -65,7 +65,7 @@
           </QueryParameter></QueryParameters>
     <CommandText>EVALUATE SELECTCOLUMNS(CALCULATETABLE('Recent Accomplishment', TREATAS({@ProjectCode}, 'Project'[Project Code])), "Accomplishment", 'Recent Accomplishment'[Accomplishment], "Source", 'Recent Accomplishment'[Source], "CompletedDate", 'Recent Accomplishment'[Completed Date]) ORDER BY [CompletedDate] DESC</CommandText>
   </Query>
-  <Fields><Field Name="Accomplishment"><DataField>Accomplishment</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="Source"><DataField>Source</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="CompletedDate"><DataField>CompletedDate</DataField><rd:TypeName>System.Object</rd:TypeName></Field></Fields>
+  <Fields><Field Name="Accomplishment"><rd:TypeName>System.String</rd:TypeName><DataField>[Accomplishment]</DataField></Field><Field Name="Source"><rd:TypeName>System.String</rd:TypeName><DataField>[Source]</DataField></Field><Field Name="CompletedDate"><rd:TypeName>System.DateTime</rd:TypeName><DataField>[CompletedDate]</DataField></Field></Fields>
 </DataSet><DataSet Name="DsGauge">
   <Query>
     <DataSourceName>TheragenModel</DataSourceName>
@@ -74,7 +74,7 @@
           </QueryParameter></QueryParameters>
     <CommandText>EVALUATE CALCULATETABLE(ROW("AvgScore", [Avg Risk Score (Open)], "RiskRating", [Risk Rating], "RatingColor", [Risk Rating Color]), TREATAS({@ProjectCode}, 'Project'[Project Code]))</CommandText>
   </Query>
-  <Fields><Field Name="AvgScore"><DataField>AvgScore</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="RiskRating"><DataField>RiskRating</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="RatingColor"><DataField>RatingColor</DataField><rd:TypeName>System.Object</rd:TypeName></Field></Fields>
+  <Fields><Field Name="AvgScore"><rd:TypeName>System.Decimal</rd:TypeName><DataField>[AvgScore]</DataField></Field><Field Name="RiskRating"><rd:TypeName>System.String</rd:TypeName><DataField>[RiskRating]</DataField></Field><Field Name="RatingColor"><rd:TypeName>System.String</rd:TypeName><DataField>[RatingColor]</DataField></Field></Fields>
 </DataSet><DataSet Name="DsNextSteps">
   <Query>
     <DataSourceName>TheragenModel</DataSourceName>
@@ -83,7 +83,7 @@
           </QueryParameter></QueryParameters>
     <CommandText>EVALUATE SELECTCOLUMNS(CALCULATETABLE('Upcoming Next Step', TREATAS({@ProjectCode}, 'Project'[Project Code])), "NextStep", 'Upcoming Next Step'[Next Step], "Owner", 'Upcoming Next Step'[Owner], "TargetDate", 'Upcoming Next Step'[Target Date]) ORDER BY [TargetDate]</CommandText>
   </Query>
-  <Fields><Field Name="NextStep"><DataField>NextStep</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="Owner"><DataField>Owner</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="TargetDate"><DataField>TargetDate</DataField><rd:TypeName>System.Object</rd:TypeName></Field></Fields>
+  <Fields><Field Name="NextStep"><rd:TypeName>System.String</rd:TypeName><DataField>[NextStep]</DataField></Field><Field Name="Owner"><rd:TypeName>System.String</rd:TypeName><DataField>[Owner]</DataField></Field><Field Name="TargetDate"><rd:TypeName>System.DateTime</rd:TypeName><DataField>[TargetDate]</DataField></Field></Fields>
 </DataSet></DataSets>
   <EmbeddedImages>
     <EmbeddedImage Name="TheragenLogo">

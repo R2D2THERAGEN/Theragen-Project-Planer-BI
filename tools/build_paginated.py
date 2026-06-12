@@ -288,9 +288,17 @@ def dataset_xml(name, d):
     qp = ("""<QueryParameters><QueryParameter Name="@ProjectCode">
             <Value>=Parameters!ProjectCode.Value</Value>
           </QueryParameter></QueryParameters>""" if d["params"] else "")
+    # DAX flattened rowsets name aliased columns "[Alias]" (brackets included)
+    # - verified against Theragen production .rdls. Binding bare names leaves
+    # every field null: blank body and a disabled Required parameter.
+    types = {
+        "DueDate": "DateTime", "StartDate": "DateTime", "TargetDate": "DateTime",
+        "CompletedDate": "DateTime", "Score": "Int64", "KASort": "Int64",
+        "PctComplete": "Decimal", "AvgScore": "Decimal",
+    }
     fields = "".join(
-        f'<Field Name="{f}"><DataField>{f}</DataField>'
-        f'<rd:TypeName>System.Object</rd:TypeName></Field>' for f in d["fields"])
+        f'<Field Name="{f}"><rd:TypeName>System.{types.get(f, "String")}</rd:TypeName>'
+        f'<DataField>[{f}]</DataField></Field>' for f in d["fields"])
     return f"""<DataSet Name="{name}">
   <Query>
     <DataSourceName>TheragenModel</DataSourceName>

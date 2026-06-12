@@ -6,7 +6,7 @@
     <DataSource Name="TheragenModel">
       <ConnectionProperties>
         <DataProvider>PBISERVICE</DataProvider>
-        <ConnectString>Data Source=powerbi://api.powerbi.com/v1.0/myorg/YOUR_WORKSPACE;Initial Catalog="Theragen Project Planner"</ConnectString>
+        <ConnectString>Data Source=powerbi://api.powerbi.com/v1.0/myorg/YOUR_WORKSPACE;Initial Catalog=Theragen Project Planner</ConnectString>
       </ConnectionProperties>
       <rd:SecurityType>None</rd:SecurityType>
     </DataSource>
@@ -63,6 +63,15 @@
     <CommandText>EVALUATE SELECTCOLUMNS(CALCULATETABLE('Recent Accomplishment', TREATAS({@ProjectCode}, 'Project'[Project Code])), "Accomplishment", 'Recent Accomplishment'[Accomplishment], "Source", 'Recent Accomplishment'[Source], "CompletedDate", 'Recent Accomplishment'[Completed Date]) ORDER BY [CompletedDate] DESC</CommandText>
   </Query>
   <Fields><Field Name="Accomplishment"><DataField>Accomplishment</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="Source"><DataField>Source</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="CompletedDate"><DataField>CompletedDate</DataField><rd:TypeName>System.Object</rd:TypeName></Field></Fields>
+</DataSet><DataSet Name="DsGauge">
+  <Query>
+    <DataSourceName>TheragenModel</DataSourceName>
+    <QueryParameters><QueryParameter Name="@ProjectCode">
+            <Value>=Parameters!ProjectCode.Value</Value>
+          </QueryParameter></QueryParameters>
+    <CommandText>EVALUATE CALCULATETABLE(ROW("AvgScore", [Avg Risk Score (Open)], "RiskRating", [Risk Rating], "RatingColor", [Risk Rating Color]), TREATAS({@ProjectCode}, 'Project'[Project Code]))</CommandText>
+  </Query>
+  <Fields><Field Name="AvgScore"><DataField>AvgScore</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="RiskRating"><DataField>RiskRating</DataField><rd:TypeName>System.Object</rd:TypeName></Field><Field Name="RatingColor"><DataField>RatingColor</DataField><rd:TypeName>System.Object</rd:TypeName></Field></Fields>
 </DataSet><DataSet Name="DsNextSteps">
   <Query>
     <DataSourceName>TheragenModel</DataSourceName>
@@ -122,17 +131,67 @@
   <CanGrow>true</CanGrow>
   <KeepTogether>true</KeepTogether>
   <Paragraphs><Paragraph><TextRuns><TextRun><Value>PROJECT DESCRIPTION</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6.5pt</FontSize><Color>#219A80</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value>=First(Fields!Description.Value, "DsHeader")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>8pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
-  <Top>0.62in</Top><Left>1.28in</Left><Height>1.45in</Height><Width>3.4in</Width>
+  <Top>0.62in</Top><Left>1.28in</Left><Height>1.45in</Height><Width>2.5in</Width>
   <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
 </Textbox><Textbox Name="Value">
   <CanGrow>true</CanGrow>
   <KeepTogether>true</KeepTogether>
   <Paragraphs><Paragraph><TextRuns><TextRun><Value>BUSINESS VALUE</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6.5pt</FontSize><Color>#219A80</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value>=First(Fields!BusinessValue.Value, "DsHeader")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>8pt</FontSize><Color>#252423</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
-  <Top>0.62in</Top><Left>4.76in</Left><Height>1.45in</Height><Width>3.4in</Width>
+  <Top>0.62in</Top><Left>3.86in</Left><Height>1.45in</Height><Width>2.5in</Width>
   <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Top</VerticalAlign></Style>
+</Textbox><GaugePanel Name="RiskGauge">
+  <RadialGauges>
+    <RadialGauge Name="RiskRadial">
+      <GaugeScales>
+        <RadialScale Name="RiskScale">
+          <GaugePointers>
+            <RadialPointer Name="RiskPointer">
+              <GaugeInputValue><Value>=First(Fields!AvgScore.Value)</Value></GaugeInputValue>
+              <Type>Needle</Type>
+              <Style><Border><Style>None</Style></Border><BackgroundColor>#252423</BackgroundColor></Style>
+            </RadialPointer>
+          </GaugePointers>
+          <ScaleRanges><ScaleRange Name="BandLow">
+              <StartValue><Value>0</Value></StartValue>
+              <EndValue><Value>6</Value></EndValue>
+              <StartWidth>8</StartWidth><EndWidth>8</EndWidth>
+              <Style><Border><Style>None</Style></Border><BackgroundColor>#00FF00</BackgroundColor></Style>
+            </ScaleRange><ScaleRange Name="BandModerate">
+              <StartValue><Value>6</Value></StartValue>
+              <EndValue><Value>12</Value></EndValue>
+              <StartWidth>8</StartWidth><EndWidth>8</EndWidth>
+              <Style><Border><Style>None</Style></Border><BackgroundColor>#D6D60D</BackgroundColor></Style>
+            </ScaleRange><ScaleRange Name="BandHigh">
+              <StartValue><Value>12</Value></StartValue>
+              <EndValue><Value>20</Value></EndValue>
+              <StartWidth>8</StartWidth><EndWidth>8</EndWidth>
+              <Style><Border><Style>None</Style></Border><BackgroundColor>#FF0000</BackgroundColor></Style>
+            </ScaleRange><ScaleRange Name="BandCritical">
+              <StartValue><Value>20</Value></StartValue>
+              <EndValue><Value>25</Value></EndValue>
+              <StartWidth>8</StartWidth><EndWidth>8</EndWidth>
+              <Style><Border><Style>None</Style></Border><BackgroundColor>#C00000</BackgroundColor></Style>
+            </ScaleRange></ScaleRanges>
+          <MaximumValue><Value>25</Value></MaximumValue>
+          <MinimumValue><Value>0</Value></MinimumValue>
+          <Interval>5</Interval>
+          <Style><Border><Style>None</Style></Border><FontSize>6pt</FontSize></Style>
+        </RadialScale>
+      </GaugeScales>
+    </RadialGauge>
+  </RadialGauges>
+  <DataSetName>DsGauge</DataSetName>
+  <Top>0.62in</Top><Left>6.44in</Left><Height>1.0in</Height><Width>1.6in</Width>
+  <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border></Style>
+</GaugePanel><Textbox Name="RiskRatingBox">
+  <CanGrow>false</CanGrow>
+  <KeepTogether>true</KeepTogether>
+  <Paragraphs><Paragraph><TextRuns><TextRun><Value>RISK RATING</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>6.5pt</FontSize><Color>#219A80</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value>=First(Fields!RiskRating.Value, "DsGauge")</Value><Style><FontFamily>Segoe UI</FontFamily><FontSize>11pt</FontSize><Color>=First(Fields!RatingColor.Value, "DsGauge")</Color><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+  <Top>1.66in</Top><Left>6.44in</Left><Height>0.41in</Height><Width>1.6in</Width>
+  <Style><Border><Color>#DCE4E3</Color><Style>Solid</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom><VerticalAlign>Middle</VerticalAlign></Style>
 </Textbox><Tablix Name="HealthCheck">
   <TablixBody>
-    <TablixColumns><TablixColumn><Width>1.236in</Width></TablixColumn><TablixColumn><Width>0.824in</Width></TablixColumn></TablixColumns>
+    <TablixColumns><TablixColumn><Width>1.308in</Width></TablixColumn><TablixColumn><Width>0.872in</Width></TablixColumn></TablixColumns>
     <TablixRows>
       <TablixRow><Height>0.22in</Height><TablixCells><TablixCell><CellContents><Textbox Name="HealthCheck_h0">
               <CanGrow>true</CanGrow>
@@ -174,7 +233,7 @@
     <TablixMember><Group Name="HealthCheck_Details" /></TablixMember>
   </TablixMembers></TablixRowHierarchy>
   <DataSetName>DsHealth</DataSetName>
-  <Top>0.62in</Top><Left>8.24in</Left><Height>0.42in</Height><Width>2.060in</Width>
+  <Top>0.62in</Top><Left>8.12in</Left><Height>0.42in</Height><Width>2.180in</Width>
   <Style><Border><Style>None</Style></Border></Style>
 </Tablix><Tablix Name="Raid">
   <TablixBody>

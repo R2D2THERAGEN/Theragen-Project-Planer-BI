@@ -117,6 +117,15 @@ DATASETS = {
             "ORDER BY [CompletedDate] DESC"
         ),
         fields=["Accomplishment", "Source", "CompletedDate"], params=True),
+    "DsGauge": dict(
+        dax=(
+            "EVALUATE CALCULATETABLE(ROW("
+            "\"AvgScore\", [Avg Risk Score (Open)], "
+            "\"RiskRating\", [Risk Rating], "
+            "\"RatingColor\", [Risk Rating Color]), "
+            "TREATAS({@ProjectCode}, 'Project'[Project Code]))"
+        ),
+        fields=["AvgScore", "RiskRating", "RatingColor"], params=True),
     "DsNextSteps": dict(
         dax=(
             "EVALUATE SELECTCOLUMNS(CALCULATETABLE('Upcoming Next Step', "
@@ -226,6 +235,45 @@ def tablix(name, dataset, columns, left, top, width, *, header_bg=TEAL,
 </Tablix>"""
 
 
+def risk_gauge(left, top, width, height):
+    """Radial severity gauge: avg open-risk score on 0-25 with PMI band colors
+    (LOW <6, MODERATE <12, HIGH <20, CRITICAL <=25) and needle pointer."""
+    bands = [("BandLow", 0, 6, DECK_GREEN), ("BandModerate", 6, 12, DECK_YELLOW),
+             ("BandHigh", 12, 20, DECK_RED), ("BandCritical", 20, 25, "#C00000")]
+    ranges = "".join(
+        f"""<ScaleRange Name="{n}">
+              <StartValue><Value>{a}</Value></StartValue>
+              <EndValue><Value>{b}</Value></EndValue>
+              <StartWidth>8</StartWidth><EndWidth>8</EndWidth>
+              <Style><Border><Style>None</Style></Border><BackgroundColor>{c}</BackgroundColor></Style>
+            </ScaleRange>""" for n, a, b, c in bands)
+    return f"""<GaugePanel Name="RiskGauge">
+  <RadialGauges>
+    <RadialGauge Name="RiskRadial">
+      <GaugeScales>
+        <RadialScale Name="RiskScale">
+          <GaugePointers>
+            <RadialPointer Name="RiskPointer">
+              <GaugeInputValue><Value>=First(Fields!AvgScore.Value)</Value></GaugeInputValue>
+              <Type>Needle</Type>
+              <Style><Border><Style>None</Style></Border><BackgroundColor>{INK}</BackgroundColor></Style>
+            </RadialPointer>
+          </GaugePointers>
+          <ScaleRanges>{ranges}</ScaleRanges>
+          <MaximumValue><Value>25</Value></MaximumValue>
+          <MinimumValue><Value>0</Value></MinimumValue>
+          <Interval>5</Interval>
+          <Style><Border><Style>None</Style></Border><FontSize>6pt</FontSize></Style>
+        </RadialScale>
+      </GaugeScales>
+    </RadialGauge>
+  </RadialGauges>
+  <DataSetName>DsGauge</DataSetName>
+  <Top>{top}in</Top><Left>{left}in</Left><Height>{height}in</Height><Width>{width}in</Width>
+  <Style><Border><Color>{GRID}</Color><Style>Solid</Style></Border></Style>
+</GaugePanel>"""
+
+
 def dataset_xml(name, d):
     qp = ("""<QueryParameters><QueryParameter Name="@ProjectCode">
             <Value>=Parameters!ProjectCode.Value</Value>
@@ -269,7 +317,7 @@ def build():
     body_items.append(label_value_box("HdrDate", "DATE OF REPORT",
                                       FH("ReportDate"), 8.95, 0, 1.35, 0.5))
 
-    # --- Row B: main status / description / value / health (0.62..2.1) ----
+    # --- Row B: main status / description / value / gauge / health (0.62..2.07)
     # Deck style: big colored letter on white, not white-on-color.
     runs = (para(textrun("MAIN STATUS", size="6.5pt", bold=True, color=TEAL), "Center") +
             para(textrun(FH("MainStatus"), size="44pt", bold=True, color=FH("StatusColor")), "Center"))
@@ -277,14 +325,21 @@ def build():
                               border=GRID, valign="Middle", grow=False))
     runs = (para(textrun("PROJECT DESCRIPTION", size="6.5pt", bold=True, color=TEAL)) +
             para(textrun(FH("Description"), size="8pt")))
-    body_items.append(textbox("Descr", runs, 1.28, 0.62, 3.4, 1.45))
+    body_items.append(textbox("Descr", runs, 1.28, 0.62, 2.5, 1.45))
     runs = (para(textrun("BUSINESS VALUE", size="6.5pt", bold=True, color=TEAL)) +
             para(textrun(FH("BusinessValue"), size="8pt")))
-    body_items.append(textbox("Value", runs, 4.76, 0.62, 3.4, 1.45))
+    body_items.append(textbox("Value", runs, 3.86, 0.62, 2.5, 1.45))
+    # Severity gauge + banded rating (same calculations as the interactive page).
+    body_items.append(risk_gauge(6.44, 0.62, 1.6, 1.0))
+    runs = (para(textrun("RISK RATING", size="6.5pt", bold=True, color=TEAL), "Center") +
+            para(textrun('=First(Fields!RiskRating.Value, "DsGauge")', size="11pt", bold=True,
+                         color='=First(Fields!RatingColor.Value, "DsGauge")'), "Center"))
+    body_items.append(textbox("RiskRatingBox", runs, 6.44, 1.66, 1.6, 0.41,
+                              border=GRID, valign="Middle", grow=False))
     body_items.append(tablix("HealthCheck", "DsHealth", [
         ("Health Check", F("KnowledgeArea"), 1.2, "Left"),
         ("Status", F("AreaStatus"), 0.8, "Center", None, AREA_COLOR, True),
-    ], 8.24, 0.62, 2.06))
+    ], 8.12, 0.62, 2.18))
 
     # --- Row C: RAID (2.2 ..) ---------------------------------------------
     body_items.append(tablix("Raid", "DsRaid", [
@@ -346,7 +401,7 @@ def build():
     <DataSource Name="TheragenModel">
       <ConnectionProperties>
         <DataProvider>PBISERVICE</DataProvider>
-        <ConnectString>Data Source=powerbi://api.powerbi.com/v1.0/myorg/YOUR_WORKSPACE;Initial Catalog="Theragen Project Planner"</ConnectString>
+        <ConnectString>Data Source=powerbi://api.powerbi.com/v1.0/myorg/YOUR_WORKSPACE;Initial Catalog=Theragen Project Planner</ConnectString>
       </ConnectionProperties>
       <rd:SecurityType>None</rd:SecurityType>
     </DataSource>

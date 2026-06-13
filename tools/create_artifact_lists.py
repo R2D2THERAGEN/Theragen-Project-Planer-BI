@@ -134,6 +134,17 @@ LISTS = {
         date_only("DecidedDate"),
         text("GateNotes", multiline=True),
     ] + BOOKKEEPING),
+    "impact_assessment_list_id": ("Change Impact Assessments", [
+        text("ProjectCode"),
+        text("ParentCRCode"),
+        choice("Department", al.DEPARTMENTS),
+        text("ScopeImpact", multiline=True),
+        {"name": "ScheduleImpactDays", "number": {"decimalPlaces": "none"}},
+        {"name": "CostImpact", "number": {"decimalPlaces": "two"}},
+        text("QualityImpact", multiline=True),
+        {"name": "SubmittedBy", "personOrGroup": {"allowMultipleSelection": False}},
+        date_only("SubmittedDate"),
+    ] + BOOKKEEPING),
 }
 
 

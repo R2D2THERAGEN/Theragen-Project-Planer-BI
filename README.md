@@ -113,6 +113,8 @@ reference: [docs/artifact-entry-setup.md](docs/artifact-entry-setup.md). Design
 rationale:
 [docs/superpowers/specs/2026-06-12-execution-tracking-design.md](docs/superpowers/specs/2026-06-12-execution-tracking-design.md).
 
+PMs also enter schedule activities in the **Project Activities** List (one row per activity); the same 5:40 AM sync auto-derives a two-tier WBS (Workstream → Work Package) from the Workstream and WorkPackage text columns, mints an `ActivityCode` per activity, and writes the result back — the derived WBS is what fills the **Key Project Areas** panel on the Project Status Report page. See [docs/artifact-entry-setup.md §D](docs/artifact-entry-setup.md) for the full column reference and grouping rules.
+
 **EVM note:** the v1.0 schema has no cost-actuals entity, so AC/CPI/EAC are intentionally
 absent; SPI/SV/EV/PV derive from WBS estimates and activity percent-complete. Add an
 actuals feed (ERP extract) in Phase 2 to complete the EVM family.

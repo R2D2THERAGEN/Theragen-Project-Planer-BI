@@ -19,7 +19,7 @@ import psycopg
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import artifact_lib as al
-from graph_client import Graph, SitePeople
+from graph_client import Graph, SitePeople, coerce_bool
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PG = json.load(open(os.path.join(ROOT, "db", ".pg.local.json")))
@@ -39,7 +39,16 @@ MILESTONE_FIELDS = ("Title,ProjectCode,BaselineDate,ForecastDate,ActualDate,"
                     "MilestoneStatus,OwnerRole,SyncStatus,SyncMessage")
 REPORT_FIELDS = ("Title,ProjectCode,PeriodStart,PeriodEnd,OverallStatus,Trend,"
                  "ExecutiveSummary,DecisionsNeeded,SubmittedBy,"
-                 "SubmittedByLookupId," + HEALTH_FIELDS + ",SyncStatus,SyncMessage")
+                 "SubmittedByLookupId,ApprovedBy,ApprovedByLookupId,ApprovedDate,"
+                 + HEALTH_FIELDS + ",SyncStatus,SyncMessage")
+CR_FIELDS = ("Title,ProjectCode,RequestedDate,RequestedBy,RequestedByLookupId,"
+             "CRClass,ChangeType,AffectedArtifacts,Description,Reason,"
+             "ImpactScope,ImpactQuality,ImpactScheduleDays,ImpactCost,"
+             "IntakeID,Decision,DecidedBy,DecidedByLookupId,DecidedDate,"
+             "ImplementationVerified,LinkedArtifactsUpdated,CRStatus,CRCode,"
+             "SyncStatus,SyncMessage")
+DECISION_FIELDS = ("Title,ProjectCode,Rationale,DecidedBy,DecidedByLookupId,"
+                   "DecidedDate,DecisionCode,SyncStatus,SyncMessage")
 
 
 def _date(v):
@@ -116,6 +125,8 @@ def normalize_report(item, people):
         "CreatedAt": item.get("createdDateTime"),
         "Health": {ka: f.get(f"{ka}Health") or "Green"
                    for ka in al.KNOWLEDGE_AREAS},
+        "ApprovedByEmail": people.email(f.get("ApprovedByLookupId")),
+        "ApprovedDate": _date(f.get("ApprovedDate")),
         "SyncStatus": f.get("SyncStatus") or "Pending",
     }
 
@@ -141,6 +152,54 @@ def normalize_activity(item, people):
     }
 
 
+def normalize_change_request(item, people):
+    f = item.get("fields", {})
+    created_by = (((item.get("createdBy") or {}).get("user") or {})
+                  .get("email") or "").lower()
+    # RequestedDate defaults to createdDateTime date when blank (like author fallback)
+    created_date = (item.get("createdDateTime") or "")[:10] or None
+    return {
+        "item_id": item["id"],
+        "Title": f.get("Title") or "",
+        "ProjectCode": (f.get("ProjectCode") or "").strip(),
+        "RequestedDate": _date(f.get("RequestedDate")) or created_date,
+        "RequestedByEmail": people.email(f.get("RequestedByLookupId")) or created_by,
+        "CreatedAt": item.get("createdDateTime"),
+        "CRClass": f.get("CRClass") or "",
+        "ChangeType": f.get("ChangeType") or "",
+        "AffectedArtifacts": f.get("AffectedArtifacts") or None,
+        "Description": f.get("Description") or "",
+        "Reason": f.get("Reason") or "",
+        "ImpactScope": f.get("ImpactScope") or None,
+        "ImpactQuality": f.get("ImpactQuality") or None,
+        "ImpactScheduleDays": f.get("ImpactScheduleDays"),
+        "ImpactCost": f.get("ImpactCost"),
+        "IntakeID": f.get("IntakeID") or None,
+        "Decision": f.get("Decision") or "Pending",
+        "DecidedByEmail": people.email(f.get("DecidedByLookupId")),
+        "DecidedDate": _date(f.get("DecidedDate")),
+        "ImplementationVerified": coerce_bool(f.get("ImplementationVerified")),
+        "LinkedArtifactsUpdated": coerce_bool(f.get("LinkedArtifactsUpdated")),
+        "CRStatus": f.get("CRStatus") or "Open",
+        "CRCode": f.get("CRCode") or "",
+        "SyncStatus": f.get("SyncStatus") or "Pending",
+    }
+
+
+def normalize_decision(item, people):
+    f = item.get("fields", {})
+    return {
+        "item_id": item["id"],
+        "Title": f.get("Title") or "",
+        "ProjectCode": (f.get("ProjectCode") or "").strip(),
+        "Rationale": f.get("Rationale") or "",
+        "DecidedByEmail": people.email(f.get("DecidedByLookupId")),
+        "DecidedDate": _date(f.get("DecidedDate")),
+        "DecisionCode": f.get("DecisionCode") or "",
+        "SyncStatus": f.get("SyncStatus") or "Pending",
+    }
+
+
 def writeback(g, list_id, item_id, fields):
     g.patch(f"/sites/{M365['site_id']}/lists/{list_id}/items/{item_id}/fields",
             fields)
@@ -156,6 +215,14 @@ def project_by_code(conn, code):
     return conn.execute(
         "SELECT project_id, primary_department FROM pmbok.project "
         "WHERE project_code=%s", (code,)).fetchone()
+
+
+def project_leads(conn, project_id):
+    """Return (sponsor_person_id, project_manager_id) for authority checks."""
+    row = conn.execute(
+        "SELECT sponsor_person_id, project_manager_id FROM pmbok.project"
+        " WHERE project_id=%s", (project_id,)).fetchone()
+    return (row[0], row[1]) if row else (None, None)
 
 
 def _error(g, list_id, it, errs, dry, kind):
@@ -188,8 +255,19 @@ MILESTONE_SELECT = ('SELECT external_ref, milestone_id, project_id, name,'
                     ' FROM pmbok.milestone WHERE external_ref IS NOT NULL')
 REPORT_SELECT = ('SELECT external_ref, report_id, project_id, period_start,'
                  ' period_end, overall_status, trend, executive_summary,'
-                 ' decisions_needed, submitted_by_person_id'
+                 ' decisions_needed, submitted_by_person_id,'
+                 ' approved_by_person_id, approved_at'
                  ' FROM pmbok.status_report WHERE external_ref IS NOT NULL')
+CR_SELECT = ('SELECT external_ref, cr_id, project_id, cr_code, intake_id,'
+             ' requested_at, requested_by_person_id, cr_class, change_types,'
+             ' affected_artifacts, description, reason, impact_scope,'
+             ' impact_schedule_days, impact_cost, impact_quality, decision,'
+             ' decided_by_person_id, decided_at, implementation_verified,'
+             ' linked_artifacts_updated, status'
+             ' FROM pmbok.change_request WHERE external_ref IS NOT NULL')
+DECISION_SELECT = ('SELECT external_ref, decision_id, project_id, code,'
+                   ' decision, rationale, decided_by_person_id, decided_at'
+                   ' FROM pmbok.decision WHERE external_ref IS NOT NULL')
 AREA_SELECT = ('SELECT r.external_ref, a.knowledge_area, a.status'
                ' FROM pmbok.status_report_area a'
                ' JOIN pmbok.status_report r ON r.report_id = a.report_id'
@@ -342,6 +420,14 @@ def process_report(conn, g, it, dry, current, area_map=None):
                  or person_id_by_email(conn, it["CreatedByEmail"]))
     if not errs and not submitter:
         errs.append("SubmittedBy not in person directory")
+    # Sign-off validation: ApprovedBy and ApprovedDate must be set together
+    has_approver = bool(it.get("ApprovedByEmail"))
+    has_approved_date = bool(it.get("ApprovedDate"))
+    if has_approver != has_approved_date:
+        errs.append("ApprovedBy and ApprovedDate must be set together")
+    if has_approver:
+        if not person_id_by_email(conn, it["ApprovedByEmail"]):
+            errs.append(f"ApprovedBy {it['ApprovedByEmail']} not in person directory")
     if errs:
         return _error(g, M365["status_report_list_id"], it, errs, dry, "report")
     project_id, _dept = proj
@@ -649,6 +735,64 @@ def process_activity(conn, g, it, dry, current, wbs_map=None, wbs_code_map=None)
     return f"OK new activity {activity_code} ({ws} / {wp}, item {it['item_id']})"
 
 
+def process_change_request(conn, g, it, dry, current):
+    errs = al.validate_change_request(it)
+    proj = project_by_code(conn, it["ProjectCode"]) if it["ProjectCode"] else None
+    if it["ProjectCode"] and not proj:
+        errs.append(f"Unknown ProjectCode: {it['ProjectCode']}")
+    requester = (person_id_by_email(conn, it["RequestedByEmail"])
+                 if it["RequestedByEmail"] else None)
+    if it["RequestedByEmail"] and not requester:
+        errs.append(f"RequestedBy {it['RequestedByEmail']} not in person directory")
+    decider = (person_id_by_email(conn, it["DecidedByEmail"])
+               if it["DecidedByEmail"] else None)
+    if it["DecidedByEmail"] and not decider:
+        errs.append(f"DecidedBy {it['DecidedByEmail']} not in person directory")
+    if errs:
+        return _error(g, M365["change_request_list_id"], it, errs, dry,
+                      "change_request")
+    project_id, _dept = proj
+    # Soft-authority note: if Decision != Pending and decider is not project lead
+    warn = ""
+    if it["Decision"] != "Pending" and decider:
+        sponsor_id, pm_id = project_leads(conn, project_id)
+        if decider not in (sponsor_id, pm_id):
+            warn = (f"DecidedBy {it['DecidedByEmail']} is not the project"
+                    " sponsor or PM — authority advisory only")
+    if current:
+        return f"OK change_request item {it['item_id']}: existing (write path lands in T5)"
+    # New item: preview next code
+    existing_codes = [r[0] for r in conn.execute(
+        "SELECT cr_code FROM pmbok.change_request WHERE project_id=%s",
+        (project_id,)).fetchall()]
+    next_code = al.next_cr_code(existing_codes)
+    suffix = f" - {warn}" if warn else ""
+    return (f"DRY change_request item {it['item_id']}: would create {next_code}"
+            f" ({it['ProjectCode']}){suffix}")
+
+
+def process_decision(conn, g, it, dry, current):
+    errs = al.validate_decision(it)
+    proj = project_by_code(conn, it["ProjectCode"]) if it["ProjectCode"] else None
+    if it["ProjectCode"] and not proj:
+        errs.append(f"Unknown ProjectCode: {it['ProjectCode']}")
+    decider = (person_id_by_email(conn, it["DecidedByEmail"])
+               if it["DecidedByEmail"] else None)
+    if it["DecidedByEmail"] and not decider:
+        errs.append(f"DecidedBy {it['DecidedByEmail']} not in person directory")
+    if errs:
+        return _error(g, M365["decision_list_id"], it, errs, dry, "decision")
+    project_id, _dept = proj
+    if current:
+        return f"OK decision item {it['item_id']}: existing (write path lands in T5)"
+    existing_codes = [r[0] for r in conn.execute(
+        "SELECT code FROM pmbok.decision WHERE project_id=%s",
+        (project_id,)).fetchall()]
+    next_code = al.next_decision_code(existing_codes)
+    return (f"DRY decision item {it['item_id']}: would create {next_code}"
+            f" ({it['ProjectCode']})")
+
+
 ARTIFACTS = [
     {"kind": "risk", "list_key": "risk_list_id", "fields": RISK_FIELDS,
      "normalize": normalize_risk, "process": process_risk,
@@ -662,6 +806,12 @@ ARTIFACTS = [
     {"kind": "activity", "list_key": "activity_list_id",
      "fields": ACTIVITY_FIELDS, "normalize": normalize_activity,
      "process": process_activity, "select": ACTIVITY_SELECT},
+    {"kind": "change_request", "list_key": "change_request_list_id",
+     "fields": CR_FIELDS, "normalize": normalize_change_request,
+     "process": process_change_request, "select": CR_SELECT},
+    {"kind": "decision", "list_key": "decision_list_id",
+     "fields": DECISION_FIELDS, "normalize": normalize_decision,
+     "process": process_decision, "select": DECISION_SELECT},
 ]
 
 

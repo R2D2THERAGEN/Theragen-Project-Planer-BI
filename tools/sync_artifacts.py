@@ -1040,8 +1040,6 @@ def resolve_parent_cr(conn, project_id, cr_code):
 
 
 def process_impact_assessment(conn, g, it, dry, current):
-    # T4: validate + resolve (project, parent CR, submitter); no writes yet.
-    # The create/update/heal/re-parent-guard write path lands in T5.
     errs = al.validate_impact_assessment(it)
     proj = project_by_code(conn, it["ProjectCode"]) if it["ProjectCode"] else None
     if it["ProjectCode"] and not proj:
@@ -1059,9 +1057,59 @@ def process_impact_assessment(conn, g, it, dry, current):
     if errs:
         return _error(g, M365["impact_assessment_list_id"], it, errs, dry,
                       "impact")
-    return (f"DRY impact item {it['item_id']}: resolved CR"
-            f" {it['ParentCRCode']} -> {cr_id}"
-            f" ({it['ProjectCode']}/{it['Department']}); no writes (stub)")
+    item_id = it["item_id"]
+    desired = al.build_impact_assessment_row(it, cr_id, submitter,
+                                             it["SubmittedDate"])
+    list_id = M365["impact_assessment_list_id"]
+
+    if current:
+        # Re-parent guard: the parent CR is fixed for a given row. Editing
+        # ProjectCode/ParentCRCode to point elsewhere is rejected.
+        if str(current["cr_id"]) != str(cr_id):
+            return _error(g, list_id, it,
+                          ["Reparenting not allowed; create a new impact"
+                           " assessment"], dry, "impact")
+        if al.row_changed(current, desired):
+            if dry:
+                return f"DRY impact item {item_id}: would update"
+            with conn.transaction():
+                conn.execute(
+                    "UPDATE pmbok.change_impact_assessment SET department=%s,"
+                    " scope_impact=%s, schedule_impact_days=%s, cost_impact=%s,"
+                    " quality_impact=%s, submitted_by_person_id=%s,"
+                    " submitted_at=%s WHERE external_ref=%s",
+                    (desired["department"], desired["scope_impact"],
+                     desired["schedule_impact_days"], desired["cost_impact"],
+                     desired["quality_impact"], desired["submitted_by_person_id"],
+                     desired["submitted_at"], item_id))
+            writeback(g, list_id, item_id,
+                      {"SyncStatus": "Synced", "SyncMessage": ""})
+            return f"OK impact item {item_id}: updated"
+        if it["SyncStatus"] != "Synced":
+            if not dry:
+                writeback(g, list_id, item_id,
+                          {"SyncStatus": "Synced", "SyncMessage": ""})
+            return f"OK impact item {item_id}: healed write-back"
+        return f"OK impact item {item_id}: no change"
+    # New item
+    if dry:
+        return (f"DRY impact item {item_id}: would create for CR"
+                f" {it['ParentCRCode']} ({it['ProjectCode']}/{it['Department']})")
+    impact_id = str(uuid.uuid5(NS, f"thg/artifact/impact/{item_id}"))
+    with conn.transaction():
+        conn.execute(
+            "INSERT INTO pmbok.change_impact_assessment"
+            " (impact_id, cr_id, department, scope_impact, schedule_impact_days,"
+            " cost_impact, quality_impact, submitted_by_person_id, submitted_at,"
+            " external_ref)"
+            " VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+            (impact_id, desired["cr_id"], desired["department"],
+             desired["scope_impact"], desired["schedule_impact_days"],
+             desired["cost_impact"], desired["quality_impact"],
+             desired["submitted_by_person_id"], desired["submitted_at"], item_id))
+    writeback(g, list_id, item_id, {"SyncStatus": "Synced", "SyncMessage": ""})
+    return (f"OK new impact for CR {it['ParentCRCode']}"
+            f" ({it['ProjectCode']}/{it['Department']}, item {item_id})")
 
 
 def _rows_as_dicts(conn, sql, params=()):

@@ -362,3 +362,353 @@ class TestBuildActivityRow:
         assert row["wbs_element_id"] == 55
         assert row["activity_code"] == "2.1-A4"
         assert row["owner_person_id"] == 3
+
+
+# ===========================================================================
+# Change Request / Decision logic (Task 2b-T2)
+# ===========================================================================
+
+def _cr(**over):
+    """Minimal valid normalized change-request item (Pending + no decider)."""
+    base = {
+        "item_id": "1",
+        "ProjectCode": "THG-IT-001",
+        "RequestedDate": "2026-06-01",
+        "RequestedByEmail": "pm@theragen.com",
+        "CRClass": "B - Substantive",
+        "ChangeType": "Scope",
+        "AffectedArtifacts": "WBS 1.2",
+        "Description": "Extend scope to include module Y.",
+        "Reason": "Client requested additional capability.",
+        "ImpactScope": "Medium",
+        "ImpactQuality": "Low",
+        "ImpactScheduleDays": None,
+        "ImpactCost": None,
+        "IntakeID": None,
+        "Decision": "Pending",
+        "DecidedByEmail": None,
+        "DecidedDate": None,
+        "ImplementationVerified": False,
+        "LinkedArtifactsUpdated": False,
+        "CRStatus": "Open",
+        "CRCode": "",
+        "SyncStatus": "Pending",
+    }
+    base.update(over)
+    return base
+
+
+def _decision(**over):
+    """Minimal valid normalized decision item."""
+    base = {
+        "item_id": "2",
+        "ProjectCode": "THG-IT-001",
+        "Title": "Proceed with vendor A for hosting.",
+        "Rationale": "Best value for cost and SLA.",
+        "DecidedByEmail": "sponsor@theragen.com",
+        "DecidedDate": "2026-06-05",
+        "DecisionCode": "",
+        "SyncStatus": "Pending",
+    }
+    base.update(over)
+    return base
+
+
+# --- next_cr_code / next_decision_code --------------------------------------
+
+class TestNextCrCode:
+    def test_empty_list(self):
+        assert al.next_cr_code([]) == "C-001"
+
+    def test_sequences_and_widens(self):
+        assert al.next_cr_code(["C-001", "C-007", None, "x"]) == "C-008"
+
+    def test_widens_beyond_999(self):
+        assert al.next_cr_code(["C-999"]) == "C-1000"
+
+    def test_non_matching_strings_ignored(self):
+        # "D-001" and "R-001" should not count
+        assert al.next_cr_code(["D-001", "R-001"]) == "C-001"
+
+
+class TestNextDecisionCode:
+    def test_empty_list(self):
+        assert al.next_decision_code([]) == "D-001"
+
+    def test_sequences_and_widens(self):
+        assert al.next_decision_code(["D-001", "D-007", None, "x"]) == "D-008"
+
+    def test_widens_beyond_999(self):
+        assert al.next_decision_code(["D-999"]) == "D-1000"
+
+    def test_non_matching_strings_ignored(self):
+        assert al.next_decision_code(["C-001", "R-001"]) == "D-001"
+
+
+# --- validate_change_request ------------------------------------------------
+
+class TestValidateChangeRequest:
+    def test_happy_pending_cr(self):
+        assert al.validate_change_request(_cr()) == []
+
+    def test_missing_project_code(self):
+        errs = al.validate_change_request(_cr(ProjectCode=""))
+        assert any("ProjectCode" in e for e in errs)
+
+    def test_missing_description(self):
+        errs = al.validate_change_request(_cr(Description="  "))
+        assert any("Description" in e for e in errs)
+
+    def test_missing_reason(self):
+        errs = al.validate_change_request(_cr(Reason=None))
+        assert any("Reason" in e for e in errs)
+
+    def test_missing_cr_class(self):
+        errs = al.validate_change_request(_cr(CRClass=""))
+        assert any("CRClass" in e for e in errs)
+
+    def test_missing_change_type(self):
+        errs = al.validate_change_request(_cr(ChangeType=""))
+        assert any("ChangeType" in e for e in errs)
+
+    def test_requester_empty_flagged(self):
+        errs = al.validate_change_request(_cr(RequestedByEmail=""))
+        assert any("RequestedBy" in e for e in errs)
+
+    def test_bad_cr_class(self):
+        errs = al.validate_change_request(_cr(CRClass="X - Unknown"))
+        assert any("CRClass" in e for e in errs)
+
+    def test_bad_change_type(self):
+        errs = al.validate_change_request(_cr(ChangeType="People"))
+        assert any("ChangeType" in e for e in errs)
+
+    def test_bad_decision(self):
+        errs = al.validate_change_request(_cr(Decision="Maybe"))
+        assert any("Decision" in e for e in errs)
+
+    def test_bad_cr_status(self):
+        errs = al.validate_change_request(_cr(CRStatus="Unknown"))
+        assert any("CRStatus" in e for e in errs)
+
+    def test_approved_without_decided_by_flagged(self):
+        errs = al.validate_change_request(_cr(
+            Decision="Approved", DecidedByEmail="", DecidedDate="2026-06-10"))
+        assert any("DecidedBy" in e for e in errs)
+
+    def test_approved_without_decided_date_flagged(self):
+        errs = al.validate_change_request(_cr(
+            Decision="Approved", DecidedByEmail="approver@theragen.com",
+            DecidedDate=None))
+        assert any("DecidedDate" in e for e in errs)
+
+    def test_pending_with_decided_date_flagged(self):
+        errs = al.validate_change_request(_cr(
+            Decision="Pending", DecidedDate="2026-06-10"))
+        assert any("DecidedDate" in e for e in errs)
+
+    def test_rejected_decision_requires_rejected_status(self):
+        errs = al.validate_change_request(_cr(
+            Decision="Rejected", DecidedByEmail="a@theragen.com",
+            DecidedDate="2026-06-10", CRStatus="Open"))
+        assert any("Rejected" in e for e in errs)
+
+    def test_verified_status_requires_approved_decision(self):
+        errs = al.validate_change_request(_cr(
+            CRStatus="Verified", Decision="Pending"))
+        assert any("Verified" in e or "Approved" in e for e in errs)
+
+    def test_closed_status_with_approved_is_ok(self):
+        assert al.validate_change_request(_cr(
+            CRStatus="Closed", Decision="Approved",
+            DecidedByEmail="a@theragen.com",
+            DecidedDate="2026-06-10")) == []
+
+    def test_decided_date_before_requested_date_flagged(self):
+        errs = al.validate_change_request(_cr(
+            Decision="Approved",
+            DecidedByEmail="a@theragen.com",
+            RequestedDate="2026-06-10",
+            DecidedDate="2026-06-05"))
+        assert any("DecidedDate" in e for e in errs)
+
+    def test_fully_valid_approved_implementing_cr(self):
+        assert al.validate_change_request(_cr(
+            Decision="Approved",
+            DecidedByEmail="sponsor@theragen.com",
+            DecidedDate="2026-06-10",
+            CRStatus="Implementing")) == []
+
+
+# --- validate_decision -------------------------------------------------------
+
+class TestValidateDecision:
+    def test_happy_path(self):
+        assert al.validate_decision(_decision()) == []
+
+    def test_missing_title(self):
+        errs = al.validate_decision(_decision(Title=""))
+        assert any("Title" in e for e in errs)
+
+    def test_missing_project_code(self):
+        errs = al.validate_decision(_decision(ProjectCode=""))
+        assert any("ProjectCode" in e for e in errs)
+
+    def test_missing_rationale(self):
+        errs = al.validate_decision(_decision(Rationale=None))
+        assert any("Rationale" in e for e in errs)
+
+    def test_missing_decided_date(self):
+        errs = al.validate_decision(_decision(DecidedDate=""))
+        assert any("DecidedDate" in e for e in errs)
+
+    def test_missing_decided_by_email(self):
+        errs = al.validate_decision(_decision(DecidedByEmail=""))
+        assert any("DecidedBy" in e for e in errs)
+
+
+# --- build_cr_row -----------------------------------------------------------
+
+class TestBuildCrRow:
+    def _row(self, **over):
+        it = _cr(**over)
+        return al.build_cr_row(it, project_id=10, requester_id=1,
+                               decider_id=None, cr_code="C-001")
+
+    def test_basic_columns_present(self):
+        row = self._row()
+        assert row["project_id"] == 10
+        assert row["cr_code"] == "C-001"
+        assert row["requested_by_person_id"] == 1
+        assert row["decided_by_person_id"] is None
+
+    def test_change_types_equals_change_type(self):
+        row = self._row(ChangeType="Cost")
+        assert row["change_types"] == "Cost"
+
+    def test_affected_artifacts_defaults_na_when_blank(self):
+        row = self._row(AffectedArtifacts="")
+        assert row["affected_artifacts"] == "n/a"
+        row2 = self._row(AffectedArtifacts=None)
+        assert row2["affected_artifacts"] == "n/a"
+
+    def test_affected_artifacts_preserved_when_set(self):
+        row = self._row(AffectedArtifacts="WBS 1.2")
+        assert row["affected_artifacts"] == "WBS 1.2"
+
+    def test_impact_schedule_days_defaults_zero(self):
+        row = self._row(ImpactScheduleDays=None)
+        assert row["impact_schedule_days"] == 0
+        row2 = self._row(ImpactScheduleDays="")
+        assert row2["impact_schedule_days"] == 0
+
+    def test_impact_schedule_days_coerced_to_int(self):
+        row = self._row(ImpactScheduleDays="14")
+        assert row["impact_schedule_days"] == 14
+
+    def test_impact_cost_defaults_zero(self):
+        row = self._row(ImpactCost=None)
+        assert row["impact_cost"] == 0.0
+        row2 = self._row(ImpactCost="")
+        assert row2["impact_cost"] == 0.0
+
+    def test_impact_cost_coerced_to_float(self):
+        row = self._row(ImpactCost="5000.50")
+        assert row["impact_cost"] == 5000.50
+
+    def test_implementation_verified_passthrough_bool(self):
+        row = self._row(ImplementationVerified=True)
+        assert row["implementation_verified"] is True
+        row2 = self._row(ImplementationVerified=False)
+        assert row2["implementation_verified"] is False
+
+    def test_linked_artifacts_updated_passthrough_bool(self):
+        row = self._row(LinkedArtifactsUpdated=True)
+        assert row["linked_artifacts_updated"] is True
+
+    def test_status_defaults_open(self):
+        row = self._row(CRStatus=None)
+        assert row["status"] == "Open"
+
+    def test_decision_defaults_pending(self):
+        row = self._row(Decision=None)
+        assert row["decision"] == "Pending"
+
+    def test_requested_at_equals_requested_date(self):
+        row = self._row(RequestedDate="2026-05-15")
+        assert row["requested_at"] == "2026-05-15"
+
+    def test_decided_at_set_when_provided(self):
+        it = _cr(Decision="Approved", DecidedByEmail="a@theragen.com",
+                 DecidedDate="2026-06-10")
+        row = al.build_cr_row(it, project_id=10, requester_id=1,
+                              decider_id=5, cr_code="C-002")
+        assert row["decided_at"] == "2026-06-10"
+        assert row["decided_by_person_id"] == 5
+
+
+# --- build_decision_row -----------------------------------------------------
+
+class TestBuildDecisionRow:
+    def test_columns_present(self):
+        row = al.build_decision_row(_decision(), project_id=10,
+                                    decider_id=5, code="D-001")
+        assert row["project_id"] == 10
+        assert row["code"] == "D-001"
+        assert row["decision"] == _decision()["Title"]
+        assert row["rationale"] == _decision()["Rationale"]
+        assert row["decided_by_person_id"] == 5
+        assert row["decided_at"] == _decision()["DecidedDate"]
+
+
+# --- build_report_row extension ---------------------------------------------
+
+class TestBuildReportRowExtension:
+    def test_approved_by_defaults_none(self):
+        row = al.build_report_row(_report(), project_id=10,
+                                  submitted_by_person_id=1)
+        assert row["approved_by_person_id"] is None
+        assert row["approved_at"] is None
+
+    def test_approved_by_person_id_set(self):
+        rpt = _report()
+        rpt["ApprovedDate"] = "2026-06-15"
+        row = al.build_report_row(rpt, project_id=10,
+                                  submitted_by_person_id=1,
+                                  approved_by_person_id=7)
+        assert row["approved_by_person_id"] == 7
+        assert row["approved_at"] == "2026-06-15"
+
+    def test_existing_3arg_callers_unaffected(self):
+        # Simulates existing callers: build_report_row(it, project_id, submitter)
+        row = al.build_report_row(_report(), 10, 1)
+        assert row["project_id"] == 10
+        assert row["submitted_by_person_id"] == 1
+        assert row["approved_by_person_id"] is None
+
+
+# --- _trail_states ----------------------------------------------------------
+
+class TestTrailStates:
+    def test_returns_before_and_after(self):
+        current = {"decision": "Pending", "status": "Open", "other": "x"}
+        desired = {"decision": "Approved", "status": "Implementing", "other": "y"}
+        before, after = al._trail_states(current, desired,
+                                         ["decision", "status"])
+        assert before == {"decision": "Pending", "status": "Open"}
+        assert after == {"decision": "Approved", "status": "Implementing"}
+
+    def test_only_requested_keys_included(self):
+        current = {"decision": "Pending", "status": "Open", "other": "x"}
+        desired = {"decision": "Approved", "status": "Implementing", "other": "y"}
+        before, after = al._trail_states(current, desired, ["decision"])
+        assert "other" not in before
+        assert "other" not in after
+
+    def test_missing_current_key_gives_none(self):
+        current = {}
+        desired = {"decision": "Approved", "status": "Open"}
+        before, after = al._trail_states(current, desired,
+                                         ["decision", "status"])
+        assert before["decision"] is None
+        assert after["decision"] == "Approved"

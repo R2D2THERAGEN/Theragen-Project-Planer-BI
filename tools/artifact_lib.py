@@ -135,7 +135,8 @@ def build_milestone_row(it, project_id):
     }
 
 
-def build_report_row(it, project_id, submitted_by_person_id):
+def build_report_row(it, project_id, submitted_by_person_id,
+                     approved_by_person_id=None):
     return {
         "project_id": project_id,
         "period_start": it["PeriodStart"],
@@ -145,6 +146,8 @@ def build_report_row(it, project_id, submitted_by_person_id):
         "executive_summary": it["ExecutiveSummary"],
         "decisions_needed": it["DecisionsNeeded"],
         "submitted_by_person_id": submitted_by_person_id,
+        "approved_by_person_id": approved_by_person_id,
+        "approved_at": it.get("ApprovedDate"),
     }
 
 
@@ -264,3 +267,127 @@ def build_activity_row(it, wbs_element_id, owner_person_id, activity_code):
         "status": it["ActivityStatus"],
         "pct_complete": float(it["PctComplete"]) if it["PctComplete"] is not None else 0,
     }
+
+
+# ---------------------------------------------------------------------------
+# Change Request / Decision constants, minting, validators, and builders
+# ---------------------------------------------------------------------------
+
+CR_CLASSES = ["A - Minor", "B - Substantive", "C - Controlling", "Emergency / Safety"]
+CHANGE_TYPES = ["Scope", "Schedule", "Cost", "Quality", "Compliance"]
+CR_DECISIONS = ["Pending", "Approved", "Deferred", "Rejected"]
+CR_STATUSES = ["Open", "In Assessment", "Implementing", "Verified", "Closed", "Rejected"]
+
+_CR_CODE = re.compile(r"^C-(\d{3,})$")
+_DECISION_CODE = re.compile(r"^D-(\d{3,})$")
+
+
+def next_cr_code(existing):
+    """Next C-NNN within one project. Overflow widens rather than truncates."""
+    nums = [int(m.group(1)) for s in existing if s and (m := _CR_CODE.match(s))]
+    return f"C-{(max(nums) + 1 if nums else 1):03d}"
+
+
+def next_decision_code(existing):
+    """Next D-NNN within one project. Overflow widens rather than truncates."""
+    nums = [int(m.group(1)) for s in existing if s and (m := _DECISION_CODE.match(s))]
+    return f"D-{(max(nums) + 1 if nums else 1):03d}"
+
+
+def validate_change_request(it):
+    """Return a list of error strings; empty list means valid."""
+    errs = [f"Missing: {k}" for k in
+            ("ProjectCode", "Description", "Reason", "CRClass", "ChangeType")
+            if _blank(it.get(k))]
+    if _blank(it.get("RequestedByEmail")):
+        errs.append("Missing: RequestedBy (picker empty and item author unknown)")
+    if it.get("CRClass") and it["CRClass"] not in CR_CLASSES:
+        errs.append(f"CRClass not recognized: {it['CRClass']}")
+    if it.get("ChangeType") and it["ChangeType"] not in CHANGE_TYPES:
+        errs.append(f"ChangeType not recognized: {it['ChangeType']}")
+    dec, st = it.get("Decision") or "Pending", it.get("CRStatus") or "Open"
+    if dec not in CR_DECISIONS:
+        errs.append(f"Decision not recognized: {dec}")
+    if st not in CR_STATUSES:
+        errs.append(f"CRStatus not recognized: {st}")
+    if dec != "Pending":
+        if _blank(it.get("DecidedByEmail")):
+            errs.append("Decision set but DecidedBy is empty")
+        if _blank(it.get("DecidedDate")):
+            errs.append("Decision set but DecidedDate is empty")
+    elif not _blank(it.get("DecidedDate")):
+        errs.append("DecidedDate must be blank while Decision is Pending")
+    if dec == "Rejected" and st != "Rejected":
+        errs.append("Rejected decision requires CRStatus = Rejected")
+    if st in ("Verified", "Closed") and dec != "Approved":
+        errs.append(f"CRStatus {st} requires Decision = Approved")
+    if (not _blank(it.get("DecidedDate")) and not _blank(it.get("RequestedDate"))
+            and it["DecidedDate"] < it["RequestedDate"]):
+        errs.append("DecidedDate must be on/after RequestedDate")
+    return errs
+
+
+def validate_decision(it):
+    """Return a list of error strings; empty list means valid."""
+    errs = [f"Missing: {k}" for k in
+            ("Title", "ProjectCode", "Rationale", "DecidedDate")
+            if _blank(it.get(k))]
+    if _blank(it.get("DecidedByEmail")):
+        errs.append("Missing: DecidedBy")
+    return errs
+
+
+def build_cr_row(it, project_id, requester_id, decider_id, cr_code):
+    """Build the change_request DB column dict.
+
+    implementation_verified and linked_artifacts_updated are received as
+    already-coerced Python bools (the normalizer in T4 does Yes/No→bool).
+    build_cr_row is pure and passes them through unchanged.
+    """
+    raw_days = it.get("ImpactScheduleDays")
+    raw_cost = it.get("ImpactCost")
+    return {
+        "project_id": project_id,
+        "cr_code": cr_code,
+        "intake_id": it.get("IntakeID"),
+        "requested_at": it["RequestedDate"],
+        "requested_by_person_id": requester_id,
+        "cr_class": it["CRClass"],
+        "change_types": it["ChangeType"],
+        "affected_artifacts": it.get("AffectedArtifacts") or "n/a",
+        "description": it["Description"],
+        "reason": it["Reason"],
+        "impact_scope": it.get("ImpactScope"),
+        "impact_schedule_days": int(raw_days) if raw_days not in (None, "") else 0,
+        "impact_cost": float(raw_cost) if raw_cost not in (None, "") else 0.0,
+        "impact_quality": it.get("ImpactQuality"),
+        "decision": it.get("Decision") or "Pending",
+        "decided_by_person_id": decider_id,
+        "decided_at": it.get("DecidedDate"),
+        "implementation_verified": it.get("ImplementationVerified"),
+        "linked_artifacts_updated": it.get("LinkedArtifactsUpdated"),
+        "status": it.get("CRStatus") or "Open",
+    }
+
+
+def build_decision_row(it, project_id, decider_id, code):
+    """Build the decision DB column dict."""
+    return {
+        "project_id": project_id,
+        "code": code,
+        "decision": it["Title"],
+        "rationale": it["Rationale"],
+        "decided_by_person_id": decider_id,
+        "decided_at": it["DecidedDate"],
+    }
+
+
+def _trail_states(current, desired, keys):
+    """Return (before, after) dicts restricted to the given keys.
+
+    before reads from current (None for missing keys); after reads from desired.
+    Pure utility for audit before/after snapshots.
+    """
+    before = {k: current.get(k) for k in keys}
+    after = {k: desired[k] for k in keys}
+    return before, after

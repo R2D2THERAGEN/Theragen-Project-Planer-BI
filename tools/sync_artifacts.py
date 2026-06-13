@@ -430,73 +430,120 @@ def reconcile_wbs(conn, project_id, project_code, project_activities, dry):
     Returns (wbs_map, wbs_code_map):
       wbs_map       : {(workstream, workpackage): wbs_element_id (uuid)}
       wbs_code_map  : {(workstream, workpackage): wbs_code string}
-    T4/dry: READ-ONLY — computes deterministic ids + would-be codes without writing.
-    Real writes land in T5.
+    Hardening A: per-node owning_department/owner_role are computed here and
+      threaded into inserts (via nodes_to_insert list).
+    Hardening B: existing rows are processed L1-first (sorted by level asc)
+      so L2 parent lookups never miss.
+    In dry mode: NO writes; maps still returned (existing + would-be ids/codes).
     """
     # Load existing WBS rows for this project.
-    # existing_by_code: wbs_code -> (wbs_element_id, parent_wbs_element_id, level, name)
     existing_rows = conn.execute(WBS_SELECT, (project_id,)).fetchall()
-    # wbs_code -> element_id derived from deterministic uuid5 seeded by name
-    # We don't store element_id in wbs_element directly via SELECT here, so we
-    # reconstruct ids deterministically using the same uuid5 formula used at creation.
-    # Build a name -> wbs_code map for L1 and L2 from existing rows.
-    l1_name_to_code = {}  # ws_name -> wbs_code
-    l2_name_to_code = {}  # (ws_name, wp_name) -> wbs_code
+
+    # Hardening B: sort existing rows level-ascending so L1s populate
+    # l1_name_to_code before any L2 tries to look up its parent.
+    existing_rows_sorted = sorted(existing_rows, key=lambda r: r[2])  # level is index 2
+
+    l1_name_to_code = {}   # ws_name  -> wbs_code  (for existing L1 rows)
+    l2_name_to_code = {}   # (ws_name, wp_name) -> wbs_code  (for existing L2 rows)
     existing_codes = set()
-    for row in existing_rows:
+
+    for row in existing_rows_sorted:
         wbs_code, _parent, level, name, _dept = row
         existing_codes.add(wbs_code)
         if level == 1:
             l1_name_to_code[name] = wbs_code
         elif level == 2:
-            # Reconstruct the workstream name by finding the L1 parent code.
-            # Since we have the parent_wbs_element_id and not the parent code
-            # directly, use prefix matching: L2 code starts with L1_code + ".".
+            # Reconstruct workstream by prefix-matching against known L1 codes.
             for ws_name, l1_code in l1_name_to_code.items():
                 if wbs_code.startswith(l1_code + "."):
                     l2_name_to_code[(ws_name, name)] = wbs_code
                     break
 
-    # Working set of all codes (existing + newly minted this run); used so two
-    # new workstreams in one run get distinct integers.
+    # Working set of all codes (existing + newly minted this run) so two new
+    # workstreams in one run get distinct integers.
     working_codes = set(existing_codes)
 
-    # Collect unique (ws, wp) pairs in item-id order (for owning_department).
-    seen_ws = {}    # ws_name -> (wbs_code, wbs_element_id)
-    seen_wp = {}    # (ws_name, wp_name) -> (wbs_code, wbs_element_id)
-
-    # Sort activities by item_id to honour "first activity" owning_department rule.
+    # Sort activities by int(item_id) for deterministic owning_department.
     sorted_acts = sorted(project_activities, key=lambda a: int(a["item_id"]))
+
+    # Hardening A: track per-node owning_department (first activity under the node).
+    seen_ws = {}    # ws_name -> (wbs_code, wbs_element_id, owning_department)
+    seen_wp = {}    # (ws_name, wp_name) -> (wbs_code, wbs_element_id, owning_department)
+    # Ordered list of nodes to INSERT (L1 before L2 to satisfy FK).
+    nodes_to_insert = []  # list of dicts with all INSERT fields
 
     for act in sorted_acts:
         ws = act["Workstream"]
         wp = act["WorkPackage"]
+        dept = act["Department"] or ""
         if not ws or not wp:
             continue
 
         # --- L1: workstream ---
         if ws not in seen_ws:
-            if ws in l1_name_to_code:
-                l1_code = l1_name_to_code[ws]
-            else:
+            is_new_l1 = ws not in l1_name_to_code
+            if is_new_l1:
                 l1_code = al.next_wbs_code(working_codes)
                 working_codes.add(l1_code)
                 l1_name_to_code[ws] = l1_code
+            else:
+                l1_code = l1_name_to_code[ws]
             l1_id = uuid.uuid5(NS, f"thg/wbs/{project_code}/ws/{ws}")
-            seen_ws[ws] = (l1_code, l1_id)
+            seen_ws[ws] = (l1_code, l1_id, dept)
+            if is_new_l1:
+                nodes_to_insert.append({
+                    "wbs_element_id": str(l1_id),
+                    "project_id": str(project_id),
+                    "wbs_code": l1_code,
+                    "parent_wbs_element_id": None,
+                    "level": 1,
+                    "name": ws,
+                    "owning_department": dept,
+                    "owner_role": "Workstream Lead",
+                })
         else:
-            l1_code, l1_id = seen_ws[ws]
+            l1_code, l1_id, _l1_dept = seen_ws[ws]
 
         # --- L2: work package ---
         if (ws, wp) not in seen_wp:
-            if (ws, wp) in l2_name_to_code:
-                l2_code = l2_name_to_code[(ws, wp)]
-            else:
+            is_new_l2 = (ws, wp) not in l2_name_to_code
+            if is_new_l2:
                 l2_code = al.next_wbs_code(working_codes, l1_code)
                 working_codes.add(l2_code)
                 l2_name_to_code[(ws, wp)] = l2_code
+            else:
+                l2_code = l2_name_to_code[(ws, wp)]
             l2_id = uuid.uuid5(NS, f"thg/wbs/{project_code}/wp/{ws}/{wp}")
-            seen_wp[(ws, wp)] = (l2_code, l2_id)
+            seen_wp[(ws, wp)] = (l2_code, l2_id, dept)
+            if is_new_l2:
+                nodes_to_insert.append({
+                    "wbs_element_id": str(l2_id),
+                    "project_id": str(project_id),
+                    "wbs_code": l2_code,
+                    "parent_wbs_element_id": str(l1_id),
+                    "level": 2,
+                    "name": wp,
+                    "owning_department": dept,
+                    "owner_role": "Work Package Owner",
+                })
+
+    # Real write: INSERT missing nodes inside one transaction (L1 before L2 in
+    # nodes_to_insert order — guaranteed by the loop above: L1 is appended before
+    # any of its L2 children).  Deterministic ids make ON CONFLICT idempotent.
+    if not dry and nodes_to_insert:
+        with conn.transaction():
+            for node in nodes_to_insert:
+                conn.execute(
+                    "INSERT INTO pmbok.wbs_element"
+                    " (wbs_element_id, project_id, wbs_code,"
+                    "  parent_wbs_element_id, level, name,"
+                    "  owning_department, owner_role)"
+                    " VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
+                    " ON CONFLICT (wbs_element_id) DO NOTHING",
+                    (node["wbs_element_id"], node["project_id"],
+                     node["wbs_code"], node["parent_wbs_element_id"],
+                     node["level"], node["name"],
+                     node["owning_department"], node["owner_role"]))
 
     # Build output maps: (ws, wp) -> l2_element_id and (ws, wp) -> l2_code.
     wbs_map = {key: val[1] for key, val in seen_wp.items()}
@@ -526,16 +573,38 @@ def process_activity(conn, g, it, dry, current, wbs_map=None, wbs_code_map=None)
         # rows with blank ws/wp; those already fail validate_activity above.
         return _error(g, M365["activity_list_id"], it,
                       [f"WBS node not found for ({ws!r} / {wp!r})"], dry, "activity")
-    # Compute would-be activity code from existing codes for this WBS element.
+    # Fetch existing activity codes for this WBS element (for code minting).
     existing_codes = [r[0] for r in conn.execute(
         "SELECT activity_code FROM pmbok.schedule_activity WHERE wbs_element_id=%s",
         (str(wbs_id),)).fetchall()]
-    would_be_code = al.next_activity_code(existing_codes, wbs_code)
     if current:
-        return f"OK activity item {it['item_id']}: existing (write path lands in T5)"
-    # New item — dry-run only in T4.
-    return (f"DRY activity item {it['item_id']}: would create {would_be_code}"
-            f" ({ws} / {wp})")
+        # T6 placeholder: update path lands in Task 6.
+        return f"OK activity item {it['item_id']}: existing (update path lands in T6)"
+    # New item — mint code.
+    activity_code = al.next_activity_code(existing_codes, wbs_code)
+    if dry:
+        return (f"DRY activity item {it['item_id']}: would create {activity_code}"
+                f" ({ws} / {wp})")
+    # Real insert (mirror process_risk transaction + write-back structure).
+    activity_id = str(uuid.uuid5(NS, f"thg/artifact/activity/{it['item_id']}"))
+    row = al.build_activity_row(it, str(wbs_id), owner, activity_code)
+    with conn.transaction():
+        conn.execute(
+            "INSERT INTO pmbok.schedule_activity"
+            " (activity_id, wbs_element_id, activity_code, name,"
+            "  start_planned, finish_planned, start_actual, finish_actual,"
+            "  duration_days, owner_person_id, department, status,"
+            "  pct_complete, external_ref)"
+            " VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+            (activity_id, row["wbs_element_id"], row["activity_code"],
+             row["name"], row["start_planned"], row["finish_planned"],
+             row["start_actual"], row["finish_actual"], row["duration_days"],
+             row["owner_person_id"], row["department"], row["status"],
+             row["pct_complete"], it["item_id"]))
+    writeback(g, M365["activity_list_id"], it["item_id"],
+              {"SyncStatus": "Synced", "SyncMessage": "",
+               "ActivityCode": activity_code})
+    return f"OK new activity {activity_code} ({ws} / {wp}, item {it['item_id']})"
 
 
 ARTIFACTS = [

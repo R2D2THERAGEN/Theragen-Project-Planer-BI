@@ -165,6 +165,10 @@ REPORT_SELECT = ('SELECT external_ref, report_id, project_id, period_start,'
                  ' period_end, overall_status, trend, executive_summary,'
                  ' decisions_needed, submitted_by_person_id'
                  ' FROM pmbok.status_report WHERE external_ref IS NOT NULL')
+AREA_SELECT = ('SELECT r.external_ref, a.knowledge_area, a.status'
+               ' FROM pmbok.status_report_area a'
+               ' JOIN pmbok.status_report r ON r.report_id = a.report_id'
+               ' WHERE r.external_ref IS NOT NULL')
 
 
 # ---- processors -------
@@ -182,7 +186,40 @@ def process_risk(conn, g, it, dry, current):
         return _error(g, M365["risk_list_id"], it, errs, dry, "risk")
     project_id, department = proj
     if current:
-        return f"OK risk item {it['item_id']}: existing (update path lands in T7)"
+        if str(current["project_id"]) != str(project_id):
+            return _error(g, M365["risk_list_id"], it,
+                          ["ProjectCode changed after sync - create a new row"
+                           " instead"], dry, "risk")
+        desired = al.build_risk_row(it, current["project_id"], department,
+                                    owner, current["risk_code"])
+        if al.row_changed(current, desired):
+            if dry:
+                return f"DRY risk item {it['item_id']}: would update {current['risk_code']}"
+            with conn.transaction():
+                conn.execute(
+                    'UPDATE pmbok.risk SET category=%s, description=%s,'
+                    ' "trigger"=%s, likelihood=%s, impact=%s, score=%s,'
+                    ' response_type=%s, owner_person_id=%s, department=%s,'
+                    ' due_date=%s, status=%s, residual_score=%s,'
+                    ' compliance_flag=%s WHERE external_ref=%s',
+                    (desired["category"], desired["description"],
+                     desired["trigger"], desired["likelihood"],
+                     desired["impact"], desired["score"],
+                     desired["response_type"], desired["owner_person_id"],
+                     desired["department"], desired["due_date"],
+                     desired["status"], desired["residual_score"],
+                     desired["compliance_flag"], it["item_id"]))
+            writeback(g, M365["risk_list_id"], it["item_id"],
+                      {"SyncStatus": "Synced", "SyncMessage": "",
+                       "RiskCode": current["risk_code"]})
+            return f"OK risk item {it['item_id']}: updated {current['risk_code']}"
+        if it["SyncStatus"] != "Synced" or it["RiskCode"] != current["risk_code"]:
+            if not dry:
+                writeback(g, M365["risk_list_id"], it["item_id"],
+                          {"SyncStatus": "Synced", "SyncMessage": "",
+                           "RiskCode": current["risk_code"]})
+            return f"OK risk item {it['item_id']}: healed write-back"
+        return f"OK risk item {it['item_id']}: no change"
     existing_codes = [r[0] for r in conn.execute(
         "SELECT risk_code FROM pmbok.risk WHERE project_id=%s",
         (project_id,)).fetchall()]
@@ -218,7 +255,32 @@ def process_milestone(conn, g, it, dry, current):
         return _error(g, M365["milestone_list_id"], it, errs, dry, "milestone")
     project_id, _dept = proj
     if current:
-        return f"OK milestone item {it['item_id']}: existing (update path lands in T7)"
+        if str(current["project_id"]) != str(project_id):
+            return _error(g, M365["milestone_list_id"], it,
+                          ["ProjectCode changed after sync - create a new row"
+                           " instead"], dry, "milestone")
+        desired = al.build_milestone_row(it, current["project_id"])
+        if al.row_changed(current, desired):
+            if dry:
+                return f"DRY milestone item {it['item_id']}: would update {it['Title']}"
+            with conn.transaction():
+                conn.execute(
+                    "UPDATE pmbok.milestone SET name=%s, baseline_date=%s,"
+                    " forecast_date=%s, actual_date=%s, status=%s,"
+                    " owner_role=%s WHERE external_ref=%s",
+                    (desired["name"], desired["baseline_date"],
+                     desired["forecast_date"], desired["actual_date"],
+                     desired["status"], desired["owner_role"],
+                     it["item_id"]))
+            writeback(g, M365["milestone_list_id"], it["item_id"],
+                      {"SyncStatus": "Synced", "SyncMessage": ""})
+            return f"OK milestone item {it['item_id']}: updated {it['Title']}"
+        if it["SyncStatus"] != "Synced":
+            if not dry:
+                writeback(g, M365["milestone_list_id"], it["item_id"],
+                          {"SyncStatus": "Synced", "SyncMessage": ""})
+            return f"OK milestone item {it['item_id']}: healed write-back"
+        return f"OK milestone item {it['item_id']}: no change"
     if dry:
         return f"DRY milestone item {it['item_id']}: would create ({it['Title']})"
     row = al.build_milestone_row(it, project_id)
@@ -236,7 +298,7 @@ def process_milestone(conn, g, it, dry, current):
     return f"OK new milestone ({it['Title']}, item {it['item_id']})"
 
 
-def process_report(conn, g, it, dry, current):
+def process_report(conn, g, it, dry, current, area_map=None):
     errs = al.validate_status_report(it)
     proj = project_by_code(conn, it["ProjectCode"]) if it["ProjectCode"] else None
     if it["ProjectCode"] and not proj:
@@ -248,8 +310,8 @@ def process_report(conn, g, it, dry, current):
     if errs:
         return _error(g, M365["status_report_list_id"], it, errs, dry, "report")
     project_id, _dept = proj
-    if current:
-        return f"OK report item {it['item_id']}: existing (update path lands in T7)"
+    # Duplicate-period guard applies on both create AND update (PeriodStart may
+    # have been edited into a collision). Exclude self via external_ref<>%s.
     dup = conn.execute(
         "SELECT 1 FROM pmbok.status_report WHERE project_id=%s AND"
         " period_start=%s AND (external_ref IS NULL OR external_ref<>%s)",
@@ -258,6 +320,48 @@ def process_report(conn, g, it, dry, current):
         return _error(g, M365["status_report_list_id"], it,
                       [f"Duplicate report period for {it['ProjectCode']}: "
                        f"{it['PeriodStart']}"], dry, "report")
+    if current:
+        if str(current["project_id"]) != str(project_id):
+            return _error(g, M365["status_report_list_id"], it,
+                          ["ProjectCode changed after sync - create a new row"
+                           " instead"], dry, "report")
+        # submitter and submitted_at are immutable — use current's person id
+        desired = al.build_report_row(it, current["project_id"],
+                                      current["submitted_by_person_id"])
+        # Check parent row + area statuses for any change
+        current_areas = (area_map or {}).get(it["item_id"], {})
+        areas_changed = [ka for ka in al.KNOWLEDGE_AREAS
+                         if it["Health"].get(ka) != current_areas.get(ka)]
+        changed = al.row_changed(current, desired) or bool(areas_changed)
+        if changed:
+            if dry:
+                return f"DRY report item {it['item_id']}: would update {it['ProjectCode']} {it['PeriodStart']}"
+            report_id = current["report_id"]
+            with conn.transaction():
+                if al.row_changed(current, desired):
+                    conn.execute(
+                        "UPDATE pmbok.status_report SET period_start=%s,"
+                        " period_end=%s, overall_status=%s, trend=%s,"
+                        " executive_summary=%s, decisions_needed=%s"
+                        " WHERE external_ref=%s",
+                        (desired["period_start"], desired["period_end"],
+                         desired["overall_status"], desired["trend"],
+                         desired["executive_summary"],
+                         desired["decisions_needed"], it["item_id"]))
+                for ka in areas_changed:
+                    conn.execute(
+                        "UPDATE pmbok.status_report_area SET status=%s"
+                        " WHERE report_id=%s AND knowledge_area=%s",
+                        (it["Health"][ka], report_id, ka))
+            writeback(g, M365["status_report_list_id"], it["item_id"],
+                      {"SyncStatus": "Synced", "SyncMessage": ""})
+            return f"OK report item {it['item_id']}: updated {it['ProjectCode']} {it['PeriodStart']}"
+        if it["SyncStatus"] != "Synced":
+            if not dry:
+                writeback(g, M365["status_report_list_id"], it["item_id"],
+                          {"SyncStatus": "Synced", "SyncMessage": ""})
+            return f"OK report item {it['item_id']}: healed write-back"
+        return f"OK report item {it['item_id']}: no change"
     if dry:
         return (f"DRY report item {it['item_id']}: would create report + 9 areas"
                 f" ({it['ProjectCode']} {it['PeriodStart']}..{it['PeriodEnd']})")
@@ -309,6 +413,12 @@ def main():
     with psycopg.connect(host=PG["server"], dbname=PG["database"],
                          user=PG["user"], password=PG["password"],
                          sslmode="require") as conn:
+        # Build area_map once: external_ref -> {knowledge_area: status}.
+        # Used by process_report to detect per-area changes without re-querying.
+        area_map = {}
+        for ref, ka, status in conn.execute(AREA_SELECT).fetchall():
+            area_map.setdefault(ref, {})[ka] = status
+
         for art in ARTIFACTS:
             raw = fetch_items(g, M365[art["list_key"]], art["fields"])
             print(f"{art['kind']}: {len(raw)} list item(s) fetched")
@@ -318,8 +428,12 @@ def main():
             for it in items:
                 seen.add(it["item_id"])
                 try:
+                    kwargs = {}
+                    if art["kind"] == "report":
+                        kwargs["area_map"] = area_map
                     results.append(art["process"](conn, g, it, args.dry_run,
-                                                  synced.get(it["item_id"])))
+                                                  synced.get(it["item_id"]),
+                                                  **kwargs))
                 except Exception as e:  # one item must not kill the batch
                     results.append(f"ERROR {art['kind']} item {it['item_id']}: "
                                    f"{type(e).__name__}: {e}")

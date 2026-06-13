@@ -314,6 +314,11 @@ the sync calls `working_days(StartPlanned, FinishPlanned)` on every insert or up
 name gets the next integer (`1`, `2`, …). A new WorkPackage under an existing Workstream
 gets the next decimal child (`1.1`, `1.2`, …). Codes are append-only and never renumbered.
 
+**Owning department** for a WBS node is taken from the `Department` of the first activity
+filed under that workstream or work package and does not change afterward (first-write-wins);
+to change it a PM would need to recreate the workstream or work-package grouping under a
+new name.
+
 ### The two-tier WBS — grouping rules
 
 Activities in the same **Workstream** roll up to the same Level-1 WBS node. Activities in

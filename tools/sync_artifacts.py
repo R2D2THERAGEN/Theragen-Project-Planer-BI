@@ -721,8 +721,6 @@ def main():
                         kwargs["area_map"] = area_map
                     if art["kind"] == "activity":
                         pc = it["ProjectCode"]
-                        ws = it["Workstream"]
-                        wp = it["WorkPackage"]
                         kwargs["wbs_map"] = {
                             (k[1], k[2]): v
                             for k, v in activity_wbs_map.items()

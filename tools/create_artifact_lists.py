@@ -1,5 +1,5 @@
 # tools/create_artifact_lists.py
-"""One-time: create the three execution-artifact Lists on the root site and
+"""One-time: create the four execution-artifact Lists on the root site and
 merge their ids into db/.m365.local.json (preserving the intake keys)."""
 import json
 import os

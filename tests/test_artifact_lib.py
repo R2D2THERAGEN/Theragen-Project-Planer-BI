@@ -180,6 +180,10 @@ class TestWorkingDays:
         # 2026-06-01 Mon through 2026-06-08 Mon = 6 (skip Sat+Sun)
         assert al.working_days("2026-06-01", "2026-06-08") == 6
 
+    def test_month_boundary(self):
+        # 2026-06-29 (Mon) through 2026-07-03 (Fri) = 5 working days (crosses month end)
+        assert al.working_days("2026-06-29", "2026-07-03") == 5
+
 
 # --- next_wbs_code ----------------------------------------------------------
 
@@ -206,6 +210,14 @@ class TestNextWbsCode:
     def test_level1_codes_ignored_for_level2(self):
         # sibling filter: "1" and "2" are not children of parent "1"
         assert al.next_wbs_code(["1", "2"], parent_code="1") == "1.1"
+
+    def test_non_contiguous_level1(self):
+        # existing codes 1, 2, 4 (gap) -> next is 5 (max + 1, not fill-gap)
+        assert al.next_wbs_code(["1", "2", "4"]) == "5"
+
+    def test_non_contiguous_level2(self):
+        # existing children 2.1 and 2.3 (gap) -> next is 2.4 (max + 1)
+        assert al.next_wbs_code(["2.1", "2.3"], parent_code="2") == "2.4"
 
 
 # --- next_activity_code -----------------------------------------------------
@@ -305,6 +317,14 @@ class TestValidateActivity:
             errs = al.validate_activity(_activity(Department=dept))
             assert not any("Department" in e for e in errs), \
                 f"Department '{dept}' should be valid but got: {errs}"
+
+    def test_pct_complete_zero_is_valid(self):
+        # PctComplete = 0 is a valid boundary value — no errors expected
+        assert al.validate_activity(_activity(PctComplete=0)) == []
+
+    def test_pct_complete_hundred_is_valid(self):
+        # PctComplete = 100 is the upper boundary — no errors expected
+        assert al.validate_activity(_activity(PctComplete=100)) == []
 
 
 # --- build_activity_row -----------------------------------------------------

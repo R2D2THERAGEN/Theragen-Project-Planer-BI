@@ -1,4 +1,4 @@
-# Artifact Entry Setup — Risks, Milestones, Status Reports, Project Activities, Change Requests, Decisions
+# Artifact Entry Setup — Risks, Milestones, Status Reports, Project Activities, Change Requests, Decisions, Baselines, Phase Gates
 
 This is the PM-facing reference for filling in the four execution-artifact SharePoint
 Lists that feed the **Project Status Report** Power BI page. The daily 5:40 AM sync
@@ -22,8 +22,10 @@ access (creating and editing items) requires at minimum Edit permission on the s
 | **Project Activities** | One row per schedule activity per project — auto-derives the WBS |
 | **Project Change Requests** | One row per change request per project — tracks the approval lifecycle |
 | **Project Decisions** | One row per governance decision per project |
+| **Project Baselines** | One row per frozen Schedule / Budget / Scope baseline per project — see §N |
+| **Project Phase Gates** | One row per lifecycle-phase handoff per project — see §O |
 
-All four Lists live on the root SharePoint site (same site as Project Intake).
+All these Lists live on the root SharePoint site (same site as Project Intake).
 
 ---
 
@@ -759,6 +761,161 @@ findstr "ERROR" logs\artifact_sync.log
 >
 > If you need to correct database data after go-live, edit the List rows and let the
 > sync heal them, or ask the PMO to make a targeted database correction.
+
+---
+
+## N. Project Baselines
+
+PMs freeze an **immutable snapshot** of a project's Schedule, Budget, or Scope by creating
+a row in the **Project Baselines** List — one row per baseline. The sync builds the snapshot
+**automatically, server-side**, from the project's live tables at the moment of sync; the PM
+never types snapshot content. A baseline answers the question *"what was the approved plan,
+and what has changed since?"*
+
+### Required columns
+
+| Column | Type | Notes |
+|--------|------|-------|
+| **Title** | Text | Short label for the baseline (auto-populated by SharePoint as item title) |
+| **ProjectCode** | Text | Must exactly match an existing project code — see §J |
+| **BaselineType** | Choice | What is being frozen — see allowed values below |
+| **BaselinedBy** | Person | M365 people picker — the person freezing the baseline; must resolve to the person directory |
+
+### Optional columns
+
+| Column | Type | Notes |
+|--------|------|-------|
+| **ChangeSummary** | Multi-line text | Why this baseline was taken (e.g. `re-baseline after approved scope change`); can be blank |
+| **LinkedCRCode** | Text | Optional link to the change request that drove the re-baseline, e.g. `C-007` |
+
+### Choice values — use exactly as shown
+
+**BaselineType** (one of):
+```
+Schedule
+Scope
+Budget
+```
+
+### How the snapshot is built (you never type it)
+
+The sync assembles the frozen JSONB snapshot from the project's live data:
+
+- **Schedule** — every activity (code, name, planned start/finish, duration days), every
+  milestone (name, baseline date), and the project's planned start/finish headline.
+- **Budget** — the project's approved budget total plus every budget line (WBS code,
+  category, amount, funding source).
+- **Scope** — the charter business case and high-level in/out-of-scope text, plus the scope
+  inclusions, exclusions, and acceptance criteria.
+
+The snapshot is deterministic (stably sorted) so the same project state always freezes to the
+same bytes.
+
+### Immutability — a baseline is never rewritten
+
+Once a baseline is synced it is **append-once**: the sync will never rebuild or overwrite its
+frozen snapshot. To re-baseline after an approved change, **file a NEW baseline of the same
+type** — do not edit the existing one. The new baseline:
+
+1. Mints the next version (`1.0` → `2.0` → `3.0`, …) for that project + type.
+2. Marks the prior `BASELINED` row of the same type as `SUPERSEDED` (kept as history, with a
+   pointer to its successor).
+
+Editing a substantive field on an already-synced baseline is **rejected** with a message like
+`Baselines are immutable; create a new baseline to re-baseline`. The prior versions are
+retained — nothing is deleted — so the full re-baseline history is preserved.
+
+### Audit trail
+
+Every baseline freeze writes an append-only entry to `doc_mgmt.audit_trail_entry`
+(`BASELINE_CREATE`, plus `BASELINE_SUPERSEDE` on the row that was superseded). These entries
+are never deleted by the sync.
+
+### Read-only write-back columns
+
+The sync populates these automatically — **do not edit them**:
+
+| Column | Meaning |
+|--------|---------|
+| **BaselineVersion** | Auto-minted version for this project + type, e.g. `1.0`, `2.0`. Never changes after creation. |
+| **SyncStatus** | `Pending` → `Synced` (success) or `Error` (see §H) |
+| **SyncMessage** | Human-readable error or immutability-reject detail; blank on success |
+
+---
+
+## O. Project Phase Gates
+
+PMs record a **lifecycle-phase handoff** by creating a row in the **Project Phase Gates**
+List — one row per gate. A gate documents who signed off the move from one PMI process group
+to the next, when, and why. The project's **current phase is read live** at sync time, so the
+gate is evaluated against where the project actually is.
+
+### Required columns
+
+| Column | Type | Notes |
+|--------|------|-------|
+| **Title** | Text | Short label for the gate (auto-populated by SharePoint as item title) |
+| **ProjectCode** | Text | Must exactly match an existing project code — see §J |
+| **TargetPhase** | Choice | The phase the project is moving to — see allowed values below |
+| **GateDecision** | Choice | The gate outcome — see allowed values below; defaults to `Approved` |
+| **ApprovedBy** | Person | M365 people picker — the person signing off the gate; must resolve to the person directory |
+
+### Optional columns
+
+| Column | Type | Notes |
+|--------|------|-------|
+| **DecidedDate** | Date | Date the gate decision was made |
+| **GateNotes** | Multi-line text | Conditions, caveats, or review notes; can be blank |
+
+### Choice values — use exactly as shown
+
+**TargetPhase** (one of, in lifecycle order):
+```
+Initiating
+Planning
+Executing
+Monitoring
+Closing
+```
+
+**GateDecision** (one of):
+```
+Approved
+Approved with conditions
+Held
+```
+
+### Forward-only + Hold — how a gate is applied
+
+The five lifecycle phases are ordered `Initiating → Planning → Executing → Monitoring →
+Closing`. The gate's `from` phase is the project's current `lifecycle_phase` at sync time:
+
+- **Approved / Approved with conditions, forward** (`TargetPhase` is *after* the current
+  phase) → advances the project to the target phase, writes the gate log row, and audits it.
+- **Held** → records the review **without advancing** the project (the `from` and `to` phase
+  are the same); the project stays put.
+- **Backward** (`TargetPhase` is *before* the current phase) → **rejected** with
+  `Backward phase transition rejected`. Projects move forward only.
+- **Same phase** (`TargetPhase` equals the current phase) on an Approved gate → no-op (no
+  advance, no double-count).
+
+A synced gate is **never re-applied** — the log row is the idempotency anchor, so re-running
+the sync never double-advances a project. To correct a gate filed by mistake, contact the PMO.
+
+### Audit trail
+
+Every gate writes an append-only entry to `doc_mgmt.audit_trail_entry` (`PHASE_GATE` on an
+advance, `PHASE_GATE_HOLD` on a Held decision), recording the from/to phases, the approver,
+and the decision. These entries are never deleted by the sync.
+
+### Read-only write-back columns
+
+The sync populates these automatically — **do not edit them**:
+
+| Column | Meaning |
+|--------|---------|
+| **SyncStatus** | `Pending` → `Synced` (success) or `Error` (see §H) |
+| **SyncMessage** | Human-readable error detail (e.g. a rejected backward transition); blank on success |
 
 ---
 

@@ -675,6 +675,12 @@ table _Measures
 		displayFolder: Baselines
 		lineageTag: c7076e70-ef14-5a83-be46-c54eb00bc32c
 
+	/// Drift of the current approved budget from the frozen BASELINED Budget baseline (current charter budget minus the baseline's snapshot budget_total). Positive = budget grew since baseline.
+	measure 'Budget Variance vs Baseline' = SUM('Project'[Charter Budget]) - SUMX(FILTER('Project Baseline', 'Project Baseline'[Baseline Type]="Budget" && 'Project Baseline'[Status]="BASELINED"), 'Project Baseline'[Baseline Budget Total])
+		formatString: \$#,##0;(\$#,##0);\$0
+		displayFolder: Baselines
+		lineageTag: 64b76302-82ca-5022-8e9e-7920da18f309
+
 	/// Phase gates that advanced the project a real step forward (Approved / Approved with conditions, From != To).
 	measure 'Phase Gates Passed' = COUNTROWS(FILTER('Phase Gate Log', 'Phase Gate Log'[Gate Decision] IN {"Approved", "Approved with conditions"} && 'Phase Gate Log'[From Phase] <> 'Phase Gate Log'[To Phase]))
 		formatString: #,0

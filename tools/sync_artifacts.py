@@ -19,6 +19,7 @@ import psycopg
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import artifact_lib as al
+import audit_lib
 from graph_client import Graph, SitePeople, coerce_bool
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -431,6 +432,9 @@ def process_report(conn, g, it, dry, current, area_map=None):
     if errs:
         return _error(g, M365["status_report_list_id"], it, errs, dry, "report")
     project_id, _dept = proj
+    # Resolve approver person_id (None when no sign-off set)
+    approver = (person_id_by_email(conn, it["ApprovedByEmail"])
+                if it.get("ApprovedByEmail") else None)
     # Duplicate-period guard applies on both create AND update (PeriodStart may
     # have been edited into a collision). Exclude self via external_ref<>%s.
     dup = conn.execute(
@@ -448,7 +452,8 @@ def process_report(conn, g, it, dry, current, area_map=None):
                            " instead"], dry, "report")
         # submitter and submitted_at are immutable — use current's person id
         desired = al.build_report_row(it, current["project_id"],
-                                      current["submitted_by_person_id"])
+                                      current["submitted_by_person_id"],
+                                      approver)
         # Check parent row + area statuses for any change
         current_areas = (area_map or {}).get(it["item_id"], {})
         areas_changed = [ka for ka in al.KNOWLEDGE_AREAS
@@ -463,17 +468,27 @@ def process_report(conn, g, it, dry, current, area_map=None):
                     conn.execute(
                         "UPDATE pmbok.status_report SET period_start=%s,"
                         " period_end=%s, overall_status=%s, trend=%s,"
-                        " executive_summary=%s, decisions_needed=%s"
+                        " executive_summary=%s, decisions_needed=%s,"
+                        " approved_by_person_id=%s, approved_at=%s"
                         " WHERE external_ref=%s",
                         (desired["period_start"], desired["period_end"],
                          desired["overall_status"], desired["trend"],
                          desired["executive_summary"],
-                         desired["decisions_needed"], it["item_id"]))
+                         desired["decisions_needed"],
+                         desired["approved_by_person_id"],
+                         desired["approved_at"], it["item_id"]))
                 for ka in areas_changed:
                     conn.execute(
                         "UPDATE pmbok.status_report_area SET status=%s"
                         " WHERE report_id=%s AND knowledge_area=%s",
                         (it["Health"][ka], report_id, ka))
+                # Write STATUS_SIGNOFF audit entry when approved_at transitions
+                # from NULL to set (first sign-off). INSIDE the transaction.
+                if current.get("approved_at") is None and desired["approved_at"] is not None:
+                    audit_lib.write_trail(
+                        conn, approver, "STATUS_SIGNOFF", "status_report",
+                        current["report_id"], None,
+                        {"approved_at": str(desired["approved_at"])}, None)
             writeback(g, M365["status_report_list_id"], it["item_id"],
                       {"SyncStatus": "Synced", "SyncMessage": ""})
             return f"OK report item {it['item_id']}: updated {it['ProjectCode']} {it['PeriodStart']}"
@@ -487,7 +502,7 @@ def process_report(conn, g, it, dry, current, area_map=None):
         return (f"DRY report item {it['item_id']}: would create report + 9 areas"
                 f" ({it['ProjectCode']} {it['PeriodStart']}..{it['PeriodEnd']})")
     report_id = str(uuid.uuid5(NS, f"thg/artifact/report/{it['item_id']}"))
-    row = al.build_report_row(it, project_id, submitter)
+    row = al.build_report_row(it, project_id, submitter, None)
     with conn.transaction():
         conn.execute(
             "INSERT INTO pmbok.status_report (report_id, project_id,"
@@ -760,15 +775,108 @@ def process_change_request(conn, g, it, dry, current):
             warn = (f"DecidedBy {it['DecidedByEmail']} is not the project"
                     " sponsor or PM — authority advisory only")
     if current:
-        return f"OK change_request item {it['item_id']}: existing (write path lands in T5)"
-    # New item: preview next code
+        # ProjectCode-change guard
+        if str(current["project_id"]) != str(project_id):
+            return _error(g, M365["change_request_list_id"], it,
+                          ["ProjectCode changed after sync - create a new row"
+                           " instead"], dry, "change_request")
+        desired = al.build_cr_row(it, current["project_id"], requester,
+                                  decider, current["cr_code"])
+        if al.row_changed(current, desired):
+            if dry:
+                return (f"DRY change_request item {it['item_id']}: would update"
+                        f" {current['cr_code']}")
+            with conn.transaction():
+                conn.execute(
+                    "UPDATE pmbok.change_request SET intake_id=%s,"
+                    " requested_at=%s, requested_by_person_id=%s,"
+                    " cr_class=%s, change_types=%s, affected_artifacts=%s,"
+                    " description=%s, reason=%s, impact_scope=%s,"
+                    " impact_schedule_days=%s, impact_cost=%s,"
+                    " impact_quality=%s, decision=%s,"
+                    " decided_by_person_id=%s, decided_at=%s,"
+                    " implementation_verified=%s,"
+                    " linked_artifacts_updated=%s, status=%s"
+                    " WHERE external_ref=%s",
+                    (desired["intake_id"], desired["requested_at"],
+                     desired["requested_by_person_id"], desired["cr_class"],
+                     desired["change_types"], desired["affected_artifacts"],
+                     desired["description"], desired["reason"],
+                     desired["impact_scope"], desired["impact_schedule_days"],
+                     desired["impact_cost"], desired["impact_quality"],
+                     desired["decision"], desired["decided_by_person_id"],
+                     desired["decided_at"],
+                     desired["implementation_verified"],
+                     desired["linked_artifacts_updated"],
+                     desired["status"], it["item_id"]))
+                # Audit decision change (if any), INSIDE the transaction
+                if str(current.get("decision") or "") != str(desired["decision"]):
+                    before_d, after_d = al._trail_states(
+                        current, desired, ["decision"])
+                    audit_lib.write_trail(
+                        conn, decider or requester, "CR_DECISION",
+                        "change_request", current["cr_id"],
+                        before_d, after_d, None)
+                # Audit status change (if any), INSIDE the transaction
+                if str(current.get("status") or "") != str(desired["status"]):
+                    before_s, after_s = al._trail_states(
+                        current, desired, ["status"])
+                    audit_lib.write_trail(
+                        conn, decider or requester, "CR_STATUS",
+                        "change_request", current["cr_id"],
+                        before_s, after_s, None)
+            writeback(g, M365["change_request_list_id"], it["item_id"],
+                      {"SyncStatus": "Synced", "SyncMessage": warn,
+                       "CRCode": current["cr_code"]})
+            return (f"OK change_request item {it['item_id']}:"
+                    f" updated {current['cr_code']}")
+        if (it["SyncStatus"] != "Synced"
+                or it.get("CRCode") != current["cr_code"]):
+            if not dry:
+                writeback(g, M365["change_request_list_id"], it["item_id"],
+                          {"SyncStatus": "Synced", "SyncMessage": warn,
+                           "CRCode": current["cr_code"]})
+            return f"OK change_request item {it['item_id']}: healed write-back"
+        return f"OK change_request item {it['item_id']}: no change"
+    # New item — mint code
     existing_codes = [r[0] for r in conn.execute(
         "SELECT cr_code FROM pmbok.change_request WHERE project_id=%s",
         (project_id,)).fetchall()]
-    next_code = al.next_cr_code(existing_codes)
+    cr_code = al.next_cr_code(existing_codes)
     suffix = f" - {warn}" if warn else ""
-    return (f"DRY change_request item {it['item_id']}: would create {next_code}"
-            f" ({it['ProjectCode']}){suffix}")
+    if dry:
+        return (f"DRY change_request item {it['item_id']}: would create"
+                f" {cr_code} ({it['ProjectCode']}){suffix}")
+    cr_id = str(uuid.uuid5(NS, f"thg/artifact/cr/{it['item_id']}"))
+    row = al.build_cr_row(it, project_id, requester, decider, cr_code)
+    with conn.transaction():
+        conn.execute(
+            "INSERT INTO pmbok.change_request"
+            " (cr_id, project_id, cr_code, intake_id, requested_at,"
+            " requested_by_person_id, cr_class, change_types,"
+            " affected_artifacts, description, reason, impact_scope,"
+            " impact_schedule_days, impact_cost, impact_quality, decision,"
+            " decided_by_person_id, decided_at, implementation_verified,"
+            " linked_artifacts_updated, status, external_ref)"
+            " VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,"
+            "%s,%s,%s,%s,%s,%s)",
+            (cr_id, row["project_id"], row["cr_code"], row["intake_id"],
+             row["requested_at"], row["requested_by_person_id"],
+             row["cr_class"], row["change_types"], row["affected_artifacts"],
+             row["description"], row["reason"], row["impact_scope"],
+             row["impact_schedule_days"], row["impact_cost"],
+             row["impact_quality"], row["decision"],
+             row["decided_by_person_id"], row["decided_at"],
+             row["implementation_verified"], row["linked_artifacts_updated"],
+             row["status"], it["item_id"]))
+        audit_lib.write_trail(
+            conn, decider or requester, "CR_CREATE", "change_request", cr_id,
+            None, {"decision": row["decision"], "status": row["status"]},
+            None)
+    writeback(g, M365["change_request_list_id"], it["item_id"],
+              {"SyncStatus": "Synced", "SyncMessage": warn, "CRCode": cr_code})
+    return (f"OK new change_request {cr_code}"
+            f" ({it['ProjectCode']}, item {it['item_id']})")
 
 
 def process_decision(conn, g, it, dry, current):
@@ -784,13 +892,61 @@ def process_decision(conn, g, it, dry, current):
         return _error(g, M365["decision_list_id"], it, errs, dry, "decision")
     project_id, _dept = proj
     if current:
-        return f"OK decision item {it['item_id']}: existing (write path lands in T5)"
+        # ProjectCode-change guard
+        if str(current["project_id"]) != str(project_id):
+            return _error(g, M365["decision_list_id"], it,
+                          ["ProjectCode changed after sync - create a new row"
+                           " instead"], dry, "decision")
+        desired = al.build_decision_row(it, current["project_id"], decider,
+                                        current["code"])
+        if al.row_changed(current, desired):
+            if dry:
+                return (f"DRY decision item {it['item_id']}: would update"
+                        f" {current['code']}")
+            with conn.transaction():
+                conn.execute(
+                    "UPDATE pmbok.decision SET decision=%s, rationale=%s,"
+                    " decided_by_person_id=%s, decided_at=%s"
+                    " WHERE external_ref=%s",
+                    (desired["decision"], desired["rationale"],
+                     desired["decided_by_person_id"], desired["decided_at"],
+                     it["item_id"]))
+            writeback(g, M365["decision_list_id"], it["item_id"],
+                      {"SyncStatus": "Synced", "SyncMessage": "",
+                       "DecisionCode": current["code"]})
+            return f"OK decision item {it['item_id']}: updated {current['code']}"
+        if (it["SyncStatus"] != "Synced"
+                or it.get("DecisionCode") != current["code"]):
+            if not dry:
+                writeback(g, M365["decision_list_id"], it["item_id"],
+                          {"SyncStatus": "Synced", "SyncMessage": "",
+                           "DecisionCode": current["code"]})
+            return f"OK decision item {it['item_id']}: healed write-back"
+        return f"OK decision item {it['item_id']}: no change"
+    # New item — mint code
     existing_codes = [r[0] for r in conn.execute(
         "SELECT code FROM pmbok.decision WHERE project_id=%s",
         (project_id,)).fetchall()]
-    next_code = al.next_decision_code(existing_codes)
-    return (f"DRY decision item {it['item_id']}: would create {next_code}"
-            f" ({it['ProjectCode']})")
+    decision_code = al.next_decision_code(existing_codes)
+    if dry:
+        return (f"DRY decision item {it['item_id']}: would create"
+                f" {decision_code} ({it['ProjectCode']})")
+    decision_id = str(uuid.uuid5(NS, f"thg/artifact/decision/{it['item_id']}"))
+    row = al.build_decision_row(it, project_id, decider, decision_code)
+    with conn.transaction():
+        conn.execute(
+            "INSERT INTO pmbok.decision"
+            " (decision_id, project_id, code, decision, rationale,"
+            " decided_by_person_id, decided_at, external_ref)"
+            " VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
+            (decision_id, row["project_id"], row["code"], row["decision"],
+             row["rationale"], row["decided_by_person_id"], row["decided_at"],
+             it["item_id"]))
+    writeback(g, M365["decision_list_id"], it["item_id"],
+              {"SyncStatus": "Synced", "SyncMessage": "",
+               "DecisionCode": decision_code})
+    return (f"OK new decision {decision_code}"
+            f" ({it['ProjectCode']}, item {it['item_id']})")
 
 
 ARTIFACTS = [

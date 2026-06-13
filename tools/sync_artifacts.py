@@ -578,8 +578,50 @@ def process_activity(conn, g, it, dry, current, wbs_map=None, wbs_code_map=None)
         "SELECT activity_code FROM pmbok.schedule_activity WHERE wbs_element_id=%s",
         (str(wbs_id),)).fetchall()]
     if current:
-        # T6 placeholder: update path lands in Task 6.
-        return f"OK activity item {it['item_id']}: existing (update path lands in T6)"
+        project_id, _dept = proj
+        # Re-parent guard: project changed.
+        if str(current["project_id"]) != str(project_id):
+            return _error(g, M365["activity_list_id"], it,
+                          ["ProjectCode changed after sync - create a new row"
+                           " instead"], dry, "activity")
+        # Re-parent guard: WBS parent (workstream / workpackage) changed.
+        if str(current["wbs_element_id"]) != str(wbs_id):
+            return _error(g, M365["activity_list_id"], it,
+                          ["Workstream/WorkPackage changed after sync - create a"
+                           " new row instead"], dry, "activity")
+        desired = al.build_activity_row(it, current["wbs_element_id"],
+                                        owner, current["activity_code"])
+        if al.row_changed(current, desired):
+            if dry:
+                return (f"DRY activity item {it['item_id']}: would update"
+                        f" {current['activity_code']}")
+            with conn.transaction():
+                conn.execute(
+                    "UPDATE pmbok.schedule_activity SET name=%s,"
+                    " start_planned=%s, finish_planned=%s,"
+                    " start_actual=%s, finish_actual=%s,"
+                    " duration_days=%s, owner_person_id=%s,"
+                    " department=%s, status=%s, pct_complete=%s"
+                    " WHERE external_ref=%s",
+                    (desired["name"], desired["start_planned"],
+                     desired["finish_planned"], desired["start_actual"],
+                     desired["finish_actual"], desired["duration_days"],
+                     desired["owner_person_id"], desired["department"],
+                     desired["status"], desired["pct_complete"],
+                     it["item_id"]))
+            writeback(g, M365["activity_list_id"], it["item_id"],
+                      {"SyncStatus": "Synced", "SyncMessage": "",
+                       "ActivityCode": current["activity_code"]})
+            return (f"OK activity item {it['item_id']}:"
+                    f" updated {current['activity_code']}")
+        if (it["SyncStatus"] != "Synced"
+                or it.get("ActivityCode") != current["activity_code"]):
+            if not dry:
+                writeback(g, M365["activity_list_id"], it["item_id"],
+                          {"SyncStatus": "Synced", "SyncMessage": "",
+                           "ActivityCode": current["activity_code"]})
+            return f"OK activity item {it['item_id']}: healed write-back"
+        return f"OK activity item {it['item_id']}: no change"
     # New item — mint code.
     activity_code = al.next_activity_code(existing_codes, wbs_code)
     if dry:

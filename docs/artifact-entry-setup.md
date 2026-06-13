@@ -1,4 +1,4 @@
-# Artifact Entry Setup — Risks, Milestones, Status Reports, Project Activities
+# Artifact Entry Setup — Risks, Milestones, Status Reports, Project Activities, Change Requests, Decisions
 
 This is the PM-facing reference for filling in the four execution-artifact SharePoint
 Lists that feed the **Project Status Report** Power BI page. The daily 5:40 AM sync
@@ -20,6 +20,8 @@ access (creating and editing items) requires at minimum Edit permission on the s
 | **Project Milestones** | One row per key milestone per project |
 | **Project Status Reports** | One row per weekly/periodic report per project |
 | **Project Activities** | One row per schedule activity per project — auto-derives the WBS |
+| **Project Change Requests** | One row per change request per project — tracks the approval lifecycle |
+| **Project Decisions** | One row per governance decision per project |
 
 All four Lists live on the root SharePoint site (same site as Project Intake).
 
@@ -32,7 +34,7 @@ All four Lists live on the root SharePoint site (same site as Project Intake).
 | Column | Type | Notes |
 |--------|------|-------|
 | **Title** | Text | Short label for the risk (auto-populated by SharePoint as item title) |
-| **ProjectCode** | Text | Must exactly match an existing project code — see §H |
+| **ProjectCode** | Text | Must exactly match an existing project code — see §J |
 | **Category** | Choice | See allowed values below |
 | **Description** | Multi-line text | Full description of the risk |
 | **Likelihood** | Choice | `1` through `5` |
@@ -108,7 +110,7 @@ The sync populates these automatically — **do not edit them**:
 | Column | Meaning |
 |--------|---------|
 | **RiskCode** | Auto-minted sequential code within the project, e.g. `R-001`, `R-002`. Never changes after creation. |
-| **SyncStatus** | `Pending` → `Synced` (success) or `Error` (see §F) |
+| **SyncStatus** | `Pending` → `Synced` (success) or `Error` (see §H) |
 | **SyncMessage** | Human-readable error detail when `SyncStatus = Error`; blank on success |
 
 ---
@@ -120,7 +122,7 @@ The sync populates these automatically — **do not edit them**:
 | Column | Type | Notes |
 |--------|------|-------|
 | **Title** | Text | Milestone name |
-| **ProjectCode** | Text | Must exactly match an existing project code — see §H |
+| **ProjectCode** | Text | Must exactly match an existing project code — see §J |
 | **BaselineDate** | Date | Original planned completion date |
 | **OwnerRole** | Choice | Role responsible for delivery |
 
@@ -129,7 +131,7 @@ The sync populates these automatically — **do not edit them**:
 | Column | Type | Notes |
 |--------|------|-------|
 | **ForecastDate** | Date | Updated forecast; can be blank |
-| **ActualDate** | Date | Required when `MilestoneStatus = Achieved` — see §E |
+| **ActualDate** | Date | Required when `MilestoneStatus = Achieved` — see §G |
 | **MilestoneStatus** | Choice | Defaults to `On track` if left blank |
 
 ### Choice values
@@ -171,7 +173,7 @@ parent report row plus nine knowledge-area health rows in PostgreSQL.
 | Column | Type | Notes |
 |--------|------|-------|
 | **Title** | Text | Short label, e.g. `wk24` or `2026-06-W3` |
-| **ProjectCode** | Text | Must exactly match an existing project code — see §H |
+| **ProjectCode** | Text | Must exactly match an existing project code — see §J |
 | **PeriodStart** | Date | Start of the reporting period |
 | **PeriodEnd** | Date | Must be on or after PeriodStart |
 | **ExecutiveSummary** | Multi-line text | 2–5 sentence narrative |
@@ -228,6 +230,21 @@ is submitted with the same `ProjectCode` and `PeriodStart`, the sync marks it `E
 `Duplicate report period for <code>: <date>`. Fix by correcting one of the two items'
 `PeriodStart` dates, then reset its `SyncStatus` to `Pending`.
 
+### Sign-off columns
+
+Once the PM or Sponsor has reviewed and approved a status report, they (or the sync
+operator) record the approval by filling these two columns on the List item:
+
+| Column | Type | Notes |
+|--------|------|-------|
+| **ApprovedBy** | Person | M365 people picker — the person signing off the report |
+| **ApprovedDate** | Date | Date the sign-off was recorded |
+
+Both columns are **all-or-nothing**: either both are set or both must be blank.
+Entering one without the other causes a validation error. Once the sync writes
+`is_signed_off = true` to the database the report's submitter field is immutable —
+the sync rejects a `SubmittedBy` change on a signed-off report.
+
 ### Read-only write-back columns
 
 | Column | Meaning |
@@ -250,7 +267,7 @@ Areas** panel on the Project Status Report page and the **Schedule & Milestones*
 | Column | Type | Notes |
 |--------|------|-------|
 | **Title** | Text | Activity name |
-| **ProjectCode** | Text | Must exactly match an existing project code — see §H |
+| **ProjectCode** | Text | Must exactly match an existing project code — see §J |
 | **Workstream** | Text | Level-1 WBS grouping, e.g. `Platform` or `Clinical Trial Setup` |
 | **WorkPackage** | Text | Level-2 grouping under the workstream, e.g. `Email delivery` |
 | **StartPlanned** | Date | Planned start date |
@@ -264,7 +281,7 @@ Areas** panel on the Project Status Report page and the **Schedule & Milestones*
 | Column | Type | Notes |
 |--------|------|-------|
 | **StartActual** | Date | Actual start date; can be blank |
-| **FinishActual** | Date | Required when `ActivityStatus = Done` — see §E |
+| **FinishActual** | Date | Required when `ActivityStatus = Done` — see §G |
 | **PctComplete** | Number | 0–100; defaults to 0 if blank |
 
 ### Choice values — use exactly as shown
@@ -297,7 +314,7 @@ The sync populates these automatically — **do not edit them**:
 | Column | Meaning |
 |--------|---------|
 | **ActivityCode** | Auto-minted code within the work package, e.g. `1.1-A1`, `1.1-A2`. Never changes after creation. |
-| **SyncStatus** | `Pending` → `Synced` (success) or `Error` (see §F) |
+| **SyncStatus** | `Pending` → `Synced` (success) or `Error` (see §H) |
 | **SyncMessage** | Human-readable error detail when `SyncStatus = Error`; blank on success |
 
 ### Derived fields
@@ -360,7 +377,199 @@ consistent.
 
 ---
 
-## E. The Achieved milestone / Done activity and the 35-day accomplishment window
+## E. Project Change Requests
+
+PMs submit change requests by creating rows in the **Project Change Requests** List —
+one row per CR per project. The sync validates each item, inserts or updates the
+corresponding `pmbok.change_request` row, mints a sequential `CRCode` (`C-001`,
+`C-002`, …) on first sync, and writes results back to the List item.
+
+### Required columns
+
+| Column | Type | Notes |
+|--------|------|-------|
+| **Title** | Text | Short label for the change (auto-populated by SharePoint as item title) |
+| **ProjectCode** | Text | Must exactly match an existing project code — see §J |
+| **CRClass** | Choice | Severity class — see allowed values below |
+| **ChangeType** | Choice | Type of change — see allowed values below; single value only |
+| **Description** | Multi-line text | Full description of what is being changed |
+| **Reason** | Multi-line text | Business justification for the change |
+
+### Optional / workflow columns
+
+| Column | Type | Notes |
+|--------|------|-------|
+| **RequestedDate** | Date | Date the request was raised; defaults to the item creation date if left blank |
+| **RequestedBy** | Person | M365 people picker — the requestor; defaults to the item author if left blank |
+| **AffectedArtifacts** | Multi-line text | Comma-separated list of impacted artifacts; defaults to `n/a` |
+| **ImpactScope** | Multi-line text | Scope impact narrative; can be blank |
+| **ImpactQuality** | Multi-line text | Quality impact narrative; can be blank |
+| **ImpactScheduleDays** | Number | Estimated schedule impact in working days; defaults to `0` |
+| **ImpactCost** | Number | Estimated cost impact; defaults to `0` |
+| **IntakeID** | Text | Optional link to the originating intake submission |
+
+### Approval columns
+
+These columns are filled by the approver (Sponsor or PM) directly in the List UI:
+
+| Column | Type | Notes |
+|--------|------|-------|
+| **Decision** | Choice | The approval gate — see allowed values below; defaults to `Pending` |
+| **DecidedBy** | Person | M365 people picker — the person who made the decision |
+| **DecidedDate** | Date | Date the decision was recorded |
+| **ImplementationVerified** | Choice | `Yes` / `No` — set to `Yes` once the change is confirmed implemented |
+| **LinkedArtifactsUpdated** | Choice | `Yes` / `No` — set to `Yes` once affected artifacts have been updated |
+| **CRStatus** | Choice | Lifecycle status — see allowed values below; defaults to `Open` |
+
+### Choice values — use exactly as shown
+
+**CRClass** (one of):
+```
+A - Minor
+B - Substantive
+C - Controlling
+Emergency / Safety
+```
+
+**ChangeType** (one of — single selection only):
+```
+Scope
+Schedule
+Cost
+Quality
+Compliance
+```
+
+**Decision** (one of):
+```
+Pending
+Approved
+Deferred
+Rejected
+```
+
+**CRStatus** (one of):
+```
+Open
+In Assessment
+Implementing
+Verified
+Closed
+Rejected
+```
+
+### The two-axis approval workflow
+
+A change request has two independent but constrained axes:
+
+- **Decision** is the approval gate. It answers "has this CR been decided?" The
+  approver edits this column in the List UI.
+- **CRStatus** is the lifecycle. It answers "where is this CR in the process?"
+
+The sync enforces these coherence rules:
+
+| Condition | Rule |
+|-----------|------|
+| `Decision` ≠ `Pending` | `DecidedBy` and `DecidedDate` must both be set |
+| `Decision = Pending` | `DecidedDate` must be blank |
+| `Decision = Rejected` | `CRStatus` must also be `Rejected` |
+| `CRStatus ∈ {Verified, Closed}` | `Decision` must be `Approved` |
+| `DecidedDate` set | Must be on or after `RequestedDate` |
+
+A typical lifecycle: `Open` → `In Assessment` → `Implementing` (once Approved) →
+`Verified` (once `ImplementationVerified = Yes`) → `Closed`.
+
+### Soft-authority note
+
+The sync does not block a decision by someone who is not the project Sponsor or PM,
+but it records a note in `SyncMessage`:
+
+```
+DecidedBy <email> is not the project sponsor or PM — authority advisory only
+```
+
+The `SyncStatus` is still written as `Synced`. The audit trail records who decided.
+To clear the advisory, the Sponsor or PM should re-enter themselves as `DecidedBy`.
+
+### Audit trail
+
+Every CR creation, decision change, and status change is recorded as an append-only
+entry in `doc_mgmt.audit_trail_entry` (action codes `CR_CREATE`, `CR_DECISION`,
+`CR_STATUS`). The before and after values are stored, so the full decision history
+is preserved even if the List item is later edited. These entries are never deleted
+by the sync.
+
+### ProjectCode-change rule
+
+Once a CR has been synced, **do not change its `ProjectCode`**. The sync rejects the
+change with:
+
+```
+ProjectCode changed after sync - create a new row instead
+```
+
+Create a fresh row for the corrected project and set the original row's `CRStatus`
+to `Closed`.
+
+### Read-only write-back columns
+
+The sync populates these automatically — **do not edit them**:
+
+| Column | Meaning |
+|--------|---------|
+| **CRCode** | Auto-minted sequential code within the project, e.g. `C-001`, `C-002`. Never changes after creation. |
+| **SyncStatus** | `Pending` → `Synced` (success) or `Error` (see §H) |
+| **SyncMessage** | Human-readable error detail when `SyncStatus = Error`; blank (or soft-authority advisory) on success |
+
+---
+
+## F. Project Decisions
+
+PMs record governance decisions by creating rows in the **Project Decisions** List —
+one row per decision per project. The Title field is the decision statement itself.
+The sync validates each item, inserts or updates the corresponding `pmbok.decision`
+row, mints a sequential `DecisionCode` (`D-001`, `D-002`, …) on first sync, and
+writes results back to the List item.
+
+### Required columns
+
+| Column | Type | Notes |
+|--------|------|-------|
+| **Title** | Text | The decision statement — state what was decided, not what was discussed |
+| **ProjectCode** | Text | Must exactly match an existing project code — see §J |
+| **Rationale** | Multi-line text | Why this decision was made |
+| **DecidedBy** | Person | M365 people picker — must resolve to a user in the person directory |
+| **DecidedDate** | Date | Date the decision was made |
+
+### Read-only write-back columns
+
+The sync populates these automatically — **do not edit them**:
+
+| Column | Meaning |
+|--------|---------|
+| **DecisionCode** | Auto-minted sequential code within the project, e.g. `D-001`, `D-002`. Never changes after creation. |
+| **SyncStatus** | `Pending` → `Synced` (success) or `Error` (see §H) |
+| **SyncMessage** | Error detail; blank on success |
+
+### Audit trail
+
+Every decision creation and update is recorded as an append-only entry in
+`doc_mgmt.audit_trail_entry` (action code `DECISION_CREATE`). These entries are
+never deleted by the sync.
+
+### Common errors
+
+| Error message | Fix |
+|---------------|-----|
+| `Missing: Rationale` | Enter the decision rationale |
+| `Missing: DecidedBy` | Set the people picker |
+| `DecidedBy <email> not in person directory` | Ask PMO to add that person, then reset Pending |
+| `Missing: DecidedDate` | Enter the date the decision was made |
+| `Unknown ProjectCode: THG-XX-999` | Correct the code — see §J |
+
+---
+
+## G. The Achieved milestone / Done activity and the 35-day accomplishment window
 
 The same rule applies to both milestones and activities:
 
@@ -388,7 +597,7 @@ The same rule applies to both milestones and activities:
 
 ---
 
-## F. The Error → fix → next-run-heals loop
+## H. The Error → fix → next-run-heals loop
 
 When the sync encounters a validation problem or an unresolvable reference, it:
 
@@ -408,7 +617,7 @@ You do not need to ask IT to re-run anything — just fix the row and reset `Syn
 | Error message | Fix |
 |---------------|-----|
 | `Missing: ProjectCode` | Enter the ProjectCode |
-| `Unknown ProjectCode: THG-XX-999` | Correct the code — see §H |
+| `Unknown ProjectCode: THG-XX-999` | Correct the code — see §J |
 | `Missing: Likelihood` / `Missing: Impact` | Select a value in the choice column |
 | `Likelihood/Impact must be 1-5` | Choose a value between 1 and 5 |
 | `Category not recognized: Weather` | Use one of the exact Category strings in §A |
@@ -424,10 +633,22 @@ You do not need to ask IT to re-run anything — just fix the row and reset `Syn
 | `FinishPlanned must be on/after StartPlanned` | Correct the planned dates |
 | `PctComplete must be 0-100` | Enter a number between 0 and 100 |
 | `Workstream/WorkPackage changed after sync - create a new row instead` | Create a new activity row in the new location; set the old row to Cancelled |
+| `Missing: Description` / `Missing: Reason` | Enter the required CR fields |
+| `CRClass not recognized: <value>` | Use one of the exact CRClass strings in §E |
+| `ChangeType not recognized: <value>` | Use one of the exact ChangeType strings in §E |
+| `Decision set but DecidedBy is empty` | Set the DecidedBy people picker |
+| `Decision set but DecidedDate is empty` | Enter the DecidedDate |
+| `DecidedDate must be blank while Decision is Pending` | Clear DecidedDate — decisions cannot be pre-dated |
+| `Rejected decision requires CRStatus = Rejected` | Set CRStatus to `Rejected` to match the decision |
+| `CRStatus Verified requires Decision = Approved` | Set Decision to `Approved` before marking Verified |
+| `DecidedDate must be on/after RequestedDate` | Correct one of the two dates |
+| `DecidedBy <email> not in person directory` | Ask PMO to add that person, then reset Pending |
+| `ApprovedBy set but ApprovedDate missing` | Enter both ApprovedBy and ApprovedDate, or clear both |
+| `ApprovedDate set but ApprovedBy missing` | Enter both ApprovedBy and ApprovedDate, or clear both |
 
 ---
 
-## G. Delete policy — never delete List rows to close a record
+## I. Delete policy — never delete List rows to close a record
 
 Deleting a SharePoint List row does **not** delete the corresponding database record.
 The sync treats a missing List row as an **orphan** and logs:
@@ -455,7 +676,7 @@ first row would silently alias an old record. The Lists are permanent infrastruc
 
 ---
 
-## H. Where to find valid ProjectCodes
+## J. Where to find valid ProjectCodes
 
 `ProjectCode` must exactly match a project code that already exists in PostgreSQL
 (created by the intake sync). Two ways to look it up:
@@ -470,7 +691,7 @@ and hyphens are significant — the sync does a case-sensitive match.
 
 ---
 
-## I. Pipeline timing
+## K. Pipeline timing
 
 | Time | Action |
 |------|--------|
@@ -485,7 +706,7 @@ artifact sync resolves ProjectCodes.
 
 ---
 
-## J. Morning health check
+## L. Morning health check
 
 Check `logs\artifact_sync.log` each morning to confirm there were no errors. The wrapper
 brackets every run with a `---- <date> <time> ----` header and a final `exit code N`
@@ -524,7 +745,7 @@ findstr "ERROR" logs\artifact_sync.log
 
 ---
 
-## K. Hard rules — never do these
+## M. Hard rules — never do these
 
 > **NEVER run `tools/load_postgres.py --reseed` after go-live.**
 >
@@ -556,4 +777,12 @@ findstr "ERROR" logs\artifact_sync.log
 | Existing item, no data change, write-back lost | Heals write-back only; no DB change |
 | Existing item, no change, write-back intact | Skips; no DB or List writes |
 | List row deleted (orphan) | Logs `INFO orphaned external_ref`; DB row kept; exits 0 |
+| New change request, valid, Pending | Mints `C-NNN`; inserts row; writes `CR_CREATE` audit entry; writes `Synced` + CRCode back to List |
+| New change request, Decision ≠ Pending | Same as above plus soft-authority check; if decider is not Sponsor or PM, writes advisory to SyncMessage |
+| CR Decision or CRStatus changed | Updates DB row; writes `CR_DECISION` and/or `CR_STATUS` audit entries inside the transaction; heals write-back |
+| CR cross-axis coherence violation | Writes `Error` + message; no DB change |
+| CR, ProjectCode changed after sync | Writes `Error: ProjectCode changed after sync - create a new row instead` |
+| New decision, valid | Mints `D-NNN`; inserts row; writes `Synced` + DecisionCode back to List |
+| Status report, ApprovedBy + ApprovedDate set | Sets `is_signed_off = true`; writes `STATUS_SIGNOFF` audit entry; `SyncStatus = Synced` |
+| Status report, sign-off fields partially set | Writes `Error: ApprovedBy/ApprovedDate must both be set or both blank` |
 | `--dry-run` flag | Prints intent only; no DB writes; no List writes |

@@ -1,4 +1,4 @@
-# Artifact Entry Setup — Risks, Milestones, Status Reports, Project Activities, Change Requests, Decisions, Baselines, Phase Gates
+# Artifact Entry Setup — Risks, Milestones, Status Reports, Project Activities, Change Requests, Decisions, Baselines, Phase Gates, Change Impact Assessments
 
 This is the PM-facing reference for filling in the four execution-artifact SharePoint
 Lists that feed the **Project Status Report** Power BI page. The daily 5:40 AM sync
@@ -24,6 +24,7 @@ access (creating and editing items) requires at minimum Edit permission on the s
 | **Project Decisions** | One row per governance decision per project |
 | **Project Baselines** | One row per frozen Schedule / Budget / Scope baseline per project — see §N |
 | **Project Phase Gates** | One row per lifecycle-phase handoff per project — see §O |
+| **Change Impact Assessments** | One row per department's impact statement on a change request — see §P |
 
 All these Lists live on the root SharePoint site (same site as Project Intake).
 
@@ -919,6 +920,78 @@ The sync populates these automatically — **do not edit them**:
 
 ---
 
+## P. Change Impact Assessments
+
+A department records the **impact a change request has on its area** by creating a row in the
+**Change Impact Assessments** List — one row per department per CR. Each row is a *child* of an
+existing change request: it names the parent CR by its code, and the sync attaches the assessment
+to that CR. This is the per-department fan-out behind the impact roll-up on the Change Control page.
+
+### Required columns
+
+| Column | Type | Notes |
+|--------|------|-------|
+| **ProjectCode** | Text | Must exactly match an existing project code — see §J; scopes the parent-CR lookup |
+| **ParentCRCode** | Text | The code of the parent change request (e.g. `C-001`) — must already exist on that project (see §E) |
+| **Department** | Choice | The assessing department — see allowed values below |
+| **SubmittedBy** | Person | M365 people picker — the assessor; **falls back to the item author** if left blank, so the row always has a submitter |
+
+### Optional columns
+
+| Column | Type | Notes |
+|--------|------|-------|
+| **ScopeImpact** | Multi-line text | How the change affects this department's scope |
+| **ScheduleImpactDays** | Number | Whole-number schedule delta in days; blank = none recorded |
+| **CostImpact** | Number | Cost delta (two decimals); blank = none recorded |
+| **QualityImpact** | Multi-line text | Quality / compliance impact |
+| **SubmittedDate** | Date | Date of the assessment; **defaults to the item's created date** when blank |
+
+### Choice values — use exactly as shown
+
+**Department** (one of the eight Theragen departments):
+```
+Clinical / Medical Affairs
+Regulatory / Quality
+R&D / Engineering
+Operations / PMO
+Finance / Procurement
+Commercial / Marketing
+IT / Data / Security
+HR / People
+```
+
+### Parent-CR link — how a child finds its parent
+
+The sync resolves the parent change request by **(ProjectCode, ParentCRCode)** — CR codes are
+unique *within a project*, so both are required. The parent CR is read live at sync time, so a CR
+filed the same morning is available to its assessments in the same run (change requests sync before
+impact assessments). If no CR matches, the row is rejected with
+`Unknown ParentCRCode <code> for project <ProjectCode>`.
+
+### Re-parent rule — do not move an assessment after sync
+
+Once an assessment has synced, its parent CR is fixed. Editing `ProjectCode` or `ParentCRCode` to
+point at a **different** CR is rejected with `Reparenting not allowed; create a new impact
+assessment`. To assess a different CR, create a new row. (Editing the impact fields, department,
+submitter, or date on the *same* CR is fine — those update in place.)
+
+### No audit trail
+
+An impact assessment is descriptive content attached to a CR, not a governance state transition, so
+it is **not** written to `doc_mgmt.audit_trail_entry` (the same treatment as Project Decisions). The
+parent CR's own decision/status changes are still audited (see §E).
+
+### Read-only write-back columns
+
+The sync populates these automatically — **do not edit them**:
+
+| Column | Meaning |
+|--------|---------|
+| **SyncStatus** | `Pending` → `Synced` (success) or `Error` (see §H) |
+| **SyncMessage** | Human-readable error detail (e.g. an unknown parent CR); blank on success |
+
+---
+
 ## Appendix — sync behaviour reference
 
 | Scenario | sync_artifacts.py behaviour |
@@ -944,4 +1017,8 @@ The sync populates these automatically — **do not edit them**:
 | New decision, valid | Mints `D-NNN`; inserts row; writes `Synced` + DecisionCode back to List |
 | Status report, ApprovedBy + ApprovedDate set | Sets `is_signed_off = true`; writes `STATUS_SIGNOFF` audit entry; `SyncStatus = Synced` |
 | Status report, sign-off fields partially set | Writes `Error: ApprovedBy/ApprovedDate must both be set or both blank` |
+| New impact assessment, valid | Resolves parent CR by (ProjectCode, ParentCRCode); inserts row; writes `Synced` back (no code minted) |
+| Impact assessment, unknown ParentCRCode | Writes `Error: Unknown ParentCRCode <code> for project <code>` |
+| Impact assessment, fields changed (same CR) | Updates DB row; heals write-back; writes `Synced` |
+| Impact assessment, re-parented after sync | Writes `Error: Reparenting not allowed; create a new impact assessment` |
 | `--dry-run` flag | Prints intent only; no DB writes; no List writes |

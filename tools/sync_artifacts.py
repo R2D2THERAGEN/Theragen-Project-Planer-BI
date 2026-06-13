@@ -50,6 +50,12 @@ CR_FIELDS = ("Title,ProjectCode,RequestedDate,RequestedBy,RequestedByLookupId,"
              "SyncStatus,SyncMessage")
 DECISION_FIELDS = ("Title,ProjectCode,Rationale,DecidedBy,DecidedByLookupId,"
                    "DecidedDate,DecisionCode,SyncStatus,SyncMessage")
+BASELINE_FIELDS = ("Title,ProjectCode,BaselineType,ChangeSummary,LinkedCRCode,"
+                   "BaselinedBy,BaselinedByLookupId,BaselineVersion,"
+                   "SyncStatus,SyncMessage")
+PHASE_GATE_FIELDS = ("Title,ProjectCode,TargetPhase,GateDecision,"
+                     "ApprovedBy,ApprovedByLookupId,DecidedDate,"
+                     "GateNotes,SyncStatus,SyncMessage")
 
 
 def _date(v):
@@ -201,6 +207,36 @@ def normalize_decision(item, people):
     }
 
 
+def normalize_baseline(item, people):
+    f = item.get("fields", {})
+    return {
+        "item_id": item["id"],
+        "Title": f.get("Title") or "",
+        "ProjectCode": (f.get("ProjectCode") or "").strip(),
+        "BaselineType": f.get("BaselineType") or "",
+        "ChangeSummary": f.get("ChangeSummary") or None,
+        "LinkedCRCode": f.get("LinkedCRCode") or None,
+        "BaselinedByEmail": people.email(f.get("BaselinedByLookupId")),
+        "BaselineVersion": f.get("BaselineVersion") or "",
+        "SyncStatus": f.get("SyncStatus") or "Pending",
+    }
+
+
+def normalize_phase_gate(item, people):
+    f = item.get("fields", {})
+    return {
+        "item_id": item["id"],
+        "Title": f.get("Title") or "",
+        "ProjectCode": (f.get("ProjectCode") or "").strip(),
+        "TargetPhase": f.get("TargetPhase") or "",
+        "GateDecision": f.get("GateDecision") or "Approved",
+        "ApprovedByEmail": people.email(f.get("ApprovedByLookupId")),
+        "DecidedDate": _date(f.get("DecidedDate")),
+        "GateNotes": f.get("GateNotes") or None,
+        "SyncStatus": f.get("SyncStatus") or "Pending",
+    }
+
+
 def writeback(g, list_id, item_id, fields):
     g.patch(f"/sites/{M365['site_id']}/lists/{list_id}/items/{item_id}/fields",
             fields)
@@ -273,6 +309,12 @@ AREA_SELECT = ('SELECT r.external_ref, a.knowledge_area, a.status'
                ' FROM pmbok.status_report_area a'
                ' JOIN pmbok.status_report r ON r.report_id = a.report_id'
                ' WHERE r.external_ref IS NOT NULL')
+BASELINE_SELECT = ('SELECT external_ref, baseline_id, project_id,'
+                   ' baseline_type, version, status'
+                   ' FROM pmbok.project_baseline WHERE external_ref IS NOT NULL')
+PHASE_GATE_SELECT = ('SELECT external_ref, phase_gate_id, project_id,'
+                     ' from_phase, to_phase, gate_decision'
+                     ' FROM pmbok.phase_gate_log WHERE external_ref IS NOT NULL')
 ACTIVITY_SELECT = ('SELECT a.external_ref, a.activity_id, a.wbs_element_id,'
                    ' w.project_id, a.activity_code, a.name, a.start_planned,'
                    ' a.finish_planned, a.start_actual, a.finish_actual,'
@@ -949,6 +991,190 @@ def process_decision(conn, g, it, dry, current):
             f" ({it['ProjectCode']}, item {it['item_id']})")
 
 
+def _rows_as_dicts(conn, sql, params=()):
+    """Execute sql, return list of dicts keyed by column name.
+
+    This helper avoids repeating the cur.description zip pattern for the
+    build_baseline_snapshot SELECTs. The same pattern is already used in
+    synced_map(); we factor it here for reuse across snapshot types.
+    """
+    cur = conn.execute(sql, params)
+    cols = [d.name for d in cur.description]
+    return [dict(zip(cols, row)) for row in cur.fetchall()]
+
+
+def project_phase(conn, project_id):
+    """Return the current lifecycle_phase string for a project, or None."""
+    row = conn.execute(
+        "SELECT lifecycle_phase FROM pmbok.project WHERE project_id=%s",
+        (project_id,)).fetchone()
+    return row[0] if row else None
+
+
+def build_baseline_snapshot(conn, project_id, baseline_type):
+    """Read live tables and call the pure assembler for the given baseline type.
+
+    Returns the assembled snapshot dict (no writes). Raises ValueError for an
+    unrecognised baseline_type so callers get a clear error, not a silent None.
+
+    Schedule: joins schedule_activity -> wbs_element for activities; reads
+      milestone for milestones; reads planned_start/planned_finish from project.
+    Budget: reads budget_total from project; joins budget_line_item -> wbs_element
+      for lines.
+    Scope: reads project_charter for the charter row (one or None).
+      scope_inclusion, scope_exclusion, acceptance_criterion each link via
+      scope_statement (scope_id). We join scope_statement -> scope_* child tables
+      via scope_statement.project_id = %s. If a project has no scope_statement
+      row, the join yields [] for each child, which the assembler accepts fine.
+      (scope_statement.project_id exists in db/02_pmbok.sql; the child tables
+      scope_inclusion, scope_exclusion, acceptance_criterion link via scope_id
+      which is scope_statement.scope_id — a standard 1:N pattern.)
+    """
+    if baseline_type not in al.BASELINE_TYPES:
+        raise ValueError(f"Unknown baseline_type: {baseline_type!r}")
+
+    if baseline_type == "Schedule":
+        activities = _rows_as_dicts(
+            conn,
+            "SELECT a.activity_code, a.name, a.start_planned, a.finish_planned,"
+            "       a.duration_days"
+            " FROM pmbok.schedule_activity a"
+            " JOIN pmbok.wbs_element w USING (wbs_element_id)"
+            " WHERE w.project_id=%s",
+            (project_id,))
+        milestones = _rows_as_dicts(
+            conn,
+            "SELECT name, baseline_date"
+            " FROM pmbok.milestone WHERE project_id=%s",
+            (project_id,))
+        headline_rows = _rows_as_dicts(
+            conn,
+            "SELECT planned_start, planned_finish"
+            " FROM pmbok.project WHERE project_id=%s",
+            (project_id,))
+        headline = headline_rows[0] if headline_rows else {}
+        return al.assemble_schedule_snapshot(activities, milestones, headline)
+
+    if baseline_type == "Budget":
+        budget_rows = _rows_as_dicts(
+            conn,
+            "SELECT budget_total FROM pmbok.project WHERE project_id=%s",
+            (project_id,))
+        budget_total = budget_rows[0]["budget_total"] if budget_rows else None
+        lines = _rows_as_dicts(
+            conn,
+            "SELECT w.wbs_code, b.category, b.total, b.funding_source"
+            " FROM pmbok.budget_line_item b"
+            " JOIN pmbok.wbs_element w USING (wbs_element_id)"
+            " WHERE w.project_id=%s",
+            (project_id,))
+        return al.assemble_budget_snapshot(budget_total, lines)
+
+    # baseline_type == "Scope"
+    charter_rows = _rows_as_dicts(
+        conn,
+        "SELECT business_case, high_level_in_scope, high_level_out_scope"
+        " FROM pmbok.project_charter WHERE project_id=%s",
+        (project_id,))
+    charter = charter_rows[0] if charter_rows else None
+    # scope_inclusion / scope_exclusion / acceptance_criterion link via
+    # scope_statement (scope_id FK). We join through scope_statement on
+    # project_id. If no scope_statement exists, each child query returns [].
+    inclusions = _rows_as_dicts(
+        conn,
+        "SELECT si.sequence, si.item"
+        " FROM pmbok.scope_inclusion si"
+        " JOIN pmbok.scope_statement ss USING (scope_id)"
+        " WHERE ss.project_id=%s",
+        (project_id,))
+    exclusions = _rows_as_dicts(
+        conn,
+        "SELECT se.sequence, se.item"
+        " FROM pmbok.scope_exclusion se"
+        " JOIN pmbok.scope_statement ss USING (scope_id)"
+        " WHERE ss.project_id=%s",
+        (project_id,))
+    acceptance = _rows_as_dicts(
+        conn,
+        "SELECT ac.sequence, ac.criterion"
+        " FROM pmbok.acceptance_criterion ac"
+        " JOIN pmbok.scope_statement ss USING (scope_id)"
+        " WHERE ss.project_id=%s",
+        (project_id,))
+    return al.assemble_scope_snapshot(charter, inclusions, exclusions, acceptance)
+
+
+def process_baseline(conn, g, it, dry, current):
+    errs = al.validate_baseline(it)
+    proj = project_by_code(conn, it["ProjectCode"]) if it["ProjectCode"] else None
+    if it["ProjectCode"] and not proj:
+        errs.append(f"Unknown ProjectCode: {it['ProjectCode']}")
+    baselined_by = (person_id_by_email(conn, it["BaselinedByEmail"])
+                    if it["BaselinedByEmail"] else None)
+    if it["BaselinedByEmail"] and not baselined_by:
+        errs.append(f"BaselinedBy {it['BaselinedByEmail']} not in person directory")
+    if errs:
+        return _error(g, M365["baseline_list_id"], it, errs, dry, "baseline")
+    project_id, _dept = proj
+    if current:
+        if str(current["project_id"]) != str(project_id):
+            return _error(g, M365["baseline_list_id"], it,
+                          ["ProjectCode changed after sync - create a new row"
+                           " instead"], dry, "baseline")
+        # Baseline rows are immutable once written (write path lands in T5).
+        return f"OK baseline item {it['item_id']}: existing (write path lands in T5)"
+    # New item — mint version for dry-run reporting.
+    existing_versions = [r[0] for r in conn.execute(
+        "SELECT version FROM pmbok.project_baseline"
+        " WHERE project_id=%s AND baseline_type=%s",
+        (project_id, it["BaselineType"])).fetchall()]
+    ver = al.next_baseline_version(existing_versions)
+    if dry:
+        return (f"DRY baseline item {it['item_id']}: would create"
+                f" {it['BaselineType']} v{ver} ({it['ProjectCode']})")
+    # Real write path lands in T5; guard against accidental non-dry call.
+    raise RuntimeError("process_baseline: real write path not yet implemented (T5)")
+
+
+def process_phase_gate(conn, g, it, dry, current):
+    errs = al.validate_phase_gate(it)
+    proj = project_by_code(conn, it["ProjectCode"]) if it["ProjectCode"] else None
+    if it["ProjectCode"] and not proj:
+        errs.append(f"Unknown ProjectCode: {it['ProjectCode']}")
+    approved_by = (person_id_by_email(conn, it["ApprovedByEmail"])
+                   if it["ApprovedByEmail"] else None)
+    if it["ApprovedByEmail"] and not approved_by:
+        errs.append(f"ApprovedBy {it['ApprovedByEmail']} not in person directory")
+    if errs:
+        return _error(g, M365["phase_gate_list_id"], it, errs, dry, "phase_gate")
+    project_id, _dept = proj
+    if current:
+        if str(current["project_id"]) != str(project_id):
+            return _error(g, M365["phase_gate_list_id"], it,
+                          ["ProjectCode changed after sync - create a new row"
+                           " instead"], dry, "phase_gate")
+        return f"OK phase_gate item {it['item_id']}: existing (write path lands in T6)"
+    # New item — compute from_phase and gate legality.
+    from_phase = project_phase(conn, project_id)
+    target = it["TargetPhase"]
+    decision = it["GateDecision"]
+    if decision == "Held":
+        msg = f"would hold at {from_phase}"
+    elif al.PHASE_ORDER.get(target, -1) > al.PHASE_ORDER.get(from_phase, -1):
+        msg = f"would move {from_phase} -> {target}"
+    elif al.PHASE_ORDER.get(target, -1) == al.PHASE_ORDER.get(from_phase, -1):
+        msg = f"would no-op (already {from_phase})"
+    else:
+        # Backward transition — reject.
+        return _error(g, M365["phase_gate_list_id"], it,
+                      [f"Backward phase transition rejected: {from_phase} -> {target}"],
+                      dry, "phase_gate")
+    if dry:
+        return f"DRY phase_gate item {it['item_id']}: {msg} ({it['ProjectCode']})"
+    # Real write path lands in T6; guard against accidental non-dry call.
+    raise RuntimeError("process_phase_gate: real write path not yet implemented (T6)")
+
+
 ARTIFACTS = [
     {"kind": "risk", "list_key": "risk_list_id", "fields": RISK_FIELDS,
      "normalize": normalize_risk, "process": process_risk,
@@ -968,6 +1194,12 @@ ARTIFACTS = [
     {"kind": "decision", "list_key": "decision_list_id",
      "fields": DECISION_FIELDS, "normalize": normalize_decision,
      "process": process_decision, "select": DECISION_SELECT},
+    {"kind": "baseline", "list_key": "baseline_list_id",
+     "fields": BASELINE_FIELDS, "normalize": normalize_baseline,
+     "process": process_baseline, "select": BASELINE_SELECT},
+    {"kind": "phase_gate", "list_key": "phase_gate_list_id",
+     "fields": PHASE_GATE_FIELDS, "normalize": normalize_phase_gate,
+     "process": process_phase_gate, "select": PHASE_GATE_SELECT},
 ]
 
 

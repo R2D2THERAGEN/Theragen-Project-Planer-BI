@@ -96,6 +96,23 @@ Setup recipe (Form questions, Flow steps, schedule, smoke test):
 [docs/intake-setup.md](docs/intake-setup.md). Design rationale:
 [docs/superpowers/specs/2026-06-12-project-ingestion-design.md](docs/superpowers/specs/2026-06-12-project-ingestion-design.md).
 
+### Execution tracking
+
+Once a project is active, PMs file risks, milestones, and weekly status reports directly
+in three SharePoint Lists — **Project Risks**, **Project Milestones**, and **Project
+Status Reports**. `tools/sync_artifacts.py` runs daily at **5:40 AM** (Task Scheduler
+job `Theragen\SyncArtifacts` → `tools/run_artifact_sync.cmd`, log in
+`logs/artifact_sync.log`), ten minutes after the intake sync so same-morning project
+codes are available. Each sync validates every List item, inserts or updates the
+corresponding `pmbok.risk`, `pmbok.milestone`, and `pmbok.status_report` rows
+(status reports fan out to nine `pmbok.status_report_area` rows, one per PMBOK
+knowledge area), and writes results back onto the List item (`SyncStatus`,
+`SyncMessage`, and — for risks — the auto-minted `RiskCode`). The write-back columns
+are managed by the sync and should not be edited by hand. PM entry guide and column
+reference: [docs/artifact-entry-setup.md](docs/artifact-entry-setup.md). Design
+rationale:
+[docs/superpowers/specs/2026-06-12-execution-tracking-design.md](docs/superpowers/specs/2026-06-12-execution-tracking-design.md).
+
 **EVM note:** the v1.0 schema has no cost-actuals entity, so AC/CPI/EAC are intentionally
 absent; SPI/SV/EV/PV derive from WBS estimates and activity percent-complete. Add an
 actuals feed (ERP extract) in Phase 2 to complete the EVM family.

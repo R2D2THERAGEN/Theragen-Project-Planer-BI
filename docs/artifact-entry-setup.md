@@ -32,7 +32,7 @@ All four Lists live on the root SharePoint site (same site as Project Intake).
 | Column | Type | Notes |
 |--------|------|-------|
 | **Title** | Text | Short label for the risk (auto-populated by SharePoint as item title) |
-| **ProjectCode** | Text | Must exactly match an existing project code — see §F |
+| **ProjectCode** | Text | Must exactly match an existing project code — see §H |
 | **Category** | Choice | See allowed values below |
 | **Description** | Multi-line text | Full description of the risk |
 | **Likelihood** | Choice | `1` through `5` |
@@ -108,7 +108,7 @@ The sync populates these automatically — **do not edit them**:
 | Column | Meaning |
 |--------|---------|
 | **RiskCode** | Auto-minted sequential code within the project, e.g. `R-001`, `R-002`. Never changes after creation. |
-| **SyncStatus** | `Pending` → `Synced` (success) or `Error` (see §E) |
+| **SyncStatus** | `Pending` → `Synced` (success) or `Error` (see §F) |
 | **SyncMessage** | Human-readable error detail when `SyncStatus = Error`; blank on success |
 
 ---
@@ -120,7 +120,7 @@ The sync populates these automatically — **do not edit them**:
 | Column | Type | Notes |
 |--------|------|-------|
 | **Title** | Text | Milestone name |
-| **ProjectCode** | Text | Must exactly match an existing project code — see §F |
+| **ProjectCode** | Text | Must exactly match an existing project code — see §H |
 | **BaselineDate** | Date | Original planned completion date |
 | **OwnerRole** | Choice | Role responsible for delivery |
 
@@ -129,7 +129,7 @@ The sync populates these automatically — **do not edit them**:
 | Column | Type | Notes |
 |--------|------|-------|
 | **ForecastDate** | Date | Updated forecast; can be blank |
-| **ActualDate** | Date | Required when `MilestoneStatus = Achieved` — see §C |
+| **ActualDate** | Date | Required when `MilestoneStatus = Achieved` — see §E |
 | **MilestoneStatus** | Choice | Defaults to `On track` if left blank |
 
 ### Choice values
@@ -171,7 +171,7 @@ parent report row plus nine knowledge-area health rows in PostgreSQL.
 | Column | Type | Notes |
 |--------|------|-------|
 | **Title** | Text | Short label, e.g. `wk24` or `2026-06-W3` |
-| **ProjectCode** | Text | Must exactly match an existing project code — see §F |
+| **ProjectCode** | Text | Must exactly match an existing project code — see §H |
 | **PeriodStart** | Date | Start of the reporting period |
 | **PeriodEnd** | Date | Must be on or after PeriodStart |
 | **ExecutiveSummary** | Multi-line text | 2–5 sentence narrative |
@@ -297,7 +297,7 @@ The sync populates these automatically — **do not edit them**:
 | Column | Meaning |
 |--------|---------|
 | **ActivityCode** | Auto-minted code within the work package, e.g. `1.1-A1`, `1.1-A2`. Never changes after creation. |
-| **SyncStatus** | `Pending` → `Synced` (success) or `Error` (see §G) |
+| **SyncStatus** | `Pending` → `Synced` (success) or `Error` (see §F) |
 | **SyncMessage** | Human-readable error detail when `SyncStatus = Error`; blank on success |
 
 ### Derived fields

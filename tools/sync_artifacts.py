@@ -1202,42 +1202,124 @@ def process_baseline(conn, g, it, dry, current):
 
 
 def process_phase_gate(conn, g, it, dry, current):
+    """Apply a phase-gate decision (the process_triage analog).
+
+    Append-once like a baseline: the phase_gate_log row (external_ref = List
+    item id) is the idempotency anchor. A Synced gate is never re-applied — the
+    project was already advanced when it first synced. A Held (or same-phase
+    Approved) records a log row with from==to and does NOT touch the project. A
+    forward Approved advances pmbok.project.lifecycle_phase, inserts the log
+    row, and writes a PHASE_GATE audit entry — all in one transaction.
+    """
     errs = al.validate_phase_gate(it)
     proj = project_by_code(conn, it["ProjectCode"]) if it["ProjectCode"] else None
     if it["ProjectCode"] and not proj:
         errs.append(f"Unknown ProjectCode: {it['ProjectCode']}")
-    approved_by = (person_id_by_email(conn, it["ApprovedByEmail"])
-                   if it["ApprovedByEmail"] else None)
-    if it["ApprovedByEmail"] and not approved_by:
+    approver = (person_id_by_email(conn, it["ApprovedByEmail"])
+                if it["ApprovedByEmail"] else None)
+    if it["ApprovedByEmail"] and not approver:
         errs.append(f"ApprovedBy {it['ApprovedByEmail']} not in person directory")
     if errs:
         return _error(g, M365["phase_gate_list_id"], it, errs, dry, "phase_gate")
     project_id, _dept = proj
+    item_id = it["item_id"]
+
+    # from_phase = the project's CURRENT lifecycle_phase (the gate's origin).
+    from_phase = project_phase(conn, project_id)
+
+    # ---- current (already synced) branch: append-once anchor ----
+    # The log row is the idempotency anchor; a synced gate already advanced the
+    # project when it first applied, so it is never re-applied here.
     if current:
         if str(current["project_id"]) != str(project_id):
             return _error(g, M365["phase_gate_list_id"], it,
                           ["ProjectCode changed after sync - create a new row"
                            " instead"], dry, "phase_gate")
-        return f"OK phase_gate item {it['item_id']}: existing (write path lands in T6)"
-    # New item — compute from_phase and gate legality.
-    from_phase = project_phase(conn, project_id)
-    target = it["TargetPhase"]
-    decision = it["GateDecision"]
-    if decision == "Held":
-        msg = f"would hold at {from_phase}"
-    elif al.PHASE_ORDER.get(target, -1) > al.PHASE_ORDER.get(from_phase, -1):
-        msg = f"would move {from_phase} -> {target}"
-    elif al.PHASE_ORDER.get(target, -1) == al.PHASE_ORDER.get(from_phase, -1):
-        msg = f"would no-op (already {from_phase})"
-    else:
-        # Backward transition — reject.
+        if it["SyncStatus"] != "Synced":
+            if not dry:
+                writeback(g, M365["phase_gate_list_id"], item_id,
+                          {"SyncStatus": "Synced", "SyncMessage": ""})
+            return f"OK phase_gate item {item_id}: healed write-back"
+        return f"OK phase_gate item {item_id}: no change"
+
+    # ---- new (current is None) branch: compute legality + apply ----
+    to_phase = it["TargetPhase"]
+    dec = it["GateDecision"]
+
+    # Defensive: from_phase comes from the DB; the domain is aligned now, so a
+    # miss here should not happen — surface it rather than mis-rank.
+    if from_phase not in al.PHASE_ORDER:
         return _error(g, M365["phase_gate_list_id"], it,
-                      [f"Backward phase transition rejected: {from_phase} -> {target}"],
+                      [f"Project lifecycle_phase {from_phase!r} not a known phase"],
                       dry, "phase_gate")
+
+    if dec == "Held":
+        # A hold stays put — record from==to. Always legal.
+        to_phase = from_phase
+    else:
+        # Approved / Approved with conditions: forward-only.
+        if al.PHASE_ORDER[to_phase] < al.PHASE_ORDER[from_phase]:
+            return _error(g, M365["phase_gate_list_id"], it,
+                          [f"Backward phase transition rejected:"
+                           f" {from_phase} -> {to_phase}"], dry, "phase_gate")
+        # PHASE_ORDER[to_phase] == PHASE_ORDER[from_phase] falls through as a
+        # no-op (already there); '>' is a real forward advance.
+
+    record_only = to_phase == from_phase  # Held OR same-phase Approved
+
     if dry:
-        return f"DRY phase_gate item {it['item_id']}: {msg} ({it['ProjectCode']})"
-    # Real write path lands in T6; guard against accidental non-dry call.
-    raise RuntimeError("process_phase_gate: real write path not yet implemented (T6)")
+        if record_only:
+            return (f"DRY phase_gate item {item_id}: would record {dec}"
+                    f" at {from_phase}")
+        return (f"DRY phase_gate item {item_id}: would move"
+                f" {from_phase} -> {to_phase} ({it['ProjectCode']})")
+
+    phase_gate_id = str(uuid.uuid5(NS, f"thg/artifact/phasegate/{item_id}"))
+    row = al.build_phase_gate_row(it, project_id, from_phase, to_phase, approver)
+
+    if record_only:
+        # No project change — just log the gate (Held or same-phase Approved).
+        with conn.transaction():
+            conn.execute(
+                "INSERT INTO pmbok.phase_gate_log"
+                " (phase_gate_id, project_id, from_phase, to_phase,"
+                "  gate_decision, approved_by_person_id, decided_at,"
+                "  gate_notes, external_ref)"
+                " VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                (phase_gate_id, row["project_id"], row["from_phase"],
+                 row["to_phase"], row["gate_decision"],
+                 row["approved_by_person_id"], row["decided_at"],
+                 row["gate_notes"], item_id))
+            audit_lib.write_trail(
+                conn, approver, "PHASE_GATE_HOLD", "phase_gate_log",
+                phase_gate_id, {"lifecycle_phase": from_phase},
+                {"lifecycle_phase": from_phase}, None)
+        writeback(g, M365["phase_gate_list_id"], item_id,
+                  {"SyncStatus": "Synced", "SyncMessage": ""})
+        return f"OK phase_gate item {item_id}: recorded {dec} at {from_phase}"
+
+    # Forward advance: UPDATE project + INSERT log + audit in one transaction.
+    with conn.transaction():
+        conn.execute(
+            "UPDATE pmbok.project SET lifecycle_phase=%s, updated_at=now()"
+            " WHERE project_id=%s", (to_phase, project_id))
+        conn.execute(
+            "INSERT INTO pmbok.phase_gate_log"
+            " (phase_gate_id, project_id, from_phase, to_phase,"
+            "  gate_decision, approved_by_person_id, decided_at,"
+            "  gate_notes, external_ref)"
+            " VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+            (phase_gate_id, row["project_id"], row["from_phase"],
+             row["to_phase"], row["gate_decision"],
+             row["approved_by_person_id"], row["decided_at"],
+             row["gate_notes"], item_id))
+        audit_lib.write_trail(
+            conn, approver, "PHASE_GATE", "phase_gate_log", phase_gate_id,
+            {"lifecycle_phase": from_phase}, {"lifecycle_phase": to_phase},
+            None)
+    writeback(g, M365["phase_gate_list_id"], item_id,
+              {"SyncStatus": "Synced", "SyncMessage": ""})
+    return f"OK phase_gate item {item_id}: moved {from_phase} -> {to_phase}"
 
 
 ARTIFACTS = [

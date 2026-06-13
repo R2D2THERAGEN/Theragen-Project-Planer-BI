@@ -72,6 +72,20 @@ LISTS = {
         {"name": "SubmittedBy", "personOrGroup": {"allowMultipleSelection": False}},
     ] + [choice(f"{ka}Health", al.RAG, default="Green")
          for ka in al.KNOWLEDGE_AREAS] + BOOKKEEPING),
+    "activity_list_id": ("Project Activities", [
+        text("ProjectCode"),
+        text("Workstream"),
+        text("WorkPackage"),
+        date_only("StartPlanned"),
+        date_only("FinishPlanned"),
+        date_only("StartActual"),
+        date_only("FinishActual"),
+        {"name": "Owner", "personOrGroup": {"allowMultipleSelection": False}},
+        choice("Department", al.DEPARTMENTS),
+        choice("ActivityStatus", al.ACTIVITY_STATUSES, default="Not started"),
+        {"name": "PctComplete", "number": {"decimalPlaces": "none"}},
+        text("ActivityCode"),
+    ] + BOOKKEEPING),
 }
 
 

@@ -71,7 +71,7 @@ def main():
                 "DROP SCHEMA IF EXISTS pmbok CASCADE; "
                 "DROP SCHEMA IF EXISTS doc_mgmt CASCADE;")
     for f in ("01_dm.sql", "02_pmbok.sql", "03_bi_views.sql", "04_foreign_keys.sql",
-              "05_intake_external_ref.sql"):
+              "05_intake_external_ref.sql", "06_artifact_external_ref.sql"):
         sql = open(os.path.join(ROOT, "db", f), encoding="utf-8").read()
         cur.execute(sql)
         print(f"executed {f}")

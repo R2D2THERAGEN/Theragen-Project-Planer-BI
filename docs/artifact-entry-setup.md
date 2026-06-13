@@ -553,9 +553,11 @@ The sync populates these automatically — **do not edit them**:
 
 ### Audit trail
 
-Every decision creation and update is recorded as an append-only entry in
-`doc_mgmt.audit_trail_entry` (action code `DECISION_CREATE`). These entries are
-never deleted by the sync.
+Project decisions are **not** individually written to `doc_mgmt.audit_trail_entry`
+in this release — the append-only audit trail covers change-request transitions
+(`CR_CREATE`, `CR_DECISION`, `CR_STATUS`) and status-report sign-off
+(`STATUS_SIGNOFF`). The decision record itself (with `DecidedBy` and `DecidedDate`)
+is the durable trail for decisions; richer decision auditing is a later-phase item.
 
 ### Common errors
 

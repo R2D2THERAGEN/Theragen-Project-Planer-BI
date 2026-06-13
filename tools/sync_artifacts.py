@@ -57,6 +57,10 @@ BASELINE_FIELDS = ("Title,ProjectCode,BaselineType,ChangeSummary,LinkedCRCode,"
 PHASE_GATE_FIELDS = ("Title,ProjectCode,TargetPhase,GateDecision,"
                      "ApprovedBy,ApprovedByLookupId,DecidedDate,"
                      "GateNotes,SyncStatus,SyncMessage")
+IMPACT_FIELDS = ("Title,ProjectCode,ParentCRCode,Department,ScopeImpact,"
+                 "ScheduleImpactDays,CostImpact,QualityImpact,"
+                 "SubmittedBy,SubmittedByLookupId,SubmittedDate,"
+                 "SyncStatus,SyncMessage")
 
 
 def _date(v):
@@ -238,6 +242,29 @@ def normalize_phase_gate(item, people):
     }
 
 
+def normalize_impact_assessment(item, people):
+    f = item.get("fields", {})
+    created_by = (((item.get("createdBy") or {}).get("user") or {})
+                  .get("email") or "").lower()
+    # SubmittedDate defaults to createdDateTime date when blank (NOT NULL column).
+    created_date = (item.get("createdDateTime") or "")[:10] or None
+    return {
+        "item_id": item["id"],
+        "Title": f.get("Title") or "",
+        "ProjectCode": (f.get("ProjectCode") or "").strip(),
+        "ParentCRCode": (f.get("ParentCRCode") or "").strip(),
+        "Department": f.get("Department") or "",
+        "ScopeImpact": f.get("ScopeImpact") or None,
+        "ScheduleImpactDays": f.get("ScheduleImpactDays"),
+        "CostImpact": f.get("CostImpact"),
+        "QualityImpact": f.get("QualityImpact") or None,
+        # Author-fallback covers the NOT NULL submitted_by_person_id.
+        "SubmittedByEmail": people.email(f.get("SubmittedByLookupId")) or created_by,
+        "SubmittedDate": _date(f.get("SubmittedDate")) or created_date,
+        "SyncStatus": f.get("SyncStatus") or "Pending",
+    }
+
+
 def writeback(g, list_id, item_id, fields):
     g.patch(f"/sites/{M365['site_id']}/lists/{list_id}/items/{item_id}/fields",
             fields)
@@ -316,6 +343,11 @@ BASELINE_SELECT = ('SELECT external_ref, baseline_id, project_id,'
 PHASE_GATE_SELECT = ('SELECT external_ref, phase_gate_id, project_id,'
                      ' from_phase, to_phase, gate_decision'
                      ' FROM pmbok.phase_gate_log WHERE external_ref IS NOT NULL')
+IMPACT_SELECT = ('SELECT external_ref, impact_id, cr_id, department,'
+                 ' scope_impact, schedule_impact_days, cost_impact,'
+                 ' quality_impact, submitted_by_person_id, submitted_at'
+                 ' FROM pmbok.change_impact_assessment'
+                 ' WHERE external_ref IS NOT NULL')
 ACTIVITY_SELECT = ('SELECT a.external_ref, a.activity_id, a.wbs_element_id,'
                    ' w.project_id, a.activity_code, a.name, a.start_planned,'
                    ' a.finish_planned, a.start_actual, a.finish_actual,'
@@ -992,6 +1024,46 @@ def process_decision(conn, g, it, dry, current):
             f" ({it['ProjectCode']}, item {it['item_id']})")
 
 
+def resolve_parent_cr(conn, project_id, cr_code):
+    """Resolve a parent change request by (project_id, cr_code) -> cr_id or None.
+
+    cr_code is UNIQUE per (project_id, cr_code), not global, so the project
+    scopes the lookup. The registry processes change_request before
+    change_impact_assessment and the sync runs autocommit, so a parent filed
+    the same morning is already committed when its child resolves here.
+    """
+    row = conn.execute(
+        "SELECT cr_id FROM pmbok.change_request"
+        " WHERE project_id=%s AND cr_code=%s",
+        (project_id, cr_code)).fetchone()
+    return row[0] if row else None
+
+
+def process_impact_assessment(conn, g, it, dry, current):
+    # T4: validate + resolve (project, parent CR, submitter); no writes yet.
+    # The create/update/heal/re-parent-guard write path lands in T5.
+    errs = al.validate_impact_assessment(it)
+    proj = project_by_code(conn, it["ProjectCode"]) if it["ProjectCode"] else None
+    if it["ProjectCode"] and not proj:
+        errs.append(f"Unknown ProjectCode: {it['ProjectCode']}")
+    submitter = (person_id_by_email(conn, it["SubmittedByEmail"])
+                 if it["SubmittedByEmail"] else None)
+    if it["SubmittedByEmail"] and not submitter:
+        errs.append(f"SubmittedBy {it['SubmittedByEmail']} not in person directory")
+    cr_id = None
+    if it.get("ParentCRCode") and proj and not errs:
+        cr_id = resolve_parent_cr(conn, proj[0], it["ParentCRCode"])
+        if cr_id is None:
+            errs.append(f"Unknown ParentCRCode {it['ParentCRCode']} for project"
+                        f" {it['ProjectCode']}")
+    if errs:
+        return _error(g, M365["impact_assessment_list_id"], it, errs, dry,
+                      "impact")
+    return (f"DRY impact item {it['item_id']}: resolved CR"
+            f" {it['ParentCRCode']} -> {cr_id}"
+            f" ({it['ProjectCode']}/{it['Department']}); no writes (stub)")
+
+
 def _rows_as_dicts(conn, sql, params=()):
     """Execute sql, return list of dicts keyed by column name.
 
@@ -1338,6 +1410,9 @@ ARTIFACTS = [
     {"kind": "change_request", "list_key": "change_request_list_id",
      "fields": CR_FIELDS, "normalize": normalize_change_request,
      "process": process_change_request, "select": CR_SELECT},
+    {"kind": "impact_assessment", "list_key": "impact_assessment_list_id",
+     "fields": IMPACT_FIELDS, "normalize": normalize_impact_assessment,
+     "process": process_impact_assessment, "select": IMPACT_SELECT},
     {"kind": "decision", "list_key": "decision_list_id",
      "fields": DECISION_FIELDS, "normalize": normalize_decision,
      "process": process_decision, "select": DECISION_SELECT},

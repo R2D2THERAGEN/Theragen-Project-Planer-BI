@@ -118,6 +118,22 @@ LISTS = {
         date_only("DecidedDate"),
         text("DecisionCode"),
     ] + BOOKKEEPING),
+    "baseline_list_id": ("Project Baselines", [
+        text("ProjectCode"),
+        choice("BaselineType", al.BASELINE_TYPES),
+        text("ChangeSummary", multiline=True),
+        text("LinkedCRCode"),
+        {"name": "BaselinedBy", "personOrGroup": {"allowMultipleSelection": False}},
+        text("BaselineVersion"),
+    ] + BOOKKEEPING),
+    "phase_gate_list_id": ("Project Phase Gates", [
+        text("ProjectCode"),
+        choice("TargetPhase", al.LIFECYCLE_PHASES),
+        choice("GateDecision", al.GATE_DECISIONS, default="Approved"),
+        {"name": "ApprovedBy", "personOrGroup": {"allowMultipleSelection": False}},
+        date_only("DecidedDate"),
+        text("GateNotes", multiline=True),
+    ] + BOOKKEEPING),
 }
 
 

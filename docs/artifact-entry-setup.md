@@ -393,7 +393,7 @@ findstr "ERROR" logs\artifact_sync.log
 | New item, person not in directory | Writes `Error: <field> not in person directory` |
 | Duplicate status report period | Writes `Error: Duplicate report period` |
 | Existing item, data changed | Updates DB row; heals write-back; writes `Synced` |
-| Existing item, ProjectCode changed | Writes `Error: ProjectCode changed after sync — create a new row instead` |
+| Existing item, ProjectCode changed | Writes `Error: ProjectCode changed after sync - create a new row instead` |
 | Existing item, no data change, write-back lost | Heals write-back only; no DB change |
 | Existing item, no change, write-back intact | Skips; no DB or List writes |
 | List row deleted (orphan) | Logs `INFO orphaned external_ref`; DB row kept; exits 0 |

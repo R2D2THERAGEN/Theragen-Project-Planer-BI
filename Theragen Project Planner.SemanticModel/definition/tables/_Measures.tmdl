@@ -332,6 +332,24 @@ table _Measures
 		displayFolder: Change
 		lineageTag: 49d2bbd3-3a3d-55f5-81ca-d896ddcd884e
 
+	/// Approved CRs with implementation confirmed in the artifact library.
+	measure 'Verified CRs' = CALCULATE([Change Requests], 'Change Request'[Implementation Verified] = TRUE())
+		formatString: #,0
+		displayFolder: Change
+		lineageTag: 58b0a9c7-aa60-5d23-a755-78059b7b9f5c
+
+	/// Approved CRs awaiting implementation verification.
+	measure 'CRs Pending Verification' = CALCULATE([Change Requests], 'Change Request'[Decision] = "Approved", 'Change Request'[Implementation Verified] = FALSE())
+		formatString: #,0
+		displayFolder: Change
+		lineageTag: a069414d-ba1a-5667-98b9-5fe155571303
+
+	/// Governance decisions formally logged for the project(s) in context.
+	measure 'Decisions Logged' = COUNTROWS('Decision')
+		formatString: #,0
+		displayFolder: Change
+		lineageTag: fd0f7788-ad8c-599b-92f9-158ea2980c2f
+
 	/// Reports submitted.
 	measure 'Status Reports' = COUNTROWS('Status Report')
 		formatString: #,0
@@ -383,6 +401,18 @@ table _Measures
 		formatString: #,0
 		displayFolder: Health
 		lineageTag: dd5709f6-80a0-5f04-8db8-e801cbdf4819
+
+	/// Status reports that have been formally signed off by the approver.
+	measure 'Signed-off Reports' = CALCULATE(COUNTROWS('Status Report'), 'Status Report'[Is Signed Off] = TRUE())
+		formatString: #,0
+		displayFolder: Health
+		lineageTag: 50927f3f-d9c4-5f55-a9f0-bd1243b63219
+
+	/// Proportion of status reports that have been signed off.
+	measure 'Sign-off Rate' = DIVIDE([Signed-off Reports], COUNTROWS('Status Report'))
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: Health
+		lineageTag: 7cddf0e9-d3c7-5497-9a4d-0d6d70572efe
 
 	/// Selected project name for the status report header.
 	measure 'Theragen Project Name' = SELECTEDVALUE('Project'[Project Name], "All projects - select one")

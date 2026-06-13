@@ -110,14 +110,41 @@ table 'Status Report'
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	column 'Approved By'
+		dataType: string
+		lineageTag: aadb525a-f9c2-5475-9e13-d93d4bd774fb
+		summarizeBy: none
+		sourceColumn: Approved By
+
+		annotation SummarizationSetBy = User
+
+	column 'Approved Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 19f574fb-bc4b-5ed3-b882-4bcdc2f7a0fc
+		summarizeBy: none
+		sourceColumn: Approved Date
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Is Signed Off'
+		dataType: boolean
+		lineageTag: d1957e31-44e3-52e3-8233-1812fd949107
+		summarizeBy: none
+		sourceColumn: Is Signed Off
+
+		annotation SummarizationSetBy = User
+
 	partition 'Status Report' = m
 		mode: import
 		source =
 				let
 				    Source = PostgreSQL.Database(PgServer, PgDatabase),
 				    Data = Source{[Schema = "bi", Item = "status_report"]}[Data],
-				    Selected = Table.SelectColumns(Data, {"report_id", "project_id", "project_code", "report_number", "period_start", "period_end", "overall_status", "trend", "executive_summary", "decisions_needed", "submitted_by_name", "submitted_at"}),
-				    Renamed = Table.RenameColumns(Selected, {{"report_id", "Report ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"report_number", "Report Number"}, {"period_start", "Period Start"}, {"period_end", "Period End"}, {"overall_status", "Overall Status"}, {"trend", "Trend"}, {"executive_summary", "Executive Summary"}, {"decisions_needed", "Decisions Needed"}, {"submitted_by_name", "Submitted By"}, {"submitted_at", "Submitted Date"}})
+				    Selected = Table.SelectColumns(Data, {"report_id", "project_id", "project_code", "report_number", "period_start", "period_end", "overall_status", "trend", "executive_summary", "decisions_needed", "submitted_by_name", "submitted_at", "approved_by_name", "approved_at", "is_signed_off"}),
+				    Renamed = Table.RenameColumns(Selected, {{"report_id", "Report ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"report_number", "Report Number"}, {"period_start", "Period Start"}, {"period_end", "Period End"}, {"overall_status", "Overall Status"}, {"trend", "Trend"}, {"executive_summary", "Executive Summary"}, {"decisions_needed", "Decisions Needed"}, {"submitted_by_name", "Submitted By"}, {"submitted_at", "Submitted Date"}, {"approved_by_name", "Approved By"}, {"approved_at", "Approved Date"}, {"is_signed_off", "Is Signed Off"}})
 				in
 				    Renamed
 

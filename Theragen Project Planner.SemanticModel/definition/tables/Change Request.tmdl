@@ -158,14 +158,62 @@ table 'Change Request'
 
 		annotation SummarizationSetBy = User
 
+	column 'Decided By'
+		dataType: string
+		lineageTag: 1db98f60-078b-59cb-8f8f-5389ea9603de
+		summarizeBy: none
+		sourceColumn: Decided By
+
+		annotation SummarizationSetBy = User
+
+	column 'Impact Scope'
+		dataType: string
+		lineageTag: c2387b7d-b0ce-5c04-8795-4f60c214b5fc
+		summarizeBy: none
+		sourceColumn: Impact Scope
+
+		annotation SummarizationSetBy = User
+
+	column 'Impact Quality'
+		dataType: string
+		lineageTag: d022d6a9-1136-5190-bc88-0c292d7e3304
+		summarizeBy: none
+		sourceColumn: Impact Quality
+
+		annotation SummarizationSetBy = User
+
+	column 'Affected Artifacts'
+		dataType: string
+		lineageTag: d244ae9d-f5cf-5269-9d5c-c477aa8f3701
+		summarizeBy: none
+		sourceColumn: Affected Artifacts
+
+		annotation SummarizationSetBy = User
+
+	column 'Implementation Verified'
+		dataType: boolean
+		lineageTag: 3e82fb44-b2e3-59eb-b55b-563b44036216
+		summarizeBy: none
+		sourceColumn: Implementation Verified
+
+		annotation SummarizationSetBy = User
+
+	column 'Linked Artifacts Updated'
+		dataType: boolean
+		lineageTag: 48c91de8-d7c7-57c7-9569-af4cc38cf212
+		summarizeBy: none
+		sourceColumn: Linked Artifacts Updated
+
+		annotation SummarizationSetBy = User
+
 	partition 'Change Request' = m
 		mode: import
 		source =
 				let
 				    Source = PostgreSQL.Database(PgServer, PgDatabase),
 				    Data = Source{[Schema = "bi", Item = "change_request"]}[Data],
-				    Selected = Table.SelectColumns(Data, {"cr_id", "project_id", "project_code", "cr_code", "intake_id", "requested_at", "requested_by_person_id", "requested_by_name", "cr_class", "change_types", "description", "reason", "impact_schedule_days", "impact_cost", "decision", "decided_at", "cycle_time_days", "status"}),
-				    Renamed = Table.RenameColumns(Selected, {{"cr_id", "CR ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"cr_code", "CR Code"}, {"intake_id", "Intake ID"}, {"requested_at", "Requested Date"}, {"requested_by_person_id", "Requested By ID"}, {"requested_by_name", "Requested By"}, {"cr_class", "CR Class"}, {"change_types", "Change Type"}, {"description", "CR Description"}, {"reason", "Reason"}, {"impact_schedule_days", "Schedule Impact Days"}, {"impact_cost", "Cost Impact"}, {"decision", "Decision"}, {"decided_at", "Decided Date"}, {"cycle_time_days", "Cycle Time Days"}, {"status", "CR Status"}})
+				    Selected = Table.SelectColumns(Data, {"cr_id", "project_id", "project_code", "cr_code", "intake_id", "requested_at", "requested_by_person_id", "requested_by_name", "cr_class", "change_types", "description", "reason", "impact_schedule_days", "impact_cost", "decision", "decided_at", "cycle_time_days", "status", "decided_by_name", "impact_scope", "impact_quality", "affected_artifacts", "implementation_verified", "linked_artifacts_updated"}),
+				    Renamed = Table.RenameColumns(Selected, {{"cr_id", "CR ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"cr_code", "CR Code"}, {"intake_id", "Intake ID"}, {"requested_at", "Requested Date"}, {"requested_by_person_id", "Requested By ID"}, {"requested_by_name", "Requested By"}, {"cr_class", "CR Class"}, {"change_types", "Change Type"}, {"description", "CR Description"}, {"reason", "Reason"}, {"impact_schedule_days", "Schedule Impact Days"}, {"impact_cost", "Cost Impact"}, {"decision", "Decision"}, {"decided_at", "Decided Date"}, {"cycle_time_days", "Cycle Time Days"}, {"status", "CR Status"}, {"decided_by_name", "Decided By"}, {"impact_scope", "Impact Scope"}, {"impact_quality", "Impact Quality"}, {"affected_artifacts", "Affected Artifacts"}, {"implementation_verified", "Implementation Verified"}, {"linked_artifacts_updated", "Linked Artifacts Updated"}})
 				in
 				    Renamed
 

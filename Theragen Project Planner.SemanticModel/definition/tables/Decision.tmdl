@@ -1,0 +1,78 @@
+/// Fact - governance decisions (PMBOK P21). Formal decisions logged against a project.
+table Decision
+	lineageTag: d6cb6de2-d75e-58f1-94a8-aa66d1b3ef97
+
+	column 'Decision ID'
+		dataType: string
+		isHidden
+		lineageTag: 8b8a2117-20c1-5e1d-ad5c-2e0a09d8abad
+		summarizeBy: none
+		sourceColumn: Decision ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project ID'
+		dataType: string
+		isHidden
+		lineageTag: aaab4659-bc3a-52e1-a8df-29203d8761f3
+		summarizeBy: none
+		sourceColumn: Project ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project Code'
+		dataType: string
+		lineageTag: 7e2b08fc-6f8c-5c5f-b2dd-e8eae232dfeb
+		summarizeBy: none
+		sourceColumn: Project Code
+
+		annotation SummarizationSetBy = User
+
+	column Decision
+		dataType: string
+		lineageTag: ef71e5ff-28d4-5d89-9a9b-b53b344a2b05
+		summarizeBy: none
+		sourceColumn: Decision
+
+		annotation SummarizationSetBy = User
+
+	column Rationale
+		dataType: string
+		lineageTag: d1bc63d0-2ca2-5cd6-9cc4-cfce2cf2a92a
+		summarizeBy: none
+		sourceColumn: Rationale
+
+		annotation SummarizationSetBy = User
+
+	column 'Decided By'
+		dataType: string
+		lineageTag: f208e4a7-038c-5a19-89d5-77137b6c678f
+		summarizeBy: none
+		sourceColumn: Decided By
+
+		annotation SummarizationSetBy = User
+
+	column 'Decided Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 0e72f05f-b3e5-5812-bdb1-112476b7290b
+		summarizeBy: none
+		sourceColumn: Decided Date
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition Decision = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "decision"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"decision_id", "project_id", "project_code", "decision", "rationale", "decided_by_name", "decided_at"}),
+				    Renamed = Table.RenameColumns(Selected, {{"decision_id", "Decision ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"decision", "Decision"}, {"rationale", "Rationale"}, {"decided_by_name", "Decided By"}, {"decided_at", "Decided Date"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table
+

@@ -75,7 +75,7 @@ def main():
               "07_activity_external_ref.sql", "08_change_request_external_ref.sql",
               "09_decision_external_ref.sql", "10_status_report_signoff.sql",
               "11_bi_governance_views.sql", "12_project_baseline.sql",
-              "13_phase_gate_log.sql"):
+              "13_phase_gate_log.sql", "14_bi_baseline_phasegate_views.sql"):
         sql = open(os.path.join(ROOT, "db", f), encoding="utf-8").read()
         cur.execute(sql)
         print(f"executed {f}")

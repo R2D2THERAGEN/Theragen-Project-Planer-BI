@@ -1,0 +1,94 @@
+/// Fact - append-only record of lifecycle-phase handoffs (PMBOK). Captures who approved each phase transition, when, and the gate decision.
+table 'Phase Gate Log'
+	lineageTag: e5eef857-5424-514c-8e0a-a63bec74a235
+
+	column 'Phase Gate ID'
+		dataType: string
+		isHidden
+		isKey
+		lineageTag: 8f696884-cafe-52d0-ace2-eb85e452352b
+		summarizeBy: none
+		sourceColumn: Phase Gate ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project ID'
+		dataType: string
+		isHidden
+		lineageTag: e76cb21f-f80c-5737-8be1-f90c7454296f
+		summarizeBy: none
+		sourceColumn: Project ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project Code'
+		dataType: string
+		lineageTag: 90a8a20f-84e8-593d-921c-808a7ba60566
+		summarizeBy: none
+		sourceColumn: Project Code
+
+		annotation SummarizationSetBy = User
+
+	column 'From Phase'
+		dataType: string
+		lineageTag: 17828154-f6fe-50cf-a619-7d7ec6522d66
+		summarizeBy: none
+		sourceColumn: From Phase
+
+		annotation SummarizationSetBy = User
+
+	column 'To Phase'
+		dataType: string
+		lineageTag: 9f641ddc-993e-5751-8425-ee16bbdf5981
+		summarizeBy: none
+		sourceColumn: To Phase
+
+		annotation SummarizationSetBy = User
+
+	column 'Gate Decision'
+		dataType: string
+		lineageTag: a4ac57e2-c374-5acd-b8ec-40f7dd791daf
+		summarizeBy: none
+		sourceColumn: Gate Decision
+
+		annotation SummarizationSetBy = User
+
+	column 'Decided Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 19e5ca13-8ad5-5dad-bdcf-b07cabed0c10
+		summarizeBy: none
+		sourceColumn: Decided Date
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Gate Notes'
+		dataType: string
+		lineageTag: 93041748-a390-535c-b30e-abed0d87225d
+		summarizeBy: none
+		sourceColumn: Gate Notes
+
+		annotation SummarizationSetBy = User
+
+	column 'Approved By'
+		dataType: string
+		lineageTag: e7c4b5e4-6418-51b0-b328-cba0e9b99b80
+		summarizeBy: none
+		sourceColumn: Approved By
+
+		annotation SummarizationSetBy = User
+
+	partition 'Phase Gate Log' = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "phase_gate_log"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"phase_gate_id", "project_id", "project_code", "from_phase", "to_phase", "gate_decision", "decided_at", "gate_notes", "approved_by_name"}),
+				    Renamed = Table.RenameColumns(Selected, {{"phase_gate_id", "Phase Gate ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"from_phase", "From Phase"}, {"to_phase", "To Phase"}, {"gate_decision", "Gate Decision"}, {"decided_at", "Decided Date"}, {"gate_notes", "Gate Notes"}, {"approved_by_name", "Approved By"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table

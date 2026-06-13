@@ -1,0 +1,112 @@
+/// Fact - immutable schedule/scope/budget baselines (PMBOK). Each new baseline mints the next version; prior BASELINED rows go SUPERSEDED.
+table 'Project Baseline'
+	lineageTag: a49ba217-e687-5670-bee1-ee4fa53dc984
+
+	column 'Baseline ID'
+		dataType: string
+		isHidden
+		isKey
+		lineageTag: 1fe08246-fcd8-5e1f-8ed9-4fc8a5569f35
+		summarizeBy: none
+		sourceColumn: Baseline ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project ID'
+		dataType: string
+		isHidden
+		lineageTag: 513f8f7b-0c6a-5fcf-aa2d-92fe8cfaa5a5
+		summarizeBy: none
+		sourceColumn: Project ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project Code'
+		dataType: string
+		lineageTag: 029aeaf9-71d8-530f-950f-08bb01d10cc2
+		summarizeBy: none
+		sourceColumn: Project Code
+
+		annotation SummarizationSetBy = User
+
+	column 'Baseline Type'
+		dataType: string
+		lineageTag: e8fa1712-a706-541d-b4ee-f365903f5cc1
+		summarizeBy: none
+		sourceColumn: Baseline Type
+
+		annotation SummarizationSetBy = User
+
+	column Version
+		dataType: string
+		lineageTag: a556f141-3843-5101-8a27-73a4f9a5d541
+		summarizeBy: none
+		sourceColumn: Version
+
+		annotation SummarizationSetBy = User
+
+	column Status
+		dataType: string
+		lineageTag: a12ad325-a9b7-5932-bdd6-a18ae367ba4d
+		summarizeBy: none
+		sourceColumn: Status
+
+		annotation SummarizationSetBy = User
+
+	column 'Change Summary'
+		dataType: string
+		lineageTag: 87d57ed3-9921-5954-92de-b9a5c5e13076
+		summarizeBy: none
+		sourceColumn: Change Summary
+
+		annotation SummarizationSetBy = User
+
+	column 'Baselined Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: b381cca0-97b6-5a3b-9864-38ec0e81e4dc
+		summarizeBy: none
+		sourceColumn: Baselined Date
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Baselined By'
+		dataType: string
+		lineageTag: 7ef90217-1610-5698-bbc8-9003e841b238
+		summarizeBy: none
+		sourceColumn: Baselined By
+
+		annotation SummarizationSetBy = User
+
+	column 'Baseline Budget Total'
+		dataType: double
+		formatString: \$#,##0;(\$#,##0);\$0
+		lineageTag: c0974c69-2730-5015-b8de-612b8302de55
+		summarizeBy: none
+		sourceColumn: Baseline Budget Total
+
+		annotation SummarizationSetBy = User
+
+	column 'Baseline Activity Count'
+		dataType: int64
+		formatString: #,0
+		lineageTag: 2dad263d-9b95-5e46-a5ed-1c264503874f
+		summarizeBy: none
+		sourceColumn: Baseline Activity Count
+
+		annotation SummarizationSetBy = User
+
+	partition 'Project Baseline' = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "project_baseline"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"baseline_id", "project_id", "project_code", "baseline_type", "version", "status", "change_summary", "baselined_at", "baselined_by_name", "baseline_budget_total", "baseline_activity_count"}),
+				    Renamed = Table.RenameColumns(Selected, {{"baseline_id", "Baseline ID"}, {"project_id", "Project ID"}, {"project_code", "Project Code"}, {"baseline_type", "Baseline Type"}, {"version", "Version"}, {"status", "Status"}, {"change_summary", "Change Summary"}, {"baselined_at", "Baselined Date"}, {"baselined_by_name", "Baselined By"}, {"baseline_budget_total", "Baseline Budget Total"}, {"baseline_activity_count", "Baseline Activity Count"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table

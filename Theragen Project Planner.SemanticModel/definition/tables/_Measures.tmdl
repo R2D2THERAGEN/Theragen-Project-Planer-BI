@@ -648,6 +648,45 @@ table _Measures
 		displayFolder: Status Page
 		lineageTag: 47d79d39-a654-507b-9139-f95bfd2c439b
 
+	/// Count of baseline rows in context (all versions and statuses).
+	measure Baselines = COUNTROWS('Project Baseline')
+		formatString: #,0
+		displayFolder: Baselines
+		lineageTag: 3869e811-dccb-565e-ab52-f4d59d2c4619
+
+	/// Baselines that are currently the active (BASELINED) version.
+	measure 'Current Baselines' = CALCULATE([Baselines], 'Project Baseline'[Status] = "BASELINED")
+		formatString: #,0
+		displayFolder: Baselines
+		lineageTag: f9256661-a0a6-5cdb-88e1-43002cc190e1
+
+	/// Active Schedule baseline version (highest among BASELINED).
+	measure 'Current Schedule Baseline Version' = CALCULATE(MAX('Project Baseline'[Version]), 'Project Baseline'[Baseline Type] = "Schedule", 'Project Baseline'[Status] = "BASELINED")
+		displayFolder: Baselines
+		lineageTag: 80ceeac1-b816-5e49-8273-18b351cd00a8
+
+	/// Active Budget baseline version (highest among BASELINED).
+	measure 'Current Budget Baseline Version' = CALCULATE(MAX('Project Baseline'[Version]), 'Project Baseline'[Baseline Type] = "Budget", 'Project Baseline'[Status] = "BASELINED")
+		displayFolder: Baselines
+		lineageTag: f4ea8366-d602-539b-8fb2-47e80c61897f
+
+	/// Active Scope baseline version (highest among BASELINED).
+	measure 'Current Scope Baseline Version' = CALCULATE(MAX('Project Baseline'[Version]), 'Project Baseline'[Baseline Type] = "Scope", 'Project Baseline'[Status] = "BASELINED")
+		displayFolder: Baselines
+		lineageTag: c7076e70-ef14-5a83-be46-c54eb00bc32c
+
+	/// Phase gates that advanced the project a real step forward (Approved / Approved with conditions, From != To).
+	measure 'Phase Gates Passed' = COUNTROWS(FILTER('Phase Gate Log', 'Phase Gate Log'[Gate Decision] IN {"Approved", "Approved with conditions"} && 'Phase Gate Log'[From Phase] <> 'Phase Gate Log'[To Phase]))
+		formatString: #,0
+		displayFolder: Governance
+		lineageTag: e2924bed-b7e5-55be-8fbc-a1e52031ae88
+
+	/// Phase gates where the decision was Held.
+	measure 'Gates Held' = CALCULATE(COUNTROWS('Phase Gate Log'), 'Phase Gate Log'[Gate Decision] = "Held")
+		formatString: #,0
+		displayFolder: Governance
+		lineageTag: 626203aa-875e-56bd-bfdf-daef6cb736ab
+
 	column Value
 		dataType: string
 		isHidden

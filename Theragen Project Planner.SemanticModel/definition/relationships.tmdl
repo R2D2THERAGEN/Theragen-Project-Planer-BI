@@ -151,3 +151,11 @@ relationship a9910373-ee18-563c-bc58-7accf71ab426
 	fromColumn: Decision.'Project ID'
 	toColumn: Project.'Project ID'
 
+relationship 47d22f96-6ff1-5fa6-91d7-0db846ae6095
+	fromColumn: 'Project Baseline'.'Project ID'
+	toColumn: Project.'Project ID'
+
+relationship 78f2ac7c-0b67-5b08-9082-bb2471343340
+	fromColumn: 'Phase Gate Log'.'Project ID'
+	toColumn: Project.'Project ID'
+

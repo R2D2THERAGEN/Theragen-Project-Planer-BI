@@ -712,3 +712,484 @@ class TestTrailStates:
                                          ["decision", "status"])
         assert before["decision"] is None
         assert after["decision"] == "Approved"
+
+
+# ===========================================================================
+# Baseline + Phase-Gate logic (Task 2c-1 T2)
+# ===========================================================================
+import json
+import random
+from decimal import Decimal
+
+
+# ---------------------------------------------------------------------------
+# next_baseline_version
+# ---------------------------------------------------------------------------
+
+class TestNextBaselineVersion:
+    def test_empty_list_returns_1_0(self):
+        assert al.next_baseline_version([]) == "1.0"
+
+    def test_sequences_past_existing(self):
+        # ["1.0","2.0",None,"x"] -> matches 1 and 2; max+1 = 3 -> "3.0"
+        assert al.next_baseline_version(["1.0", "2.0", None, "x"]) == "3.0"
+
+    def test_nine_becomes_ten(self):
+        assert al.next_baseline_version(["9.0"]) == "10.0"
+
+    def test_non_matching_strings_ignored(self):
+        # "1.1" does not match ^(\d+)\.0$ so treated as no valid versions -> "1.0"
+        assert al.next_baseline_version(["1.1"]) == "1.0"
+
+    def test_none_entries_ignored(self):
+        assert al.next_baseline_version([None, None]) == "1.0"
+
+    def test_single_valid_entry(self):
+        assert al.next_baseline_version(["1.0"]) == "2.0"
+
+
+# ---------------------------------------------------------------------------
+# validate_baseline
+# ---------------------------------------------------------------------------
+
+def _baseline(**over):
+    """Minimal valid baseline item fixture."""
+    base = {
+        "ProjectCode": "THG-IT-005",
+        "BaselineType": "Schedule",
+        "BaselinedByEmail": "pm@theragen.com",
+        "ChangeSummary": "Initial baseline",
+        "BaselineVersion": "",
+        "SyncStatus": "Pending",
+    }
+    base.update(over)
+    return base
+
+
+class TestValidateBaseline:
+    def test_happy_path(self):
+        assert al.validate_baseline(_baseline()) == []
+
+    def test_missing_project_code(self):
+        errs = al.validate_baseline(_baseline(ProjectCode=""))
+        assert any("ProjectCode" in e for e in errs)
+
+    def test_missing_baseline_type(self):
+        errs = al.validate_baseline(_baseline(BaselineType=""))
+        assert any("BaselineType" in e for e in errs)
+
+    def test_missing_baselined_by_email(self):
+        errs = al.validate_baseline(_baseline(BaselinedByEmail=""))
+        assert any("BaselinedBy" in e for e in errs)
+
+    def test_missing_baselined_by_none(self):
+        errs = al.validate_baseline(_baseline(BaselinedByEmail=None))
+        assert any("BaselinedBy" in e for e in errs)
+
+    def test_bad_baseline_type(self):
+        errs = al.validate_baseline(_baseline(BaselineType="Resources"))
+        assert any("BaselineType" in e for e in errs)
+
+    def test_all_valid_baseline_types_accepted(self):
+        for bt in al.BASELINE_TYPES:
+            assert al.validate_baseline(_baseline(BaselineType=bt)) == [], \
+                f"BaselineType '{bt}' should be valid"
+
+    def test_multiple_missing_fields(self):
+        errs = al.validate_baseline(_baseline(ProjectCode="", BaselineType="",
+                                              BaselinedByEmail=""))
+        assert any("ProjectCode" in e for e in errs)
+        assert any("BaselineType" in e for e in errs)
+        assert any("BaselinedBy" in e for e in errs)
+
+
+# ---------------------------------------------------------------------------
+# validate_phase_gate
+# ---------------------------------------------------------------------------
+
+def _phase_gate(**over):
+    """Minimal valid phase-gate item fixture."""
+    base = {
+        "ProjectCode": "THG-IT-005",
+        "TargetPhase": "Planning",
+        "GateDecision": "Approved",
+        "ApprovedByEmail": "sponsor@theragen.com",
+        "DecidedDate": "2026-06-13",
+        "GateNotes": "",
+        "SyncStatus": "Pending",
+    }
+    base.update(over)
+    return base
+
+
+class TestValidatePhaseGate:
+    def test_happy_path(self):
+        assert al.validate_phase_gate(_phase_gate()) == []
+
+    def test_missing_project_code(self):
+        errs = al.validate_phase_gate(_phase_gate(ProjectCode=""))
+        assert any("ProjectCode" in e for e in errs)
+
+    def test_missing_target_phase(self):
+        errs = al.validate_phase_gate(_phase_gate(TargetPhase=""))
+        assert any("TargetPhase" in e for e in errs)
+
+    def test_missing_gate_decision(self):
+        errs = al.validate_phase_gate(_phase_gate(GateDecision=""))
+        assert any("GateDecision" in e for e in errs)
+
+    def test_missing_approved_by_email(self):
+        errs = al.validate_phase_gate(_phase_gate(ApprovedByEmail=""))
+        assert any("ApprovedBy" in e for e in errs)
+
+    def test_missing_approved_by_none(self):
+        errs = al.validate_phase_gate(_phase_gate(ApprovedByEmail=None))
+        assert any("ApprovedBy" in e for e in errs)
+
+    def test_bad_target_phase(self):
+        errs = al.validate_phase_gate(_phase_gate(TargetPhase="Discovery"))
+        assert any("TargetPhase" in e for e in errs)
+
+    def test_bad_gate_decision(self):
+        errs = al.validate_phase_gate(_phase_gate(GateDecision="Rejected"))
+        assert any("GateDecision" in e for e in errs)
+
+    def test_all_valid_phases_accepted(self):
+        for phase in al.LIFECYCLE_PHASES:
+            assert al.validate_phase_gate(_phase_gate(TargetPhase=phase)) == [], \
+                f"TargetPhase '{phase}' should be valid"
+
+    def test_all_valid_gate_decisions_accepted(self):
+        for dec in al.GATE_DECISIONS:
+            assert al.validate_phase_gate(_phase_gate(GateDecision=dec)) == [], \
+                f"GateDecision '{dec}' should be valid"
+
+    def test_multiple_missing_fields(self):
+        errs = al.validate_phase_gate(_phase_gate(
+            ProjectCode="", TargetPhase="", GateDecision="", ApprovedByEmail=""))
+        assert any("ProjectCode" in e for e in errs)
+        assert any("TargetPhase" in e for e in errs)
+        assert any("GateDecision" in e for e in errs)
+        assert any("ApprovedBy" in e for e in errs)
+
+
+# ---------------------------------------------------------------------------
+# assemble_schedule_snapshot
+# ---------------------------------------------------------------------------
+
+def _act(code, name, start, finish, dur):
+    """Helper: create an activity row (dates as datetime.date to prove _d coercion)."""
+    return {
+        "activity_code": code,
+        "name": name,
+        "start_planned": datetime.date.fromisoformat(start),
+        "finish_planned": datetime.date.fromisoformat(finish),
+        "duration_days": dur,
+    }
+
+
+def _mil(name, baseline_date):
+    """Helper: milestone row (date as datetime.date or None)."""
+    return {
+        "name": name,
+        "baseline_date": datetime.date.fromisoformat(baseline_date) if baseline_date else None,
+    }
+
+
+_HEADLINE = {"planned_start": datetime.date(2026, 6, 1),
+             "planned_finish": datetime.date(2026, 9, 30)}
+
+# A set of activity rows in a canonical order
+_ACTIVITIES = [
+    _act("1.1-A1", "Design",   "2026-06-01", "2026-06-10", 8),
+    _act("1.1-A2", "Build",    "2026-06-11", "2026-06-25", 11),
+    _act("1.2-A1", "Test",     "2026-06-26", "2026-07-05", 8),
+    _act("2.1-A1", "Deploy",   "2026-07-06", "2026-07-10", 5),
+]
+
+# A set of milestone rows with varying dates (incl. one None-date) to test sort stability
+_MILESTONES = [
+    _mil("Go-live",    "2026-09-01"),
+    _mil("UAT sign-off", "2026-08-01"),
+    _mil("Kickoff",    "2026-06-01"),
+    _mil("Orphan",     None),          # None baseline_date -> sorts to front (or "")
+]
+
+
+class TestAssembleScheduleSnapshot:
+    def _snap(self, acts, mils):
+        return al.assemble_schedule_snapshot(acts, mils, _HEADLINE)
+
+    def test_type_field(self):
+        snap = self._snap(_ACTIVITIES, _MILESTONES)
+        assert snap["type"] == "Schedule"
+
+    def test_activities_sorted_by_code(self):
+        shuffled = list(_ACTIVITIES)
+        random.shuffle(shuffled)
+        snap = self._snap(shuffled, _MILESTONES)
+        codes = [a["code"] for a in snap["activities"]]
+        assert codes == sorted(codes)
+
+    def test_activities_exact_keys(self):
+        snap = self._snap(_ACTIVITIES, _MILESTONES)
+        expected_keys = {"code", "name", "start_planned", "finish_planned", "duration_days"}
+        for act in snap["activities"]:
+            assert set(act.keys()) == expected_keys
+
+    def test_dates_are_strings(self):
+        snap = self._snap(_ACTIVITIES, _MILESTONES)
+        for act in snap["activities"]:
+            assert isinstance(act["start_planned"], str)
+            assert isinstance(act["finish_planned"], str)
+            # must be YYYY-MM-DD
+            assert len(act["start_planned"]) == 10
+            assert len(act["finish_planned"]) == 10
+
+    def test_duration_days_is_int(self):
+        snap = self._snap(_ACTIVITIES, _MILESTONES)
+        for act in snap["activities"]:
+            assert isinstance(act["duration_days"], int)
+
+    def test_milestones_sorted_by_date_then_name(self):
+        # After sort: None ("") comes first, then ascending date
+        snap = self._snap(_ACTIVITIES, _MILESTONES)
+        dates = [m["baseline_date"] for m in snap["milestones"]]
+        # None maps to "" in the sort key, so None-date rows come first
+        assert dates[0] is None
+        # remaining dates should be in ascending order
+        non_none = [d for d in dates if d is not None]
+        assert non_none == sorted(non_none)
+
+    def test_milestone_exact_keys(self):
+        snap = self._snap(_ACTIVITIES, _MILESTONES)
+        for m in snap["milestones"]:
+            assert set(m.keys()) == {"name", "baseline_date"}
+
+    def test_milestone_dates_are_strings_or_none(self):
+        snap = self._snap(_ACTIVITIES, _MILESTONES)
+        for m in snap["milestones"]:
+            assert m["baseline_date"] is None or isinstance(m["baseline_date"], str)
+
+    def test_headline_dates_are_strings(self):
+        snap = self._snap(_ACTIVITIES, _MILESTONES)
+        assert snap["headline"]["planned_start"] == "2026-06-01"
+        assert snap["headline"]["planned_finish"] == "2026-09-30"
+
+    def test_byte_determinism(self):
+        """Two calls with differently-shuffled inputs must produce identical JSON."""
+        order1 = list(_ACTIVITIES)
+        order2 = list(reversed(_ACTIVITIES))
+        mils1 = list(_MILESTONES)
+        mils2 = list(reversed(_MILESTONES))
+        a = al.assemble_schedule_snapshot(order1, mils1, _HEADLINE)
+        b = al.assemble_schedule_snapshot(order2, mils2, _HEADLINE)
+        assert json.dumps(a, sort_keys=False) == json.dumps(b, sort_keys=False)
+
+    def test_decimal_duration_coerced_to_int(self):
+        """psycopg may return Decimal for numeric columns; _d/int() must handle it."""
+        acts = [{"activity_code": "1.1-A1", "name": "X",
+                 "start_planned": datetime.date(2026, 6, 1),
+                 "finish_planned": datetime.date(2026, 6, 5),
+                 "duration_days": Decimal("5")}]
+        snap = al.assemble_schedule_snapshot(acts, [], _HEADLINE)
+        assert snap["activities"][0]["duration_days"] == 5
+        assert isinstance(snap["activities"][0]["duration_days"], int)
+
+
+# ---------------------------------------------------------------------------
+# assemble_budget_snapshot
+# ---------------------------------------------------------------------------
+
+_BUDGET_LINES = [
+    {"wbs_code": "1.2", "category": "Labour",    "total": Decimal("50000.00"), "funding_source": "Internal"},
+    {"wbs_code": "1.1", "category": "Equipment", "total": Decimal("12000.50"), "funding_source": "Grant"},
+    {"wbs_code": "1.1", "category": "Labour",    "total": Decimal("30000.00"), "funding_source": "Internal"},
+    {"wbs_code": "2.1", "category": "Travel",    "total": Decimal("3500.00"),  "funding_source": "Internal"},
+]
+
+
+class TestAssembleBudgetSnapshot:
+    def _snap(self, lines, total=Decimal("95500.50")):
+        return al.assemble_budget_snapshot(total, lines)
+
+    def test_type_field(self):
+        assert self._snap(_BUDGET_LINES)["type"] == "Budget"
+
+    def test_lines_sorted_by_wbs_then_category(self):
+        shuffled = list(_BUDGET_LINES)
+        random.shuffle(shuffled)
+        snap = al.assemble_budget_snapshot(Decimal("95500.50"), shuffled)
+        keys = [(l["wbs_code"], l["category"]) for l in snap["lines"]]
+        assert keys == sorted(keys)
+
+    def test_total_coerced_to_float(self):
+        snap = self._snap(_BUDGET_LINES, Decimal("95500.50"))
+        assert isinstance(snap["budget_total"], float)
+        assert snap["budget_total"] == 95500.50
+
+    def test_line_total_coerced_to_float(self):
+        snap = self._snap(_BUDGET_LINES)
+        for line in snap["lines"]:
+            assert isinstance(line["total"], float)
+
+    def test_budget_total_none_preserved(self):
+        snap = al.assemble_budget_snapshot(None, [])
+        assert snap["budget_total"] is None
+
+    def test_byte_determinism(self):
+        order1 = list(_BUDGET_LINES)
+        order2 = list(reversed(_BUDGET_LINES))
+        a = al.assemble_budget_snapshot(Decimal("95500.50"), order1)
+        b = al.assemble_budget_snapshot(Decimal("95500.50"), order2)
+        assert json.dumps(a, sort_keys=False) == json.dumps(b, sort_keys=False)
+
+    def test_line_keys_present(self):
+        snap = self._snap(_BUDGET_LINES)
+        for line in snap["lines"]:
+            assert "wbs_code" in line
+            assert "category" in line
+            assert "total" in line
+            assert "funding_source" in line
+
+
+# ---------------------------------------------------------------------------
+# assemble_scope_snapshot
+# ---------------------------------------------------------------------------
+
+_CHARTER = {
+    "business_case": "Reduce manual processing time by 80%.",
+    "high_level_in_scope": "Modules A, B, C.",
+    "high_level_out_scope": "Module D (Phase 2).",
+}
+
+_INCLUSIONS = [
+    {"item": "User authentication", "sequence": 2},
+    {"item": "Data import",         "sequence": 1},
+    {"item": "Reporting dashboard", "sequence": 3},
+]
+
+_EXCLUSIONS = [
+    {"item": "Mobile app",          "sequence": 1},
+    {"item": "Legacy migration",    "sequence": 2},
+]
+
+_ACCEPTANCE = [
+    {"criterion": "All unit tests pass", "sequence": 2},
+    {"criterion": "UAT sign-off",        "sequence": 1},
+]
+
+
+class TestAssembleScopeSnapshot:
+    def test_type_field(self):
+        snap = al.assemble_scope_snapshot(_CHARTER, _INCLUSIONS, _EXCLUSIONS, _ACCEPTANCE)
+        assert snap["type"] == "Scope"
+
+    def test_charter_fields_mapped(self):
+        snap = al.assemble_scope_snapshot(_CHARTER, [], [], [])
+        assert snap["charter"]["business_case"] == _CHARTER["business_case"]
+        assert snap["charter"]["high_level_in_scope"] == _CHARTER["high_level_in_scope"]
+        assert snap["charter"]["high_level_out_scope"] == _CHARTER["high_level_out_scope"]
+
+    def test_inclusions_sorted_by_sequence(self):
+        shuffled = list(_INCLUSIONS)
+        random.shuffle(shuffled)
+        snap = al.assemble_scope_snapshot(_CHARTER, shuffled, [], [])
+        assert snap["inclusions"] == ["Data import", "User authentication", "Reporting dashboard"]
+
+    def test_exclusions_sorted_by_sequence(self):
+        snap = al.assemble_scope_snapshot(_CHARTER, [], list(reversed(_EXCLUSIONS)), [])
+        assert snap["exclusions"] == ["Mobile app", "Legacy migration"]
+
+    def test_acceptance_sorted_by_sequence(self):
+        snap = al.assemble_scope_snapshot(_CHARTER, [], [], list(reversed(_ACCEPTANCE)))
+        assert snap["acceptance"] == ["UAT sign-off", "All unit tests pass"]
+
+    def test_empty_lists_produce_empty_lists(self):
+        snap = al.assemble_scope_snapshot(_CHARTER, [], [], [])
+        assert snap["inclusions"] == []
+        assert snap["exclusions"] == []
+        assert snap["acceptance"] == []
+
+    def test_none_charter_produces_dict_of_nones(self):
+        snap = al.assemble_scope_snapshot(None, [], [], [])
+        assert snap["charter"] == {
+            "business_case": None,
+            "high_level_in_scope": None,
+            "high_level_out_scope": None,
+        }
+
+    def test_missing_sequence_key_treated_as_zero(self):
+        """Rows without 'sequence' key must not crash (r.get('sequence', 0))."""
+        rows = [{"item": "Alpha"}, {"item": "Beta"}]
+        snap = al.assemble_scope_snapshot(_CHARTER, rows, [], [])
+        # Both have sequence 0 -> stable sort by insertion; items are present
+        assert set(snap["inclusions"]) == {"Alpha", "Beta"}
+
+    def test_byte_determinism(self):
+        inc1 = list(_INCLUSIONS)
+        inc2 = list(reversed(_INCLUSIONS))
+        exc1 = list(_EXCLUSIONS)
+        exc2 = list(reversed(_EXCLUSIONS))
+        acc1 = list(_ACCEPTANCE)
+        acc2 = list(reversed(_ACCEPTANCE))
+        a = al.assemble_scope_snapshot(_CHARTER, inc1, exc1, acc1)
+        b = al.assemble_scope_snapshot(_CHARTER, inc2, exc2, acc2)
+        assert json.dumps(a, sort_keys=False) == json.dumps(b, sort_keys=False)
+
+
+# ---------------------------------------------------------------------------
+# build_phase_gate_row
+# ---------------------------------------------------------------------------
+
+class TestBuildPhaseGateRow:
+    def _row(self, **over):
+        it = _phase_gate(**over)
+        return al.build_phase_gate_row(it, project_id=42,
+                                       from_phase="Initiating",
+                                       to_phase="Planning",
+                                       approver_id=7)
+
+    def test_required_keys_present(self):
+        row = self._row()
+        expected = {"project_id", "from_phase", "to_phase", "gate_decision",
+                    "approved_by_person_id", "decided_at", "gate_notes"}
+        assert set(row.keys()) == expected
+
+    def test_project_id_passed_through(self):
+        assert self._row()["project_id"] == 42
+
+    def test_from_phase(self):
+        assert self._row()["from_phase"] == "Initiating"
+
+    def test_to_phase(self):
+        assert self._row()["to_phase"] == "Planning"
+
+    def test_gate_decision_from_item(self):
+        assert self._row()["gate_decision"] == "Approved"
+
+    def test_approved_by_person_id(self):
+        assert self._row()["approved_by_person_id"] == 7
+
+    def test_decided_at_from_item(self):
+        assert self._row()["decided_at"] == "2026-06-13"
+
+    def test_gate_notes_from_item(self):
+        row = self._row(GateNotes="Reviewed in board meeting")
+        assert row["gate_notes"] == "Reviewed in board meeting"
+
+    def test_gate_notes_defaults_empty_string(self):
+        row = self._row()
+        # GateNotes="" in fixture -> gate_notes=""
+        assert row["gate_notes"] == ""
+
+    def test_decided_at_none_when_absent(self):
+        it = _phase_gate()
+        del it["DecidedDate"]
+        row = al.build_phase_gate_row(it, project_id=1, from_phase="Initiating",
+                                      to_phase="Planning", approver_id=3)
+        assert row["decided_at"] is None
+
+    def test_held_gate_decision(self):
+        row = self._row(GateDecision="Held")
+        assert row["gate_decision"] == "Held"

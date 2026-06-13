@@ -391,3 +391,120 @@ def _trail_states(current, desired, keys):
     before = {k: current.get(k) for k in keys}
     after = {k: desired[k] for k in keys}
     return before, after
+
+
+# ---------------------------------------------------------------------------
+# Baseline + Phase-Gate constants, minting, validators, snapshot assemblers
+# ---------------------------------------------------------------------------
+
+BASELINE_TYPES = ["Schedule", "Scope", "Budget"]
+LIFECYCLE_PHASES = ["Initiating", "Planning", "Executing",
+                    "Monitoring & Controlling", "Closing"]
+PHASE_ORDER = {p: i for i, p in enumerate(LIFECYCLE_PHASES)}
+GATE_DECISIONS = ["Approved", "Approved with conditions", "Held"]
+_BASELINE_VER = re.compile(r"^(\d+)\.0$")
+
+
+def next_baseline_version(existing):
+    """Next N.0 version string. [] -> '1.0'; non-matching entries ignored."""
+    nums = [int(m.group(1)) for s in existing if s and (m := _BASELINE_VER.match(s))]
+    return f"{(max(nums) + 1 if nums else 1)}.0"
+
+
+def validate_baseline(it):
+    """Return list of error strings; empty means valid."""
+    errs = [f"Missing: {k}" for k in ("ProjectCode", "BaselineType")
+            if _blank(it.get(k))]
+    if _blank(it.get("BaselinedByEmail")):
+        errs.append("Missing: BaselinedBy")
+    if it.get("BaselineType") and it["BaselineType"] not in BASELINE_TYPES:
+        errs.append(f"BaselineType not recognized: {it['BaselineType']}")
+    return errs
+
+
+def validate_phase_gate(it):
+    """Return list of error strings; empty means valid."""
+    errs = [f"Missing: {k}" for k in ("ProjectCode", "TargetPhase", "GateDecision")
+            if _blank(it.get(k))]
+    if _blank(it.get("ApprovedByEmail")):
+        errs.append("Missing: ApprovedBy")
+    if it.get("TargetPhase") and it["TargetPhase"] not in LIFECYCLE_PHASES:
+        errs.append(f"TargetPhase not recognized: {it['TargetPhase']}")
+    if it.get("GateDecision") and it["GateDecision"] not in GATE_DECISIONS:
+        errs.append(f"GateDecision not recognized: {it['GateDecision']}")
+    return errs
+
+
+def _d(v):
+    """Coerce a psycopg date/Decimal/str/None to 'YYYY-MM-DD' string or None."""
+    if v is None:
+        return None
+    return v.isoformat()[:10] if hasattr(v, "isoformat") else str(v)[:10]
+
+
+def assemble_schedule_snapshot(activities, milestones, headline):
+    """Build deterministic schedule snapshot dict from raw DB rows.
+
+    activities/milestones are lists of plain dicts (already SELECTed).
+    Dates may be datetime.date objects or ISO strings; Decimal durations are
+    coerced to int.  Output is fully sorted so json.dumps is byte-stable.
+    """
+    acts = sorted(
+        ({"code": a["activity_code"],
+          "name": a["name"],
+          "start_planned": _d(a["start_planned"]),
+          "finish_planned": _d(a["finish_planned"]),
+          "duration_days": int(a["duration_days"])} for a in activities),
+        key=lambda x: x["code"])
+    mils = sorted(
+        ({"name": m["name"], "baseline_date": _d(m["baseline_date"])}
+         for m in milestones),
+        key=lambda x: (x["baseline_date"] or "", x["name"]))
+    return {"type": "Schedule", "activities": acts, "milestones": mils,
+            "headline": {"planned_start": _d(headline.get("planned_start")),
+                         "planned_finish": _d(headline.get("planned_finish"))}}
+
+
+def assemble_budget_snapshot(budget_total, lines):
+    """Build deterministic budget snapshot dict from raw DB rows.
+
+    Decimal totals are coerced to float; lines sorted by (wbs_code, category).
+    """
+    ls = sorted(
+        ({"wbs_code": l["wbs_code"], "category": l["category"],
+          "total": float(l["total"]),
+          "funding_source": l["funding_source"]} for l in lines),
+        key=lambda x: (x["wbs_code"], x["category"]))
+    return {"type": "Budget",
+            "budget_total": float(budget_total) if budget_total is not None else None,
+            "lines": ls}
+
+
+def assemble_scope_snapshot(charter, inclusions, exclusions, acceptance):
+    """Build deterministic scope snapshot dict.
+
+    charter is a dict or None; inclusions/exclusions/acceptance are lists of
+    dicts with 'item'/'criterion' and optional 'sequence' (defaults to 0).
+    """
+    c = charter or {}
+    return {"type": "Scope",
+            "charter": {"business_case": c.get("business_case"),
+                        "high_level_in_scope": c.get("high_level_in_scope"),
+                        "high_level_out_scope": c.get("high_level_out_scope")},
+            "inclusions": [r["item"] for r in sorted(inclusions,
+                           key=lambda r: r.get("sequence", 0))],
+            "exclusions": [r["item"] for r in sorted(exclusions,
+                           key=lambda r: r.get("sequence", 0))],
+            "acceptance": [r["criterion"] for r in sorted(acceptance,
+                           key=lambda r: r.get("sequence", 0))]}
+
+
+def build_phase_gate_row(it, project_id, from_phase, to_phase, approver_id):
+    """Build the phase_gate_log DB column dict from a normalized List item."""
+    return {"project_id": project_id,
+            "from_phase": from_phase,
+            "to_phase": to_phase,
+            "gate_decision": it["GateDecision"],
+            "approved_by_person_id": approver_id,
+            "decided_at": it.get("DecidedDate"),
+            "gate_notes": it.get("GateNotes")}

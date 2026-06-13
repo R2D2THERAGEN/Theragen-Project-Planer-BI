@@ -31,6 +31,10 @@ RISK_FIELDS = ("Title,ProjectCode,Category,Description,Trigger,Likelihood,"
                "Impact,ResponseType,RiskOwner,RiskOwnerLookupId,DueDate,"
                "RiskStatus,ResidualScore,ComplianceFlag,RiskCode,"
                "SyncStatus,SyncMessage")
+ACTIVITY_FIELDS = ("Title,ProjectCode,Workstream,WorkPackage,StartPlanned,"
+                   "FinishPlanned,StartActual,FinishActual,Owner,OwnerLookupId,"
+                   "Department,ActivityStatus,PctComplete,ActivityCode,"
+                   "SyncStatus,SyncMessage")
 MILESTONE_FIELDS = ("Title,ProjectCode,BaselineDate,ForecastDate,ActualDate,"
                     "MilestoneStatus,OwnerRole,SyncStatus,SyncMessage")
 REPORT_FIELDS = ("Title,ProjectCode,PeriodStart,PeriodEnd,OverallStatus,Trend,"
@@ -116,6 +120,27 @@ def normalize_report(item, people):
     }
 
 
+def normalize_activity(item, people):
+    f = item.get("fields", {})
+    return {
+        "item_id": item["id"],
+        "Title": f.get("Title") or "",
+        "ProjectCode": (f.get("ProjectCode") or "").strip(),
+        "Workstream": f.get("Workstream") or "",
+        "WorkPackage": f.get("WorkPackage") or "",
+        "StartPlanned": _date(f.get("StartPlanned")),
+        "FinishPlanned": _date(f.get("FinishPlanned")),
+        "StartActual": _date(f.get("StartActual")),
+        "FinishActual": _date(f.get("FinishActual")),
+        "OwnerEmail": people.email(f.get("OwnerLookupId")),
+        "Department": f.get("Department") or "",
+        "ActivityStatus": f.get("ActivityStatus") or "Not started",
+        "PctComplete": f.get("PctComplete"),
+        "ActivityCode": f.get("ActivityCode") or "",
+        "SyncStatus": f.get("SyncStatus") or "Pending",
+    }
+
+
 def writeback(g, list_id, item_id, fields):
     g.patch(f"/sites/{M365['site_id']}/lists/{list_id}/items/{item_id}/fields",
             fields)
@@ -169,6 +194,16 @@ AREA_SELECT = ('SELECT r.external_ref, a.knowledge_area, a.status'
                ' FROM pmbok.status_report_area a'
                ' JOIN pmbok.status_report r ON r.report_id = a.report_id'
                ' WHERE r.external_ref IS NOT NULL')
+ACTIVITY_SELECT = ('SELECT a.external_ref, a.activity_id, a.wbs_element_id,'
+                   ' w.project_id, a.activity_code, a.name, a.start_planned,'
+                   ' a.finish_planned, a.start_actual, a.finish_actual,'
+                   ' a.duration_days, a.owner_person_id, a.department,'
+                   ' a.status, a.pct_complete'
+                   ' FROM pmbok.schedule_activity a'
+                   ' JOIN pmbok.wbs_element w USING (wbs_element_id)'
+                   ' WHERE a.external_ref IS NOT NULL')
+WBS_SELECT = ('SELECT wbs_code, parent_wbs_element_id, level, name,'
+              ' owning_department FROM pmbok.wbs_element WHERE project_id=%s')
 
 
 # ---- processors -------
@@ -389,6 +424,120 @@ def process_report(conn, g, it, dry, current, area_map=None):
     return f"OK new report + 9 areas ({it['ProjectCode']} {it['PeriodStart']}, item {it['item_id']})"
 
 
+def reconcile_wbs(conn, project_id, project_code, project_activities, dry):
+    """Ensure L1 workstream + L2 work-package WBS nodes exist for every
+    (workstream, workpackage) referenced by this project's activities.
+    Returns (wbs_map, wbs_code_map):
+      wbs_map       : {(workstream, workpackage): wbs_element_id (uuid)}
+      wbs_code_map  : {(workstream, workpackage): wbs_code string}
+    T4/dry: READ-ONLY — computes deterministic ids + would-be codes without writing.
+    Real writes land in T5.
+    """
+    # Load existing WBS rows for this project.
+    # existing_by_code: wbs_code -> (wbs_element_id, parent_wbs_element_id, level, name)
+    existing_rows = conn.execute(WBS_SELECT, (project_id,)).fetchall()
+    # wbs_code -> element_id derived from deterministic uuid5 seeded by name
+    # We don't store element_id in wbs_element directly via SELECT here, so we
+    # reconstruct ids deterministically using the same uuid5 formula used at creation.
+    # Build a name -> wbs_code map for L1 and L2 from existing rows.
+    l1_name_to_code = {}  # ws_name -> wbs_code
+    l2_name_to_code = {}  # (ws_name, wp_name) -> wbs_code
+    existing_codes = set()
+    for row in existing_rows:
+        wbs_code, _parent, level, name, _dept = row
+        existing_codes.add(wbs_code)
+        if level == 1:
+            l1_name_to_code[name] = wbs_code
+        elif level == 2:
+            # Reconstruct the workstream name by finding the L1 parent code.
+            # Since we have the parent_wbs_element_id and not the parent code
+            # directly, use prefix matching: L2 code starts with L1_code + ".".
+            for ws_name, l1_code in l1_name_to_code.items():
+                if wbs_code.startswith(l1_code + "."):
+                    l2_name_to_code[(ws_name, name)] = wbs_code
+                    break
+
+    # Working set of all codes (existing + newly minted this run); used so two
+    # new workstreams in one run get distinct integers.
+    working_codes = set(existing_codes)
+
+    # Collect unique (ws, wp) pairs in item-id order (for owning_department).
+    seen_ws = {}    # ws_name -> (wbs_code, wbs_element_id)
+    seen_wp = {}    # (ws_name, wp_name) -> (wbs_code, wbs_element_id)
+
+    # Sort activities by item_id to honour "first activity" owning_department rule.
+    sorted_acts = sorted(project_activities, key=lambda a: int(a["item_id"]))
+
+    for act in sorted_acts:
+        ws = act["Workstream"]
+        wp = act["WorkPackage"]
+        if not ws or not wp:
+            continue
+
+        # --- L1: workstream ---
+        if ws not in seen_ws:
+            if ws in l1_name_to_code:
+                l1_code = l1_name_to_code[ws]
+            else:
+                l1_code = al.next_wbs_code(working_codes)
+                working_codes.add(l1_code)
+                l1_name_to_code[ws] = l1_code
+            l1_id = uuid.uuid5(NS, f"thg/wbs/{project_code}/ws/{ws}")
+            seen_ws[ws] = (l1_code, l1_id)
+        else:
+            l1_code, l1_id = seen_ws[ws]
+
+        # --- L2: work package ---
+        if (ws, wp) not in seen_wp:
+            if (ws, wp) in l2_name_to_code:
+                l2_code = l2_name_to_code[(ws, wp)]
+            else:
+                l2_code = al.next_wbs_code(working_codes, l1_code)
+                working_codes.add(l2_code)
+                l2_name_to_code[(ws, wp)] = l2_code
+            l2_id = uuid.uuid5(NS, f"thg/wbs/{project_code}/wp/{ws}/{wp}")
+            seen_wp[(ws, wp)] = (l2_code, l2_id)
+
+    # Build output maps: (ws, wp) -> l2_element_id and (ws, wp) -> l2_code.
+    wbs_map = {key: val[1] for key, val in seen_wp.items()}
+    wbs_code_map = {key: val[0] for key, val in seen_wp.items()}
+    return wbs_map, wbs_code_map
+
+
+def process_activity(conn, g, it, dry, current, wbs_map=None, wbs_code_map=None):
+    wbs_map = wbs_map or {}
+    wbs_code_map = wbs_code_map or {}
+    errs = al.validate_activity(it)
+    proj = project_by_code(conn, it["ProjectCode"]) if it["ProjectCode"] else None
+    if it["ProjectCode"] and not proj:
+        errs.append(f"Unknown ProjectCode: {it['ProjectCode']}")
+    owner = (person_id_by_email(conn, it["OwnerEmail"])
+             if it["OwnerEmail"] else None)
+    if it["OwnerEmail"] and not owner:
+        errs.append(f"Owner {it['OwnerEmail']} not in person directory")
+    if errs:
+        return _error(g, M365["activity_list_id"], it, errs, dry, "activity")
+    ws = it["Workstream"]
+    wp = it["WorkPackage"]
+    wbs_id = wbs_map.get((ws, wp))
+    wbs_code = wbs_code_map.get((ws, wp))
+    if wbs_id is None or wbs_code is None:
+        # ProjectCode resolved but (ws, wp) not in map — reconcile_wbs skips
+        # rows with blank ws/wp; those already fail validate_activity above.
+        return _error(g, M365["activity_list_id"], it,
+                      [f"WBS node not found for ({ws!r} / {wp!r})"], dry, "activity")
+    # Compute would-be activity code from existing codes for this WBS element.
+    existing_codes = [r[0] for r in conn.execute(
+        "SELECT activity_code FROM pmbok.schedule_activity WHERE wbs_element_id=%s",
+        (str(wbs_id),)).fetchall()]
+    would_be_code = al.next_activity_code(existing_codes, wbs_code)
+    if current:
+        return f"OK activity item {it['item_id']}: existing (write path lands in T5)"
+    # New item — dry-run only in T4.
+    return (f"DRY activity item {it['item_id']}: would create {would_be_code}"
+            f" ({ws} / {wp})")
+
+
 ARTIFACTS = [
     {"kind": "risk", "list_key": "risk_list_id", "fields": RISK_FIELDS,
      "normalize": normalize_risk, "process": process_risk,
@@ -399,6 +548,9 @@ ARTIFACTS = [
     {"kind": "report", "list_key": "status_report_list_id",
      "fields": REPORT_FIELDS, "normalize": normalize_report,
      "process": process_report, "select": REPORT_SELECT},
+    {"kind": "activity", "list_key": "activity_list_id",
+     "fields": ACTIVITY_FIELDS, "normalize": normalize_activity,
+     "process": process_activity, "select": ACTIVITY_SELECT},
 ]
 
 
@@ -428,6 +580,27 @@ def main():
             print(f"{art['kind']}: {len(raw)} list item(s) fetched")
             items = [art["normalize"](i, people) for i in raw]
             synced = synced_map(conn, art["kind"], art["select"])
+
+            # Activity: build wbs_map/wbs_code_map per project (read-only in T4).
+            activity_wbs_map = {}
+            activity_wbs_code_map = {}
+            if art["kind"] == "activity":
+                by_project = {}
+                for it in items:
+                    pc = it["ProjectCode"]
+                    if pc:
+                        by_project.setdefault(pc, []).append(it)
+                for pc, acts in by_project.items():
+                    proj = project_by_code(conn, pc)
+                    if not proj:
+                        continue  # unknown ProjectCode: processor will surface the error
+                    project_id, _dept = proj
+                    wm, wcm = reconcile_wbs(conn, project_id, pc, acts, args.dry_run)
+                    for key, val in wm.items():
+                        activity_wbs_map[(pc, key[0], key[1])] = val
+                    for key, val in wcm.items():
+                        activity_wbs_code_map[(pc, key[0], key[1])] = val
+
             seen = set()
             for it in items:
                 seen.add(it["item_id"])
@@ -435,6 +608,20 @@ def main():
                     kwargs = {}
                     if art["kind"] == "report":
                         kwargs["area_map"] = area_map
+                    if art["kind"] == "activity":
+                        pc = it["ProjectCode"]
+                        ws = it["Workstream"]
+                        wp = it["WorkPackage"]
+                        kwargs["wbs_map"] = {
+                            (k[1], k[2]): v
+                            for k, v in activity_wbs_map.items()
+                            if k[0] == pc
+                        }
+                        kwargs["wbs_code_map"] = {
+                            (k[1], k[2]): v
+                            for k, v in activity_wbs_code_map.items()
+                            if k[0] == pc
+                        }
                     results.append(art["process"](conn, g, it, args.dry_run,
                                                   synced.get(it["item_id"]),
                                                   **kwargs))

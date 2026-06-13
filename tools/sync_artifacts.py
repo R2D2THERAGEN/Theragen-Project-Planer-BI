@@ -167,7 +167,7 @@ REPORT_SELECT = ('SELECT external_ref, report_id, project_id, period_start,'
                  ' FROM pmbok.status_report WHERE external_ref IS NOT NULL')
 
 
-# ---- processors (T5: stubs - validate/resolve and report intent only) -------
+# ---- processors -------
 
 def process_risk(conn, g, it, dry, current):
     errs = al.validate_risk(it)
@@ -180,10 +180,33 @@ def process_risk(conn, g, it, dry, current):
         errs.append(f"RiskOwner {it['RiskOwnerEmail']} not in person directory")
     if errs:
         return _error(g, M365["risk_list_id"], it, errs, dry, "risk")
+    project_id, department = proj
     if current:
-        return f"DRY risk item {it['item_id']}: existing (update path lands in T6/T7)"
-    return f"DRY risk item {it['item_id']}: would create (project {it['ProjectCode']})"
-    # TODO(T6): insert + write-back; TODO(T7): compare/update/heal
+        return f"OK risk item {it['item_id']}: existing (update path lands in T7)"
+    existing_codes = [r[0] for r in conn.execute(
+        "SELECT risk_code FROM pmbok.risk WHERE project_id=%s",
+        (project_id,)).fetchall()]
+    risk_code = al.next_risk_code(existing_codes)
+    if dry:
+        return f"DRY risk item {it['item_id']}: would create {risk_code} ({it['ProjectCode']})"
+    row = al.build_risk_row(it, project_id, department, owner, risk_code)
+    with conn.transaction():
+        conn.execute(
+            'INSERT INTO pmbok.risk (risk_id, project_id, risk_code, category,'
+            ' description, "trigger", likelihood, impact, score, response_type,'
+            ' owner_person_id, department, due_date, status, residual_score,'
+            ' compliance_flag, external_ref)'
+            ' VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',
+            (str(uuid.uuid5(NS, f"thg/artifact/risk/{it['item_id']}")),
+             row["project_id"], row["risk_code"], row["category"],
+             row["description"], row["trigger"], row["likelihood"],
+             row["impact"], row["score"], row["response_type"],
+             row["owner_person_id"], row["department"], row["due_date"],
+             row["status"], row["residual_score"], row["compliance_flag"],
+             it["item_id"]))
+    writeback(g, M365["risk_list_id"], it["item_id"],
+              {"SyncStatus": "Synced", "SyncMessage": "", "RiskCode": risk_code})
+    return f"OK new risk {risk_code} ({it['ProjectCode']}, item {it['item_id']})"
 
 
 def process_milestone(conn, g, it, dry, current):
@@ -193,10 +216,24 @@ def process_milestone(conn, g, it, dry, current):
         errs.append(f"Unknown ProjectCode: {it['ProjectCode']}")
     if errs:
         return _error(g, M365["milestone_list_id"], it, errs, dry, "milestone")
+    project_id, _dept = proj
     if current:
-        return f"DRY milestone item {it['item_id']}: existing (update path lands in T6/T7)"
-    return f"DRY milestone item {it['item_id']}: would create ({it['Title']})"
-    # TODO(T6)/TODO(T7) as above
+        return f"OK milestone item {it['item_id']}: existing (update path lands in T7)"
+    if dry:
+        return f"DRY milestone item {it['item_id']}: would create ({it['Title']})"
+    row = al.build_milestone_row(it, project_id)
+    with conn.transaction():
+        conn.execute(
+            "INSERT INTO pmbok.milestone (milestone_id, project_id, name,"
+            " baseline_date, forecast_date, actual_date, status, owner_role,"
+            " external_ref) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+            (str(uuid.uuid5(NS, f"thg/artifact/milestone/{it['item_id']}")),
+             row["project_id"], row["name"], row["baseline_date"],
+             row["forecast_date"], row["actual_date"], row["status"],
+             row["owner_role"], it["item_id"]))
+    writeback(g, M365["milestone_list_id"], it["item_id"],
+              {"SyncStatus": "Synced", "SyncMessage": ""})
+    return f"OK new milestone ({it['Title']}, item {it['item_id']})"
 
 
 def process_report(conn, g, it, dry, current):
@@ -210,12 +247,42 @@ def process_report(conn, g, it, dry, current):
         errs.append("SubmittedBy not in person directory")
     if errs:
         return _error(g, M365["status_report_list_id"], it, errs, dry, "report")
+    project_id, _dept = proj
     if current:
-        return f"DRY report item {it['item_id']}: existing (update path lands in T6/T7)"
-    return (f"DRY report item {it['item_id']}: would create report + "
-            f"{len(al.KNOWLEDGE_AREAS)} areas ({it['ProjectCode']} "
-            f"{it['PeriodStart']}..{it['PeriodEnd']})")
-    # TODO(T6)/TODO(T7) as above
+        return f"OK report item {it['item_id']}: existing (update path lands in T7)"
+    dup = conn.execute(
+        "SELECT 1 FROM pmbok.status_report WHERE project_id=%s AND"
+        " period_start=%s AND (external_ref IS NULL OR external_ref<>%s)",
+        (project_id, it["PeriodStart"], it["item_id"])).fetchone()
+    if dup:
+        return _error(g, M365["status_report_list_id"], it,
+                      [f"Duplicate report period for {it['ProjectCode']}: "
+                       f"{it['PeriodStart']}"], dry, "report")
+    if dry:
+        return (f"DRY report item {it['item_id']}: would create report + 9 areas"
+                f" ({it['ProjectCode']} {it['PeriodStart']}..{it['PeriodEnd']})")
+    report_id = str(uuid.uuid5(NS, f"thg/artifact/report/{it['item_id']}"))
+    row = al.build_report_row(it, project_id, submitter)
+    with conn.transaction():
+        conn.execute(
+            "INSERT INTO pmbok.status_report (report_id, project_id,"
+            " period_start, period_end, overall_status, trend,"
+            " executive_summary, decisions_needed, submitted_by_person_id,"
+            " submitted_at, external_ref)"
+            " VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+            (report_id, row["project_id"], row["period_start"],
+             row["period_end"], row["overall_status"], row["trend"],
+             row["executive_summary"], row["decisions_needed"],
+             row["submitted_by_person_id"], it["CreatedAt"], it["item_id"]))
+        for area in al.build_area_rows(it):
+            conn.execute(
+                "INSERT INTO pmbok.status_report_area (area_id, report_id,"
+                " knowledge_area, status) VALUES (%s,%s,%s,%s)",
+                (str(uuid.uuid5(NS, f"thg/sra/{it['item_id']}/{area['knowledge_area']}")),
+                 report_id, area["knowledge_area"], area["status"]))
+    writeback(g, M365["status_report_list_id"], it["item_id"],
+              {"SyncStatus": "Synced", "SyncMessage": ""})
+    return f"OK new report + 9 areas ({it['ProjectCode']} {it['PeriodStart']}, item {it['item_id']})"
 
 
 ARTIFACTS = [

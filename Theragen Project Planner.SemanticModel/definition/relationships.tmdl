@@ -159,3 +159,7 @@ relationship 78f2ac7c-0b67-5b08-9082-bb2471343340
 	fromColumn: 'Phase Gate Log'.'Project ID'
 	toColumn: Project.'Project ID'
 
+relationship 22ba022c-5b6a-5cea-8836-4040864a9fe7
+	fromColumn: 'Change Impact Assessment'.'CR ID'
+	toColumn: 'Change Request'.'CR ID'
+

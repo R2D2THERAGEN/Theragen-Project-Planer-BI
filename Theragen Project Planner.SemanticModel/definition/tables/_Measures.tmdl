@@ -702,6 +702,36 @@ table _Measures
 
 		annotation SummarizationSetBy = User
 
+	/// Count of per-department impact assessments.
+	measure 'Impact Assessments' = COUNTROWS('Change Impact Assessment')
+		formatString: #,0
+		displayFolder: Change
+		lineageTag: 2a83e2ad-6285-5065-8404-cae8c1196c71
+
+	/// Distinct CRs with at least one impact assessment.
+	measure 'Assessed CRs' = DISTINCTCOUNT('Change Impact Assessment'[CR ID])
+		formatString: #,0
+		displayFolder: Change
+		lineageTag: fea4de75-2782-544d-be93-212816d88d31
+
+	/// Distinct departments that assessed a CR.
+	measure 'Departments Assessed' = DISTINCTCOUNT('Change Impact Assessment'[Department])
+		formatString: #,0
+		displayFolder: Change
+		lineageTag: e31202c1-f2bb-581e-aa6a-e0a2d7130ab7
+
+	/// Total assessed schedule impact across departments (days).
+	measure 'Assessed Schedule Impact Days' = SUM('Change Impact Assessment'[Schedule Impact Days])
+		formatString: #,0
+		displayFolder: Change
+		lineageTag: fc0c0538-55e6-5775-886f-b95e11fadd79
+
+	/// Total assessed cost impact across departments.
+	measure 'Assessed Cost Impact' = SUM('Change Impact Assessment'[Cost Impact])
+		formatString: \$#,##0;(\$#,##0);\$0
+		displayFolder: Change
+		lineageTag: d1486865-f1a0-55dc-96de-d2cfe1afa0e4
+
 	partition _Measures = m
 		mode: import
 		source =

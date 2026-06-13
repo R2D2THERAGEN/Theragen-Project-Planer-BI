@@ -1,0 +1,111 @@
+/// Fact - per-department change-impact assessments (PMBOK P22). One row per department's impact statement on a change request.
+table 'Change Impact Assessment'
+	lineageTag: 40109f87-3d67-5568-9ca6-b85fe40e2c0b
+
+	column 'Impact ID'
+		dataType: string
+		isHidden
+		lineageTag: fa88452f-e59f-5a8d-b560-880ef0b04e07
+		summarizeBy: none
+		sourceColumn: Impact ID
+
+		annotation SummarizationSetBy = User
+
+	column 'CR ID'
+		dataType: string
+		isHidden
+		lineageTag: 96aeceb0-790a-5818-8bdd-1964c613e267
+		summarizeBy: none
+		sourceColumn: CR ID
+
+		annotation SummarizationSetBy = User
+
+	column 'CR Code'
+		dataType: string
+		lineageTag: c4e967f6-0081-5467-95f7-f600edc70031
+		summarizeBy: none
+		sourceColumn: CR Code
+
+		annotation SummarizationSetBy = User
+
+	column 'Project Code'
+		dataType: string
+		lineageTag: 453cf658-ff0f-5130-8714-b4a0d770f560
+		summarizeBy: none
+		sourceColumn: Project Code
+
+		annotation SummarizationSetBy = User
+
+	column Department
+		dataType: string
+		lineageTag: 36dd6d26-2825-5251-92ba-6ff2e27460ba
+		summarizeBy: none
+		sourceColumn: Department
+
+		annotation SummarizationSetBy = User
+
+	column 'Scope Impact'
+		dataType: string
+		lineageTag: 216b0e7f-95e8-5caa-a1cc-499455562e52
+		summarizeBy: none
+		sourceColumn: Scope Impact
+
+		annotation SummarizationSetBy = User
+
+	column 'Schedule Impact Days'
+		dataType: int64
+		formatString: #,0
+		lineageTag: 411702e5-8307-52d5-9d22-5f2cbde4a907
+		summarizeBy: none
+		sourceColumn: Schedule Impact Days
+
+		annotation SummarizationSetBy = User
+
+	column 'Cost Impact'
+		dataType: double
+		formatString: \$#,##0;(\$#,##0);\$0
+		lineageTag: cc816d35-03fa-5763-bee7-5d0a225d1f78
+		summarizeBy: none
+		sourceColumn: Cost Impact
+
+		annotation SummarizationSetBy = User
+
+	column 'Quality Impact'
+		dataType: string
+		lineageTag: 2ae6e34b-8f8b-51d5-99ac-bc1740ba1ebe
+		summarizeBy: none
+		sourceColumn: Quality Impact
+
+		annotation SummarizationSetBy = User
+
+	column 'Submitted By'
+		dataType: string
+		lineageTag: ebc3c34b-4952-5968-bd0c-8b583595fa9b
+		summarizeBy: none
+		sourceColumn: Submitted By
+
+		annotation SummarizationSetBy = User
+
+	column 'Submitted Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 55748c1b-a355-5644-a509-9d24f13018a5
+		summarizeBy: none
+		sourceColumn: Submitted Date
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition 'Change Impact Assessment' = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "change_impact_assessment"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"impact_id", "cr_id", "cr_code", "project_code", "department", "scope_impact", "schedule_impact_days", "cost_impact", "quality_impact", "submitted_by_name", "submitted_at"}),
+				    Renamed = Table.RenameColumns(Selected, {{"impact_id", "Impact ID"}, {"cr_id", "CR ID"}, {"cr_code", "CR Code"}, {"project_code", "Project Code"}, {"department", "Department"}, {"scope_impact", "Scope Impact"}, {"schedule_impact_days", "Schedule Impact Days"}, {"cost_impact", "Cost Impact"}, {"quality_impact", "Quality Impact"}, {"submitted_by_name", "Submitted By"}, {"submitted_at", "Submitted Date"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table

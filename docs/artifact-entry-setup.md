@@ -317,6 +317,10 @@ the next run.
 **To retract a status report:** there is no retract status — contact the PMO to correct
 or remove the database record directly.
 
+**Never delete and recreate a whole List.** SharePoint item ids restart at 1 in a new
+List, and the sync matches rows to database records by item id — a recreated List's
+first row would silently alias an old record. The Lists are permanent infrastructure.
+
 ---
 
 ## H. Pipeline timing

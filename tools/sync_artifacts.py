@@ -410,9 +410,13 @@ def main():
     g = Graph()
     people = SitePeople(g, M365["site_id"])
     results, orphans = [], []
+    # autocommit: bare SELECTs run autonomously, so a transient DB error on one
+    # item cannot leave the connection INERROR and poison the rest of the batch;
+    # each conn.transaction() block is a real per-item COMMIT (report rows stay
+    # atomic with their 9 areas inside one block).
     with psycopg.connect(host=PG["server"], dbname=PG["database"],
                          user=PG["user"], password=PG["password"],
-                         sslmode="require") as conn:
+                         sslmode="require", autocommit=True) as conn:
         # Build area_map once: external_ref -> {knowledge_area: status}.
         # Used by process_report to detect per-area changes without re-querying.
         area_map = {}

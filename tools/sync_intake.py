@@ -213,9 +213,12 @@ def main():
 
     g = Graph()
     people = SitePeople(g, M365["site_id"])
+    # autocommit: bare SELECTs run autonomously, so a transient DB error on one
+    # item cannot leave the connection INERROR and poison the rest of the batch;
+    # each conn.transaction() block below is a real per-item COMMIT.
     with psycopg.connect(host=PG["server"], dbname=PG["database"],
                          user=PG["user"], password=PG["password"],
-                         sslmode="require") as conn:
+                         sslmode="require", autocommit=True) as conn:
         raw_items = fetch_items(g)
         print(f"{len(raw_items)} list item(s) fetched")
 

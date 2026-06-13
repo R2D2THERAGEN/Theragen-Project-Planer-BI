@@ -170,3 +170,97 @@ def row_changed(current, desired):
     """True if any desired column differs from current, normalizing types
     (date vs ISO string, Decimal vs int, None vs '')."""
     return any(_norm(current.get(k)) != _norm(desired[k]) for k in desired)
+
+
+# ---------------------------------------------------------------------------
+# Activity / WBS constants and helpers
+# ---------------------------------------------------------------------------
+
+ACTIVITY_STATUSES = ["Not started", "In progress", "At risk", "Done", "Cancelled"]
+# The 8 Theragen departments (exact strings; also doc_mgmt.department.name).
+DEPARTMENTS = ["Clinical / Medical Affairs", "Regulatory / Quality",
+               "R&D / Engineering", "Operations / PMO", "Finance / Procurement",
+               "Commercial / Marketing", "IT / Data / Security", "HR / People"]
+
+_ACTIVITY_CODE = re.compile(r"-A(\d+)$")
+
+
+def working_days(start, finish):
+    """Inclusive Mon-Fri count between two ISO date strings (yyyy-mm-dd).
+    Returns 0 if either is blank or finish < start."""
+    if _blank(start) or _blank(finish):
+        return 0
+    s = datetime.date.fromisoformat(str(start)[:10])
+    f = datetime.date.fromisoformat(str(finish)[:10])
+    if f < s:
+        return 0
+    days, d = 0, s
+    while d <= f:
+        if d.weekday() < 5:
+            days += 1
+        d += datetime.timedelta(days=1)
+    return days
+
+
+def next_wbs_code(existing_codes, parent_code=None):
+    """Append-only WBS code. Level-1 (parent_code None): next unused integer.
+    Level-2: '{parent}.{next unused child int}'. Never renumbers existing codes."""
+    if parent_code is None:
+        nums = [int(c) for c in existing_codes if c and c.isdigit()]
+        return str(max(nums) + 1 if nums else 1)
+    prefix = f"{parent_code}."
+    nums = [int(c[len(prefix):]) for c in existing_codes
+            if c and c.startswith(prefix) and c[len(prefix):].isdigit()]
+    return f"{prefix}{max(nums) + 1 if nums else 1}"
+
+
+def next_activity_code(existing_codes, wbs_code):
+    """Next '{wbs_code}-A{n}' for one work package. Widens, never truncates."""
+    nums = [int(m.group(1)) for c in existing_codes
+            if c and (m := _ACTIVITY_CODE.search(c)) and c.startswith(f"{wbs_code}-A")]
+    return f"{wbs_code}-A{max(nums) + 1 if nums else 1}"
+
+
+def validate_activity(it):
+    errs = [f"Missing: {k}" for k in
+            ("ProjectCode", "Title", "Workstream", "WorkPackage",
+             "StartPlanned", "FinishPlanned", "Department") if _blank(it.get(k))]
+    if _blank(it.get("OwnerEmail")):
+        errs.append("Missing: Owner")
+    if it.get("ActivityStatus") not in ACTIVITY_STATUSES:
+        errs.append(f"ActivityStatus not recognized: {it.get('ActivityStatus')}")
+    if not _blank(it.get("Department")) and it["Department"] not in DEPARTMENTS:
+        errs.append(f"Department not recognized: {it['Department']}")
+    if (not _blank(it.get("StartPlanned")) and not _blank(it.get("FinishPlanned"))
+            and it["FinishPlanned"] < it["StartPlanned"]):
+        errs.append("FinishPlanned must be on/after StartPlanned")
+    pct = it.get("PctComplete")
+    if pct is not None and not (0 <= float(pct) <= 100):
+        errs.append("PctComplete must be 0-100")
+    # Recent Accomplishment DAX filters Done AND non-blank Actual Finish.
+    if it.get("ActivityStatus") == "Done" and _blank(it.get("FinishActual")):
+        errs.append("Done requires FinishActual (report hides it otherwise)")
+    return errs
+
+
+def build_wbs_row(project_id, wbs_code, parent_id, level, name, owning_department, owner_role):
+    return {"project_id": project_id, "wbs_code": wbs_code,
+            "parent_wbs_element_id": parent_id, "level": level, "name": name[:200],
+            "owning_department": owning_department, "owner_role": owner_role}
+
+
+def build_activity_row(it, wbs_element_id, owner_person_id, activity_code):
+    return {
+        "wbs_element_id": wbs_element_id,
+        "activity_code": activity_code,
+        "name": it["Title"][:200],
+        "start_planned": it["StartPlanned"],
+        "finish_planned": it["FinishPlanned"],
+        "start_actual": it["StartActual"],
+        "finish_actual": it["FinishActual"],
+        "duration_days": working_days(it["StartPlanned"], it["FinishPlanned"]),
+        "owner_person_id": owner_person_id,
+        "department": it["Department"],
+        "status": it["ActivityStatus"],
+        "pct_complete": float(it["PctComplete"]) if it["PctComplete"] is not None else 0,
+    }

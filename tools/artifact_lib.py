@@ -394,6 +394,61 @@ def _trail_states(current, desired, keys):
 
 
 # ---------------------------------------------------------------------------
+# Change Impact Assessment (2c-2) - per-department impact statement on a CR
+# ---------------------------------------------------------------------------
+
+def validate_impact_assessment(it):
+    """Return a list of error strings; empty list means valid.
+
+    The parent CR (ParentCRCode) and submitter (SubmittedByEmail) are resolved
+    in the sync; here we only require the human inputs be present/coherent.
+    schedule_impact_days / cost_impact are nullable - blank is fine, but a
+    non-coercible value gets a clean error instead of a raw int()/float() crash.
+    """
+    errs = [f"Missing: {k}" for k in ("ProjectCode", "ParentCRCode", "Department")
+            if _blank(it.get(k))]
+    if _blank(it.get("SubmittedByEmail")):
+        errs.append("Missing: SubmittedBy (picker empty and item author unknown)")
+    if it.get("Department") and it["Department"] not in DEPARTMENTS:
+        errs.append(f"Department not recognized: {it['Department']}")
+    raw_days = it.get("ScheduleImpactDays")
+    if raw_days not in (None, ""):
+        try:
+            int(raw_days)
+        except (TypeError, ValueError):
+            errs.append(f"ScheduleImpactDays must be a whole number: {raw_days}")
+    raw_cost = it.get("CostImpact")
+    if raw_cost not in (None, ""):
+        try:
+            float(raw_cost)
+        except (TypeError, ValueError):
+            errs.append(f"CostImpact must be numeric: {raw_cost}")
+    return errs
+
+
+def build_impact_assessment_row(it, cr_id, submitted_by_person_id, submitted_at):
+    """Build the change_impact_assessment DB column dict.
+
+    cr_id (parent CR), submitted_by_person_id and submitted_at are already
+    resolved by the caller (parent lookup, person directory, createdDate
+    fallback). Unlike build_cr_row, schedule_impact_days / cost_impact are
+    NULLABLE: blank -> None (the column has no default).
+    """
+    raw_days = it.get("ScheduleImpactDays")
+    raw_cost = it.get("CostImpact")
+    return {
+        "cr_id": cr_id,
+        "department": it["Department"],
+        "scope_impact": it.get("ScopeImpact") or None,
+        "schedule_impact_days": int(raw_days) if raw_days not in (None, "") else None,
+        "cost_impact": float(raw_cost) if raw_cost not in (None, "") else None,
+        "quality_impact": it.get("QualityImpact") or None,
+        "submitted_by_person_id": submitted_by_person_id,
+        "submitted_at": submitted_at,
+    }
+
+
+# ---------------------------------------------------------------------------
 # Baseline + Phase-Gate constants, minting, validators, snapshot assemblers
 # ---------------------------------------------------------------------------
 

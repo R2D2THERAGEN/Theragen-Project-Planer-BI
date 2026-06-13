@@ -1290,3 +1290,127 @@ class TestBuildPhaseGateRow:
     def test_held_gate_decision(self):
         row = self._row(GateDecision="Held")
         assert row["gate_decision"] == "Held"
+
+
+# --- Change Impact Assessment (2c-2) ----------------------------------------
+
+def _impact(**over):
+    """Minimal valid normalized change-impact-assessment item.
+
+    Keys are the normalizer's output (SubmittedByEmail already resolved from
+    the picker or the item-author fallback; SubmittedDate already defaulted).
+    """
+    base = {
+        "item_id": "3",
+        "Title": "Finance impact on C-001",
+        "ProjectCode": "THG-IT-001",
+        "ParentCRCode": "C-001",
+        "Department": "Finance / Procurement",
+        "ScopeImpact": "Two extra reconciliation cycles.",
+        "ScheduleImpactDays": "5",
+        "CostImpact": "2500.00",
+        "QualityImpact": "",
+        "SubmittedByEmail": "sponsor@theragen.com",
+        "SubmittedDate": "2026-06-10",
+        "SyncStatus": "Pending",
+    }
+    base.update(over)
+    return base
+
+
+class TestValidateImpactAssessment:
+    def test_happy_path(self):
+        assert al.validate_impact_assessment(_impact()) == []
+
+    def test_missing_project_code(self):
+        errs = al.validate_impact_assessment(_impact(ProjectCode=""))
+        assert any("ProjectCode" in e for e in errs)
+
+    def test_missing_parent_cr_code(self):
+        errs = al.validate_impact_assessment(_impact(ParentCRCode=""))
+        assert any("ParentCRCode" in e for e in errs)
+
+    def test_missing_department(self):
+        errs = al.validate_impact_assessment(_impact(Department=""))
+        assert any("Department" in e for e in errs)
+
+    def test_missing_submitter(self):
+        errs = al.validate_impact_assessment(_impact(SubmittedByEmail=""))
+        assert any("SubmittedBy" in e for e in errs)
+
+    def test_missing_submitter_none(self):
+        errs = al.validate_impact_assessment(_impact(SubmittedByEmail=None))
+        assert any("SubmittedBy" in e for e in errs)
+
+    def test_bad_department(self):
+        errs = al.validate_impact_assessment(_impact(Department="Legal / IP"))
+        assert any("Department not recognized" in e for e in errs)
+
+    def test_all_valid_departments_accepted(self):
+        for d in al.DEPARTMENTS:
+            assert al.validate_impact_assessment(_impact(Department=d)) == [], \
+                f"department {d} should be valid"
+
+    def test_blank_numerics_ok(self):
+        assert al.validate_impact_assessment(
+            _impact(ScheduleImpactDays="", CostImpact="")) == []
+        assert al.validate_impact_assessment(
+            _impact(ScheduleImpactDays=None, CostImpact=None)) == []
+
+    def test_non_integer_schedule_flagged(self):
+        errs = al.validate_impact_assessment(_impact(ScheduleImpactDays="abc"))
+        assert any("ScheduleImpactDays" in e for e in errs)
+
+    def test_non_numeric_cost_flagged(self):
+        errs = al.validate_impact_assessment(_impact(CostImpact="lots"))
+        assert any("CostImpact" in e for e in errs)
+
+    def test_submitted_date_optional(self):
+        # SubmittedDate is defaulted in the normalizer -> never a validation error
+        assert al.validate_impact_assessment(_impact(SubmittedDate="")) == []
+
+    def test_aggregate_missing(self):
+        errs = al.validate_impact_assessment(_impact(
+            ProjectCode="", ParentCRCode="", Department="", SubmittedByEmail=""))
+        assert len(errs) >= 4
+
+
+class TestBuildImpactAssessmentRow:
+    def _row(self, **over):
+        it = _impact(**over)
+        return al.build_impact_assessment_row(
+            it, cr_id="cr-uuid", submitted_by_person_id=7,
+            submitted_at="2026-06-10")
+
+    def test_columns_present(self):
+        row = self._row()
+        assert row["cr_id"] == "cr-uuid"
+        assert row["department"] == "Finance / Procurement"
+        assert row["submitted_by_person_id"] == 7
+        assert row["submitted_at"] == "2026-06-10"
+
+    def test_schedule_days_coerced_int(self):
+        row = self._row(ScheduleImpactDays="5")
+        assert row["schedule_impact_days"] == 5
+        assert isinstance(row["schedule_impact_days"], int)
+
+    def test_schedule_days_blank_none(self):
+        assert self._row(ScheduleImpactDays="")["schedule_impact_days"] is None
+        assert self._row(ScheduleImpactDays=None)["schedule_impact_days"] is None
+
+    def test_cost_coerced_float(self):
+        row = self._row(CostImpact="2500.00")
+        assert row["cost_impact"] == 2500.0
+
+    def test_cost_blank_none(self):
+        assert self._row(CostImpact="")["cost_impact"] is None
+        assert self._row(CostImpact=None)["cost_impact"] is None
+
+    def test_scope_and_quality_blank_none(self):
+        row = self._row(ScopeImpact="", QualityImpact="")
+        assert row["scope_impact"] is None
+        assert row["quality_impact"] is None
+
+    def test_scope_preserved_when_set(self):
+        row = self._row(ScopeImpact="Adds two cycles")
+        assert row["scope_impact"] == "Adds two cycles"

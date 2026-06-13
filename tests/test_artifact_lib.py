@@ -1139,6 +1139,103 @@ class TestAssembleScopeSnapshot:
 
 
 # ---------------------------------------------------------------------------
+# Determinism / total-order regression tests (sort-key hardening)
+# ---------------------------------------------------------------------------
+
+class TestBudgetSnapshotTotalOrder:
+    """Two lines sharing (wbs_code, category) but differing in funding_source/total
+    must produce byte-identical JSON regardless of input order.
+    Before the fix (key only on wbs_code+category) the order of these two rows
+    was input-order-dependent and json.dumps would have differed."""
+
+    def test_duplicate_wbs_category_different_funding_and_total(self):
+        line_a = {"wbs_code": "1.1", "category": "Labour",
+                  "total": Decimal("30000.00"), "funding_source": "Grant"}
+        line_b = {"wbs_code": "1.1", "category": "Labour",
+                  "total": Decimal("50000.00"), "funding_source": "Internal"}
+        snap1 = al.assemble_budget_snapshot(Decimal("80000.00"), [line_a, line_b])
+        snap2 = al.assemble_budget_snapshot(Decimal("80000.00"), [line_b, line_a])
+        # Must be equal — would have been UNEQUAL before the 4-key sort fix
+        assert json.dumps(snap1, sort_keys=False) == json.dumps(snap2, sort_keys=False)
+
+    def test_ordering_is_by_funding_source_then_total(self):
+        """Grant < Internal alphabetically -> Grant line must appear first."""
+        line_grant    = {"wbs_code": "1.1", "category": "Labour",
+                         "total": Decimal("30000.00"), "funding_source": "Grant"}
+        line_internal = {"wbs_code": "1.1", "category": "Labour",
+                         "total": Decimal("50000.00"), "funding_source": "Internal"}
+        snap = al.assemble_budget_snapshot(Decimal("80000.00"),
+                                           [line_internal, line_grant])
+        assert snap["lines"][0]["funding_source"] == "Grant"
+        assert snap["lines"][1]["funding_source"] == "Internal"
+
+
+class TestScopeSnapshotTotalOrder:
+    """Two inclusions sharing the same sequence value must sort deterministically
+    by item text regardless of input order."""
+
+    def test_tied_sequence_inclusions_byte_stable(self):
+        inc_alpha = {"item": "Alpha feature", "sequence": 1}
+        inc_zebra = {"item": "Zebra feature", "sequence": 1}
+        snap1 = al.assemble_scope_snapshot(None, [inc_alpha, inc_zebra], [], [])
+        snap2 = al.assemble_scope_snapshot(None, [inc_zebra, inc_alpha], [], [])
+        assert json.dumps(snap1, sort_keys=False) == json.dumps(snap2, sort_keys=False)
+
+    def test_tied_sequence_inclusions_alphabetical_order(self):
+        """Alpha < Zebra -> Alpha must come first after tiebreak."""
+        inc_alpha = {"item": "Alpha feature", "sequence": 1}
+        inc_zebra = {"item": "Zebra feature", "sequence": 1}
+        snap = al.assemble_scope_snapshot(None, [inc_zebra, inc_alpha], [], [])
+        assert snap["inclusions"] == ["Alpha feature", "Zebra feature"]
+
+    def test_tied_sequence_exclusions_byte_stable(self):
+        exc_a = {"item": "Audit trail",  "sequence": 2}
+        exc_b = {"item": "Batch export", "sequence": 2}
+        snap1 = al.assemble_scope_snapshot(None, [], [exc_a, exc_b], [])
+        snap2 = al.assemble_scope_snapshot(None, [], [exc_b, exc_a], [])
+        assert json.dumps(snap1, sort_keys=False) == json.dumps(snap2, sort_keys=False)
+
+    def test_tied_sequence_acceptance_byte_stable(self):
+        acc_a = {"criterion": "Load test passes",  "sequence": 0}
+        acc_b = {"criterion": "Security scan clean", "sequence": 0}
+        snap1 = al.assemble_scope_snapshot(None, [], [], [acc_a, acc_b])
+        snap2 = al.assemble_scope_snapshot(None, [], [], [acc_b, acc_a])
+        assert json.dumps(snap1, sort_keys=False) == json.dumps(snap2, sort_keys=False)
+
+
+class TestScheduleSnapshotTotalOrder:
+    """Defensive: two activities sharing a code (hypothetical) but differing in
+    name must sort deterministically.  In practice activity_code is unique per
+    project, so this is a belt-and-suspenders guard only.  We test it anyway to
+    document the invariant and confirm the (code, name) key is in effect."""
+
+    def test_tied_code_different_name_byte_stable(self):
+        act_a = {"activity_code": "1.1-A1", "name": "Alpha task",
+                 "start_planned": datetime.date(2026, 6, 1),
+                 "finish_planned": datetime.date(2026, 6, 5),
+                 "duration_days": 5}
+        act_b = {"activity_code": "1.1-A1", "name": "Zebra task",
+                 "start_planned": datetime.date(2026, 6, 1),
+                 "finish_planned": datetime.date(2026, 6, 5),
+                 "duration_days": 5}
+        snap1 = al.assemble_schedule_snapshot([act_a, act_b], [], _HEADLINE)
+        snap2 = al.assemble_schedule_snapshot([act_b, act_a], [], _HEADLINE)
+        assert json.dumps(snap1, sort_keys=False) == json.dumps(snap2, sort_keys=False)
+
+    def test_tied_code_name_is_alphabetical_tiebreak(self):
+        act_a = {"activity_code": "1.1-A1", "name": "Alpha task",
+                 "start_planned": datetime.date(2026, 6, 1),
+                 "finish_planned": datetime.date(2026, 6, 5),
+                 "duration_days": 5}
+        act_b = {"activity_code": "1.1-A1", "name": "Zebra task",
+                 "start_planned": datetime.date(2026, 6, 1),
+                 "finish_planned": datetime.date(2026, 6, 5),
+                 "duration_days": 5}
+        snap = al.assemble_schedule_snapshot([act_b, act_a], [], _HEADLINE)
+        assert snap["activities"][0]["name"] == "Alpha task"
+
+
+# ---------------------------------------------------------------------------
 # build_phase_gate_row
 # ---------------------------------------------------------------------------
 

@@ -455,7 +455,7 @@ def assemble_schedule_snapshot(activities, milestones, headline):
           "start_planned": _d(a["start_planned"]),
           "finish_planned": _d(a["finish_planned"]),
           "duration_days": int(a["duration_days"])} for a in activities),
-        key=lambda x: x["code"])
+        key=lambda x: (x["code"], x["name"]))
     mils = sorted(
         ({"name": m["name"], "baseline_date": _d(m["baseline_date"])}
          for m in milestones),
@@ -474,7 +474,7 @@ def assemble_budget_snapshot(budget_total, lines):
         ({"wbs_code": l["wbs_code"], "category": l["category"],
           "total": float(l["total"]),
           "funding_source": l["funding_source"]} for l in lines),
-        key=lambda x: (x["wbs_code"], x["category"]))
+        key=lambda x: (x["wbs_code"], x["category"], x["funding_source"], x["total"]))
     return {"type": "Budget",
             "budget_total": float(budget_total) if budget_total is not None else None,
             "lines": ls}
@@ -492,11 +492,11 @@ def assemble_scope_snapshot(charter, inclusions, exclusions, acceptance):
                         "high_level_in_scope": c.get("high_level_in_scope"),
                         "high_level_out_scope": c.get("high_level_out_scope")},
             "inclusions": [r["item"] for r in sorted(inclusions,
-                           key=lambda r: r.get("sequence", 0))],
+                           key=lambda r: (r.get("sequence", 0), r["item"]))],
             "exclusions": [r["item"] for r in sorted(exclusions,
-                           key=lambda r: r.get("sequence", 0))],
+                           key=lambda r: (r.get("sequence", 0), r["item"]))],
             "acceptance": [r["criterion"] for r in sorted(acceptance,
-                           key=lambda r: r.get("sequence", 0))]}
+                           key=lambda r: (r.get("sequence", 0), r["criterion"]))]}
 
 
 def build_phase_gate_row(it, project_id, from_phase, to_phase, approver_id):

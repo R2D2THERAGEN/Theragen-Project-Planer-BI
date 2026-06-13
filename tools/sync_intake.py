@@ -17,7 +17,7 @@ import psycopg
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import intake_lib as il
-from graph_client import Graph
+from graph_client import Graph, SitePeople, coerce_bool
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PG = json.load(open(os.path.join(ROOT, "db", ".pg.local.json")))
@@ -38,70 +38,6 @@ FIELDS = ("Title,RequestType,Department,BusinessProblem,DesiredOutcome,"
           "DataSharingFlag,StrategicObjective,TriageStatus,IntakeID,"
           "ProjectCode,SyncStatus,SyncMessage")
 
-# --- Person-field resolution --------------------------------------------------
-# LookupId (numeric string) -> lower-case email, populated once per run.
-_user_cache: dict[str, str] = {}
-
-
-def _load_user_cache(g):
-    """Populate _user_cache from the site's User Information List (once per run).
-
-    The UIL is a hidden list not returned by the default /lists endpoint;
-    it requires an explicit $filter on displayName to be found.
-    Items carry Id (numeric string), EMail, and UserName fields.
-    """
-    if _user_cache:
-        return
-    site = M365["site_id"]
-    # Locate the hidden User Information List via explicit filter.
-    lists = g.get(f"/sites/{site}/lists",
-                  **{"$filter": "displayName eq 'User Information List'",
-                     "$select": "id,displayName"})
-    uil_id = next((l["id"] for l in lists.get("value", [])), None)
-    if not uil_id:
-        print("WARNING: User Information List not found - person fields will be empty",
-              file=sys.stderr)
-        return
-    # Fetch all user entries; Id is the SharePoint LookupId.
-    url = f"/sites/{site}/lists/{uil_id}/items"
-    params = {"$expand": "fields($select=Id,EMail,UserName)", "$top": "500"}
-    while url:
-        page = g.get(url, **params)
-        for item in page.get("value", []):
-            f = item.get("fields", {})
-            lid = str(f.get("Id") or item.get("id") or "").strip()
-            email = (f.get("EMail") or f.get("UserName") or "").lower().strip()
-            if lid and email:
-                _user_cache[lid] = email
-        url = page.get("@odata.nextLink", "")
-        if url:
-            url = url.replace("https://graph.microsoft.com/v1.0", "")
-            params = {}
-
-
-def _coerce_bool(v):
-    """Graph booleans are JSON true/false; non-UI writers may send strings."""
-    if isinstance(v, bool):
-        return v
-    if isinstance(v, str):
-        return v.strip().lower() not in ("", "0", "false", "no")
-    return bool(v)
-
-
-def person_email(lookup_id_str, g):
-    """Resolve a SharePoint LookupId string to an e-mail address.
-
-    Graph person fields arrive as plain display-name strings when requested
-    by column name (e.g. 'Sponsor': 'Richard Allen'), but the companion
-    LookupId field (e.g. 'SponsorLookupId': '485') gives the numeric site
-    user id needed to look up the actual e-mail in the User Information List.
-    """
-    lid = str(lookup_id_str or "").strip()
-    if not lid:
-        return ""
-    _load_user_cache(g)
-    return _user_cache.get(lid, "")
-
 
 def fetch_items(g):
     site, lst = M365["site_id"], M365["list_id"]
@@ -117,7 +53,7 @@ def fetch_items(g):
     return out
 
 
-def normalize(item, g):
+def normalize(item, people):
     f = item.get("fields", {})
     return {
         "item_id": item["id"],
@@ -126,13 +62,13 @@ def normalize(item, g):
         "Department": f.get("Department") or "",
         "BusinessProblem": f.get("BusinessProblem") or "",
         "DesiredOutcome": f.get("DesiredOutcome") or "",
-        "SponsorEmail": person_email(f.get("SponsorLookupId"), g),
-        "ProjectManagerEmail": person_email(f.get("ProjectManagerLookupId"), g),
+        "SponsorEmail": people.email(f.get("SponsorLookupId")),
+        "ProjectManagerEmail": people.email(f.get("ProjectManagerLookupId")),
         "PlannedStart": (f.get("PlannedStart") or "")[:10] or None,
         "PlannedFinish": (f.get("PlannedFinish") or "")[:10] or None,
         "EstimatedBudget": f.get("EstimatedBudget"),
         "EffortBucket": f.get("EffortBucket") or "Large (3-12 mo)",  # spec default when the choice is blank
-        "Flags": {k: _coerce_bool(f.get(k)) for k in
+        "Flags": {k: coerce_bool(f.get(k)) for k in
                   ("PHIFlag", "CFR11Flag", "ClinicalFlag", "VendorFlag",
                    "DataSharingFlag")},
         "StrategicObjective": f.get("StrategicObjective") or None,
@@ -276,13 +212,14 @@ def main():
     args = ap.parse_args()
 
     g = Graph()
+    people = SitePeople(g, M365["site_id"])
     with psycopg.connect(host=PG["server"], dbname=PG["database"],
                          user=PG["user"], password=PG["password"],
                          sslmode="require") as conn:
         raw_items = fetch_items(g)
         print(f"{len(raw_items)} list item(s) fetched")
 
-        items = [normalize(i, g) for i in raw_items]
+        items = [normalize(i, people) for i in raw_items]
 
         synced = dict(conn.execute(
             "SELECT external_ref, intake_id FROM doc_mgmt.intake_submission "

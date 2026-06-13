@@ -72,3 +72,61 @@ class Graph:
         r = self.s.patch(f"{BASE}{path}", json=body, timeout=30)
         _raise(r)
         return r.json() if r.text else {}
+
+
+def coerce_bool(v):
+    """Graph booleans are JSON true/false; non-UI writers may send strings."""
+    if isinstance(v, bool):
+        return v
+    if isinstance(v, str):
+        return v.strip().lower() not in ("", "0", "false", "no")
+    return bool(v)
+
+
+class SitePeople:
+    """LookupId -> e-mail resolution via a site's hidden User Information List.
+
+    Graph person fields arrive as display-name strings when requested by
+    column name, but the companion <Name>LookupId field gives the numeric
+    site-user id; the UIL maps that id to the user's e-mail. The UIL is not
+    returned by the default /lists endpoint - it needs an explicit $filter.
+    Cache is per-instance, loaded lazily once.
+    """
+
+    def __init__(self, g, site_id):
+        self.g, self.site_id = g, site_id
+        self._cache = None
+
+    def _load(self):
+        if self._cache is not None:
+            return
+        self._cache = {}
+        lists = self.g.get(f"/sites/{self.site_id}/lists",
+                           **{"$filter": "displayName eq 'User Information List'",
+                              "$select": "id,displayName"})
+        uil_id = next((l["id"] for l in lists.get("value", [])), None)
+        if not uil_id:
+            print("WARNING: User Information List not found - person fields "
+                  "will be empty", file=sys.stderr)
+            return
+        url = f"/sites/{self.site_id}/lists/{uil_id}/items"
+        params = {"$expand": "fields($select=Id,EMail,UserName)", "$top": "500"}
+        while url:
+            page = self.g.get(url, **params)
+            for item in page.get("value", []):
+                f = item.get("fields", {})
+                lid = str(f.get("Id") or item.get("id") or "").strip()
+                email = (f.get("EMail") or f.get("UserName") or "").lower().strip()
+                if lid and email:
+                    self._cache[lid] = email
+            url = page.get("@odata.nextLink", "")
+            if url:
+                url = url.replace("https://graph.microsoft.com/v1.0", "")
+                params = {}
+
+    def email(self, lookup_id_str):
+        lid = str(lookup_id_str or "").strip()
+        if not lid:
+            return ""
+        self._load()
+        return self._cache.get(lid, "")

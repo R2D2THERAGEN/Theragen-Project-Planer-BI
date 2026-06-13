@@ -399,7 +399,7 @@ def _trail_states(current, desired, keys):
 
 BASELINE_TYPES = ["Schedule", "Scope", "Budget"]
 LIFECYCLE_PHASES = ["Initiating", "Planning", "Executing",
-                    "Monitoring & Controlling", "Closing"]
+                    "Monitoring", "Closing"]
 PHASE_ORDER = {p: i for i, p in enumerate(LIFECYCLE_PHASES)}
 GATE_DECISIONS = ["Approved", "Approved with conditions", "Held"]
 _BASELINE_VER = re.compile(r"^(\d+)\.0$")

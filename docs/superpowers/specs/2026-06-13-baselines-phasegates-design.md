@@ -10,7 +10,7 @@ spec covers **2c-1 only** — chosen first because it depends on nothing new (re
 
 The system can change and approve projects (2b), but it can't **freeze a baseline** (so "what
 changed since the approved plan?" is unanswerable) and the project `lifecycle_phase`
-(Initiating→Planning→Executing→Monitoring & Controlling→Closing) advances with no documented
+(Initiating→Planning→Executing→Monitoring→Closing) advances with no documented
 **gate** — no record of who signed off the handoff between phases, when, or why.
 
 ## Decisions
@@ -73,7 +73,7 @@ List columns: ProjectCode, TargetPhase (choice of the 5 lifecycle phases), GateD
 default Approved), ApprovedBy (person), DecidedDate (date), GateNotes (ml) + bookkeeping.
 
 `process_phase_gate` = a `process_triage` analog with `PHASE_ORDER = {Initiating:0, Planning:1,
-Executing:2, "Monitoring & Controlling":3, Closing:4}`:
+Executing:2, Monitoring:3, Closing:4}`:
 - `from_phase` = the project's current `lifecycle_phase` (read at sync time).
 - **Forward-only legality**: `Held` always legal (to=from); `Approved`/`Approved with conditions`
   require `PHASE_ORDER[Target] > PHASE_ORDER[from]`; `==` is the no-op/heal short-circuit; `<`

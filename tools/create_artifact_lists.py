@@ -71,7 +71,10 @@ LISTS = {
         text("DecisionsNeeded", multiline=True),
         {"name": "SubmittedBy", "personOrGroup": {"allowMultipleSelection": False}},
     ] + [choice(f"{ka}Health", al.RAG, default="Green")
-         for ka in al.KNOWLEDGE_AREAS] + BOOKKEEPING),
+         for ka in al.KNOWLEDGE_AREAS] + [
+        {"name": "ApprovedBy", "personOrGroup": {"allowMultipleSelection": False}},
+        date_only("ApprovedDate"),
+    ] + BOOKKEEPING),
     "activity_list_id": ("Project Activities", [
         text("ProjectCode"),
         text("Workstream"),
@@ -85,6 +88,35 @@ LISTS = {
         choice("ActivityStatus", al.ACTIVITY_STATUSES, default="Not started"),
         {"name": "PctComplete", "number": {"decimalPlaces": "none"}},
         text("ActivityCode"),
+    ] + BOOKKEEPING),
+    "change_request_list_id": ("Project Change Requests", [
+        text("ProjectCode"),
+        date_only("RequestedDate"),
+        {"name": "RequestedBy", "personOrGroup": {"allowMultipleSelection": False}},
+        choice("CRClass", al.CR_CLASSES),
+        choice("ChangeType", al.CHANGE_TYPES),
+        text("AffectedArtifacts", multiline=True),
+        text("Description", multiline=True),
+        text("Reason", multiline=True),
+        text("ImpactScope", multiline=True),
+        text("ImpactQuality", multiline=True),
+        {"name": "ImpactScheduleDays", "number": {"decimalPlaces": "none"}},
+        {"name": "ImpactCost", "number": {"decimalPlaces": "two"}},
+        text("IntakeID"),
+        choice("Decision", al.CR_DECISIONS, default="Pending"),
+        {"name": "DecidedBy", "personOrGroup": {"allowMultipleSelection": False}},
+        date_only("DecidedDate"),
+        choice("ImplementationVerified", ["Yes", "No"], default="No"),
+        choice("LinkedArtifactsUpdated", ["Yes", "No"], default="No"),
+        choice("CRStatus", al.CR_STATUSES, default="Open"),
+        text("CRCode"),
+    ] + BOOKKEEPING),
+    "decision_list_id": ("Project Decisions", [
+        text("ProjectCode"),
+        text("Rationale", multiline=True),
+        {"name": "DecidedBy", "personOrGroup": {"allowMultipleSelection": False}},
+        date_only("DecidedDate"),
+        text("DecisionCode"),
     ] + BOOKKEEPING),
 }
 
@@ -108,10 +140,25 @@ def main():
             })
             print(f"{name}: created ({lst['id']})")
         cfg[key] = lst["id"]
-        cols = g.get(f"/sites/{site_id}/lists/{lst['id']}/columns")
-        names = {c["name"] for c in cols["value"]}
-        missing = [c["name"] for c in columns if c["name"] not in names]
-        print(f"  columns: {'OK all present' if not missing else f'MISSING {missing}'}")
+        # Ensure every declared column exists on the live list (idempotent).
+        # Built-in SharePoint columns (id, Title, Modified, Created, Author, Editor,
+        # _UIVersionString, Attachments, Edit, LinkTitleNoMenu, LinkTitle,
+        # DocIcon, ItemChildCount, FolderChildCount, _ComplianceFlags,
+        # _ComplianceTag, _ComplianceTagWrittenTime, _ComplianceTagUserId,
+        # AppAuthor, AppEditor) are never in our column dicts so they are never
+        # re-posted.  The GET returns all columns; we only POST ones whose name
+        # is absent from the live list.
+        live_cols = g.get(f"/sites/{site_id}/lists/{lst['id']}/columns")
+        live_names = {c["name"] for c in live_cols["value"]}
+        added = []
+        for col in columns:
+            if col["name"] not in live_names:
+                g.post(f"/sites/{site_id}/lists/{lst['id']}/columns", col)
+                added.append(col["name"])
+        if added:
+            print(f"  columns added: {added}")
+        else:
+            print(f"  columns: OK all present")
     json.dump(cfg, open(CFG_PATH, "w", encoding="utf-8"), indent=2)
     print(f"config merged: {CFG_PATH}")
 

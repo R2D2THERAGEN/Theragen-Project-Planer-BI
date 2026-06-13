@@ -16,6 +16,7 @@ import sys
 import uuid
 
 import psycopg
+from psycopg.types.json import Jsonb
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import artifact_lib as al
@@ -1113,27 +1114,91 @@ def process_baseline(conn, g, it, dry, current):
                     if it["BaselinedByEmail"] else None)
     if it["BaselinedByEmail"] and not baselined_by:
         errs.append(f"BaselinedBy {it['BaselinedByEmail']} not in person directory")
+    # Resolve linked CR if provided
+    linked_cr_id = None
+    if it.get("LinkedCRCode"):
+        if proj and not errs:
+            cr_row = conn.execute(
+                "SELECT cr_id FROM pmbok.change_request"
+                " WHERE project_id=%s AND cr_code=%s",
+                (proj[0], it["LinkedCRCode"])).fetchone()
+            if cr_row:
+                linked_cr_id = cr_row[0]
+            else:
+                errs.append(f"Unknown LinkedCRCode: {it['LinkedCRCode']}")
     if errs:
         return _error(g, M365["baseline_list_id"], it, errs, dry, "baseline")
     project_id, _dept = proj
+    item_id = it["item_id"]
+
+    # ---- current (already synced) branch: append-once, immutable ----
     if current:
         if str(current["project_id"]) != str(project_id):
             return _error(g, M365["baseline_list_id"], it,
                           ["ProjectCode changed after sync - create a new row"
                            " instead"], dry, "baseline")
-        # Baseline rows are immutable once written (write path lands in T5).
-        return f"OK baseline item {it['item_id']}: existing (write path lands in T5)"
-    # New item — mint version for dry-run reporting.
+        # Heal write-back if SyncStatus or BaselineVersion is out of sync.
+        if (it["SyncStatus"] != "Synced"
+                or it.get("BaselineVersion") != current["version"]):
+            if not dry:
+                writeback(g, M365["baseline_list_id"], item_id,
+                          {"SyncStatus": "Synced", "SyncMessage": "",
+                           "BaselineVersion": current["version"]})
+            return f"OK baseline item {item_id}: healed write-back"
+        return (f"OK baseline item {item_id}: no change"
+                " (baselines are immutable; create a new baseline to re-baseline)")
+
+    # ---- new (current is None) branch: create ----
     existing_versions = [r[0] for r in conn.execute(
         "SELECT version FROM pmbok.project_baseline"
         " WHERE project_id=%s AND baseline_type=%s",
         (project_id, it["BaselineType"])).fetchall()]
-    ver = al.next_baseline_version(existing_versions)
+    version = al.next_baseline_version(existing_versions)
     if dry:
-        return (f"DRY baseline item {it['item_id']}: would create"
-                f" {it['BaselineType']} v{ver} ({it['ProjectCode']})")
-    # Real write path lands in T5; guard against accidental non-dry call.
-    raise RuntimeError("process_baseline: real write path not yet implemented (T5)")
+        return (f"DRY baseline item {item_id}: would create"
+                f" {it['BaselineType']} v{version} ({it['ProjectCode']})")
+
+    snapshot = build_baseline_snapshot(conn, project_id, it["BaselineType"])
+    baseline_id = str(uuid.uuid5(NS, f"thg/artifact/baseline/{item_id}"))
+
+    with conn.transaction():
+        if version != "1.0":
+            # Supersede the prior BASELINED row
+            prior_row = conn.execute(
+                "SELECT baseline_id FROM pmbok.project_baseline"
+                " WHERE project_id=%s AND baseline_type=%s AND status='BASELINED'",
+                (project_id, it["BaselineType"])).fetchone()
+            if prior_row:
+                prior_id = prior_row[0]
+                conn.execute(
+                    "UPDATE pmbok.project_baseline"
+                    " SET status='SUPERSEDED', superseded_by_baseline_id=%s"
+                    " WHERE baseline_id=%s",
+                    (baseline_id, prior_id))
+                audit_lib.write_trail(
+                    conn, baselined_by, "BASELINE_SUPERSEDE",
+                    "project_baseline", prior_id,
+                    {"status": "BASELINED"}, {"status": "SUPERSEDED"}, None)
+
+        conn.execute(
+            "INSERT INTO pmbok.project_baseline"
+            " (baseline_id, project_id, baseline_type, version, status,"
+            "  change_summary, change_class, linked_cr_id, snapshot,"
+            "  baselined_by_person_id, external_ref)"
+            " VALUES (%s,%s,%s,%s,'BASELINED',%s,%s,%s,%s,%s,%s)",
+            (baseline_id, project_id, it["BaselineType"], version,
+             it.get("ChangeSummary"), None, linked_cr_id,
+             Jsonb(snapshot), baselined_by, item_id))
+        audit_lib.write_trail(
+            conn, baselined_by, "BASELINE_CREATE", "project_baseline",
+            baseline_id, None,
+            {"baseline_type": it["BaselineType"], "version": version}, None)
+
+    writeback(g, M365["baseline_list_id"], item_id,
+              {"SyncStatus": "Synced", "SyncMessage": "",
+               "BaselineVersion": version})
+    return (f"OK new baseline {it['BaselineType']} v{version}"
+            f" ({it['ProjectCode']}, item {item_id})")
 
 
 def process_phase_gate(conn, g, it, dry, current):

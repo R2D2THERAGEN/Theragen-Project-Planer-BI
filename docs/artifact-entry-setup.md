@@ -1,4 +1,4 @@
-# Artifact Entry Setup — Risks, Milestones, Status Reports, Project Activities, Change Requests, Decisions, Baselines, Phase Gates, Change Impact Assessments, Controlled Documents, Document RACI, Document Versions, Document Approvals
+# Artifact Entry Setup — Risks, Milestones, Status Reports, Project Activities, Change Requests, Decisions, Baselines, Phase Gates, Change Impact Assessments, Controlled Documents, Document RACI, Document Versions, Document Approvals, Governance Change Requests, Governance Change Assessments
 
 This is the PM-facing reference for filling in the four execution-artifact SharePoint
 Lists that feed the **Project Status Report** Power BI page. The daily 5:40 AM sync
@@ -29,6 +29,8 @@ access (creating and editing items) requires at minimum Edit permission on the s
 | **Document RACI** | One row per (document, department) R/A/C/I assignment — see §R |
 | **Document Versions** | One row per document version (child of a document) — see §S |
 | **Document Approvals (e-sig)** | One row per per-version sign-off **attestation** (non-§11) — see §T |
+| **Governance Change Requests** | One row per change request against a controlled document (project-less, `CHG-NNN`) — see §U |
+| **Governance Change Assessments** | One row per department's impact statement on a governance CR — see §V |
 
 All these Lists live on the root SharePoint site (same site as Project Intake).
 
@@ -1128,14 +1130,16 @@ it, and the version's status.
 | **ChangeClass** | Choice | `A - Minor` / `B - Substantive` / `C - Controlling` / `Emergency / Safety` |
 | **EffectiveDate** | Date | When this version takes effect |
 | **StoragePath** | Text | Versioned file path; **defaults to `{ParentDocID}/v{Version}`** |
+| **LinkedCRCode** | Text | Optional governance change request (`CHG-NNN`, see §U) that drove this version. Must already exist; an unknown code is an error. Surfaced as the model's `Linked CR` column |
 
 ### Identity + audit
 
 `(ParentDocID, Version)` is the version's identity — both are fixed after first sync; editing either is
 rejected (`ParentDocID/Version changed after sync - create a new version instead`). `Status` moves
 freely (DRAFT → … → BASELINE), with each create + status change written to the audit trail
-(`VERSION_CREATE` / `VERSION_STATUS`). (Linking a version to a governance change request arrives with
-2c-6.)
+(`VERSION_CREATE` / `VERSION_STATUS`). `LinkedCRCode` binds the version to the governance change request
+that drove it (`document_version.linked_cr_id`); blank leaves it unlinked, a non-existent code is
+rejected (`Unknown LinkedCRCode: <code>`).
 
 ### Read-only write-back columns
 
@@ -1199,6 +1203,105 @@ canonicalize it the same way (`YYYY-MM-DDTHH:MM:SSZ`, whole seconds) before re-h
 
 ---
 
+## U. Governance Change Requests
+
+The PMO raises a controlled change against a **document** in the **Governance Change Requests** List —
+one row per change request (`CHG-NNN`), a child of a controlled document (linked by `ParentDocID`).
+Unlike a project change request (§E), a governance CR is **project-less** (there is no `ProjectCode`) and
+targets a document. It reuses the **two-axis approval workflow** (`Decision` × `CRStatus`) from §E
+verbatim.
+
+### Required columns
+
+| Column | Type | Notes |
+|--------|------|-------|
+| **ParentDocID** | Text | The `DocID` of the target controlled document (e.g. `THG-IT-SOP-001`) — must already exist (see §Q) |
+| **Description** | Multi-line text | The proposed change |
+| **Reason** | Multi-line text | The driver for the change |
+| **CRClass** | Choice | `A - Minor` / `B - Substantive` / `C - Controlling` / `Emergency / Safety` |
+| **RequestedBy** | Person | The requester; **falls back to the item author** if blank |
+
+### Optional / workflow columns
+
+| Column | Type | Notes |
+|--------|------|-------|
+| **RequestedDate** | Date | Defaults to the item's created date when blank |
+| **IntakeID** | Text | Optional originating intake reference |
+| **Decision** | Choice | `Pending` (default) / `Approved` / `Deferred` / `Rejected` |
+| **CRStatus** | Choice | `Open` (default) / `In Assessment` / `Implementing` / `Verified` / `Closed` / `Rejected` |
+| **DecidedBy** | Person | The approver — required once `Decision ≠ Pending` |
+| **DecidedDate** | Date | The decision date — required once `Decision ≠ Pending` |
+| **ImplementationVerified** | Choice | `Yes` / `No` (default No) |
+
+### The two-axis workflow + coherence
+
+Identical to §E: `Decision` is the approval gate; `CRStatus` is the lifecycle. `Decision ≠ Pending`
+requires `DecidedBy` + `DecidedDate`; `Pending` requires a blank `DecidedDate`; `Rejected` decision
+requires `CRStatus = Rejected`; `CRStatus ∈ {Verified, Closed}` requires `Decision = Approved`;
+`DecidedDate ≥ RequestedDate`. Violations are errors; no DB change.
+
+### Soft-authority note (document-scoped)
+
+Anyone may record a decision, but if the decider is **neither the target document's Owner nor its
+Approver**, the row still syncs with an advisory in `SyncMessage` (the audit trail records the actual
+decider). This is the document-scoped analog of the §E Sponsor/PM check. Hard role enforcement is
+deferred.
+
+### Identity + audit
+
+`CHG-NNN` is minted globally (the code is unique across all governance CRs, not per document). The target
+document is fixed after first sync — editing `ParentDocID` is rejected
+(`ParentDocID changed after sync - create a new governance change request instead`). Create + each
+decision/status change is written to the audit trail (`GOVCR_CREATE` / `GOVCR_DECISION` / `GOVCR_STATUS`).
+
+### Read-only write-back columns
+
+| Column | Meaning |
+|--------|---------|
+| **CRCode** | The minted `CHG-NNN` (written back on first sync) |
+| **SyncStatus** | `Pending` → `Synced` (success) or `Error` (see §H) |
+| **SyncMessage** | Advisory (soft-authority) or error detail; blank on a clean success |
+
+---
+
+## V. Governance Change Assessments
+
+Each department records its **impact statement** on a governance CR in the **Governance Change
+Assessments** List — one row per department per CR, a child of a governance CR (linked by `ParentCRCode`).
+This mirrors §P (Change Impact Assessments) but is **department-scoped** (no person) and attaches to a
+governance CR by its global `CHG-NNN` code.
+
+### Required columns
+
+| Column | Type | Notes |
+|--------|------|-------|
+| **ParentCRCode** | Text | The governance CR's `CHG-NNN` (globally unique, see §U) — must already exist |
+| **Department** | Choice | One of the 8 Theragen departments |
+| **ImpactSummary** | Multi-line text | The department's impact statement |
+
+### Optional columns
+
+| Column | Type | Notes |
+|--------|------|-------|
+| **ComplianceImpact** | Multi-line text | Compliance / regulatory impact, if any |
+| **SubmittedDate** | Date | Defaults to the item's created date when blank |
+
+### Re-parent rule + audit
+
+The parent governance CR is fixed after first sync — editing `ParentCRCode` to point at a different CR is
+rejected (`ParentCRCode changed after sync - create a new governance assessment instead`). Department,
+impact, and compliance text are freely editable. Like §P, an assessment is **descriptive content** — no
+audit-trail entry is written (only governance *state transitions* are audited).
+
+### Read-only write-back columns
+
+| Column | Meaning |
+|--------|---------|
+| **SyncStatus** | `Pending` → `Synced` (success) or `Error` (see §H) |
+| **SyncMessage** | Human-readable error detail (e.g. an unknown `ParentCRCode`); blank on success |
+
+---
+
 ## Appendix — sync behaviour reference
 
 | Scenario | sync_artifacts.py behaviour |
@@ -1242,4 +1345,13 @@ canonicalize it the same way (`YYYY-MM-DDTHH:MM:SSZ`, whole seconds) before re-h
 | New approval (attestation), valid | Resolves document→version→approver; computes + freezes the `esig_hash`; writes `APPROVAL_SIGN` audit; writes `Synced` |
 | Approval, unknown ParentVersion | Writes `Error: Unknown ParentVersion <v> for <DocID>` |
 | Approval, already synced (immutable) | No-op; the attestation is frozen (create a new approval to re-sign) |
+| Version with LinkedCRCode | Resolves the governance CR by `CHG-NNN`; sets `linked_cr_id`; unknown code → `Error: Unknown LinkedCRCode: <code>` |
+| New governance CR, valid, Pending | Mints `CHG-NNN` (global); resolves the parent document; inserts row; writes `GOVCR_CREATE` audit; writes `Synced` + CRCode back |
+| Governance CR, Decision ≠ Pending | Same plus the doc Owner/Approver soft-authority check; advisory to SyncMessage if the decider is neither |
+| Governance CR Decision/CRStatus changed | Updates DB row; writes `GOVCR_DECISION` and/or `GOVCR_STATUS` audit; heals write-back |
+| Governance CR, cross-axis coherence violation | Writes `Error` + message; no DB change |
+| Governance CR, ParentDocID changed after sync | Writes `Error: ParentDocID changed after sync - create a new governance change request instead` |
+| New governance assessment, valid | Resolves the parent gov CR by `CHG-NNN` + the department; inserts row; writes `Synced` back (no code, no audit) |
+| Governance assessment, unknown ParentCRCode / Department | Writes `Error: Unknown ParentCRCode/Department` |
+| Governance assessment, re-parented after sync | Writes `Error: ParentCRCode changed after sync - create a new governance assessment instead` |
 | `--dry-run` flag | Prints intent only; no DB writes; no List writes |

@@ -3,4 +3,4 @@ role 'Scoped Viewer'
 	modelPermission: read
 	lineageTag: 6f82a8e8-dc47-5e99-82a5-b531d63d7d90
 
-	tablePermission Project = COUNTROWS(FILTER('Report Access', 'Report Access'[Active] = TRUE() && LOWER('Report Access'[User Email]) = LOWER(USERPRINCIPALNAME()) && ('Report Access'[Scope Type] = "All" || ('Report Access'[Scope Type] = "Project" && 'Report Access'[Scope Value] = 'Project'[Project Code]) || ('Report Access'[Scope Type] = "Department" && 'Report Access'[Scope Value] = 'Project'[Primary Department])))) > 0
+	tablePermission Project = COUNTROWS(FILTER('Report Access', 'Report Access'[Active] = TRUE() && LOWER('Report Access'[User Email]) = LOWER(TRIM(USERPRINCIPALNAME())) && ('Report Access'[Scope Type] = "All" || ('Report Access'[Scope Type] = "Project" && 'Report Access'[Scope Value] = 'Project'[Project Code]) || ('Report Access'[Scope Type] = "Department" && 'Report Access'[Scope Value] = 'Project'[Primary Department])))) > 0

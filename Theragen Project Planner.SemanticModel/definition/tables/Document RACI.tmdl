@@ -1,0 +1,104 @@
+/// Fact - per-document, per-department R/A/C/I assignment (effective-dated).
+table 'Document RACI'
+	lineageTag: 64488c3b-3902-5c87-a6b8-a91fae657384
+
+	column 'RACI ID'
+		dataType: string
+		isHidden
+		lineageTag: 1b488fd0-edbd-58e5-b59f-65a9ca9739aa
+		summarizeBy: none
+		sourceColumn: RACI ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Document ID'
+		dataType: string
+		isHidden
+		lineageTag: 444c10a6-8a7b-51d1-937d-04d08e2ca0ee
+		summarizeBy: none
+		sourceColumn: Document ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Doc ID'
+		dataType: string
+		lineageTag: a6d6a382-335c-50a7-b4e1-17638adac3ee
+		summarizeBy: none
+		sourceColumn: Doc ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Document Title'
+		dataType: string
+		lineageTag: 352beff3-611f-5a05-9899-7205538d965b
+		summarizeBy: none
+		sourceColumn: Document Title
+
+		annotation SummarizationSetBy = User
+
+	column Department
+		dataType: string
+		lineageTag: 98042f80-7b9f-54f9-b2fd-e21f82e3cdd0
+		summarizeBy: none
+		sourceColumn: Department
+
+		annotation SummarizationSetBy = User
+
+	column Role
+		dataType: string
+		lineageTag: 0f88334b-4708-5bf0-b199-49ffee70c333
+		summarizeBy: none
+		sourceColumn: Role
+
+		annotation SummarizationSetBy = User
+
+	column 'Role Name'
+		dataType: string
+		lineageTag: cb897400-7801-5bfe-9f3e-44b972ab764e
+		summarizeBy: none
+		sourceColumn: Role Name
+
+		annotation SummarizationSetBy = User
+
+	column Touchpoint
+		dataType: string
+		lineageTag: ffdf872b-c227-5cec-9624-ed4df9f41fa4
+		summarizeBy: none
+		sourceColumn: Touchpoint
+
+		annotation SummarizationSetBy = User
+
+	column 'Valid From'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: d1c5d78c-0b30-5a96-b3bf-4113d85a1d84
+		summarizeBy: none
+		sourceColumn: Valid From
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Valid To'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 63069ace-8607-5e92-9426-1de4cbc69049
+		summarizeBy: none
+		sourceColumn: Valid To
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition 'Document RACI' = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "raci_assignment"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"raci_id", "document_id", "doc_id", "doc_title", "department", "role", "role_name", "touchpoint", "valid_from", "valid_to"}),
+				    Renamed = Table.RenameColumns(Selected, {{"raci_id", "RACI ID"}, {"document_id", "Document ID"}, {"doc_id", "Doc ID"}, {"doc_title", "Document Title"}, {"department", "Department"}, {"role", "Role"}, {"role_name", "Role Name"}, {"touchpoint", "Touchpoint"}, {"valid_from", "Valid From"}, {"valid_to", "Valid To"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table

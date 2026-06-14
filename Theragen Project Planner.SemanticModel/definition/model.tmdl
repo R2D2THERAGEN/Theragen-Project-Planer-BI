@@ -6,7 +6,7 @@ model Model
 		legacyRedirects
 		returnErrorValuesAsNull
 
-annotation PBI_QueryOrder = ["PgServer", "PgDatabase", "Project", "Department", "Person", "WBS Element", "Knowledge Area", "Schedule Activity", "Milestone", "Budget Line", "Risk", "Risk Response", "Change Request", "Status Report", "Status Report Area", "Stakeholder", "Team Member", "Lesson Learned", "Closure Item", "Decision", "Project Baseline", "Phase Gate Log", "Change Impact Assessment", "Controlled Document", "_Measures"]
+annotation PBI_QueryOrder = ["PgServer", "PgDatabase", "Project", "Department", "Person", "WBS Element", "Knowledge Area", "Schedule Activity", "Milestone", "Budget Line", "Risk", "Risk Response", "Change Request", "Status Report", "Status Report Area", "Stakeholder", "Team Member", "Lesson Learned", "Closure Item", "Decision", "Project Baseline", "Phase Gate Log", "Change Impact Assessment", "Controlled Document", "Document RACI", "_Measures"]
 
 annotation __PBI_TimeIntelligenceEnabled = 0
 
@@ -34,6 +34,7 @@ ref table 'Project Baseline'
 ref table 'Phase Gate Log'
 ref table 'Change Impact Assessment'
 ref table 'Controlled Document'
+ref table 'Document RACI'
 ref table Date
 ref table 'Recent Accomplishment'
 ref table 'Upcoming Next Step'

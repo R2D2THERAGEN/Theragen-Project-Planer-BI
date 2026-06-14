@@ -167,3 +167,7 @@ relationship 4b66ef03-05bf-548d-afe3-0434f1ac575a
 	fromColumn: 'Controlled Document'.Department
 	toColumn: Department.Department
 
+relationship 953a3317-f244-50a7-9841-4a8dd1c8a577
+	fromColumn: 'Document RACI'.'Document ID'
+	toColumn: 'Controlled Document'.'Document ID'
+

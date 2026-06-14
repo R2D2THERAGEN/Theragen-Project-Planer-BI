@@ -762,6 +762,36 @@ table _Measures
 		displayFolder: Documents
 		lineageTag: 0e28cfdb-83bf-5620-8134-6265dce80c96
 
+	/// Count of document RACI assignments.
+	measure 'RACI Assignments' = COUNTROWS('Document RACI')
+		formatString: #,0
+		displayFolder: Documents
+		lineageTag: 8fdb6b83-e380-5a16-97b3-d4c768e4fa41
+
+	/// Documents that have at least one RACI assignment.
+	measure 'Documents with RACI' = DISTINCTCOUNT('Document RACI'[Document ID])
+		formatString: #,0
+		displayFolder: Documents
+		lineageTag: 73685f83-475a-558b-a7a8-8b8a6ef42539
+
+	/// RACI rows with the Accountable role.
+	measure 'Accountable Assignments' = CALCULATE([RACI Assignments], 'Document RACI'[Role] = "A")
+		formatString: #,0
+		displayFolder: Documents
+		lineageTag: 9ef1eab1-2230-5177-ba18-bde9d74206eb
+
+	/// RACI rows with the Responsible role.
+	measure 'Responsible Assignments' = CALCULATE([RACI Assignments], 'Document RACI'[Role] = "R")
+		formatString: #,0
+		displayFolder: Documents
+		lineageTag: 4f839f6f-186b-5d61-8557-9cab7be6ce82
+
+	/// RACI assignments currently in effect (open-ended or not yet expired).
+	measure 'Current RACI Assignments' = CALCULATE([RACI Assignments], FILTER('Document RACI', ISBLANK('Document RACI'[Valid To]) || 'Document RACI'[Valid To] >= TODAY()))
+		formatString: #,0
+		displayFolder: Documents
+		lineageTag: 67050f18-35d3-5ce2-9244-b482e1a75183
+
 	partition _Measures = m
 		mode: import
 		source =

@@ -1302,6 +1302,38 @@ audit-trail entry is written (only governance *state transitions* are audited).
 
 ---
 
+## W. Governance health digest
+
+`tools/governance_health.py` is a **read-only** exceptions report that surfaces the governance items
+needing human action — so the framework drives work, not just records it. It complements the §L morning
+sync-log check: §L confirms the *pipeline* ran; this confirms the *governance* is being kept up.
+
+Run it any time (it only `SELECT`s):
+
+```cmd
+python tools\governance_health.py
+```
+
+It prints one section per check; an empty check shows `[ OK ]`, a populated one shows a count + a table:
+
+| Check | Flags |
+|-------|-------|
+| Documents overdue for review | `next_review_due` is in the past and the document is not RETIRED |
+| Documents with no Accountable | no current `A` RACI assignment (a §R governance gap) |
+| Baselined versions with no attestation | a `BASELINE` version (§S) with no sign-off attestation (§T) |
+| Governance CRs approved but not verified | Approved ≥ 30 days with `Implementation Verified = No` and not yet Verified/Closed |
+| Governance CRs pending too long | a `Pending` decision older than 14 days |
+| Project CRs approved but not verified | the §E equivalent for project change requests |
+| Status reports (recent period) unsigned | a closed-period report from the last 90 days with no sign-off (§C) |
+
+Thresholds (`PENDING_CR_DAYS`, `APPROVED_UNVERIFIED_DAYS`, `RECENT_REPORT_DAYS`, `MAX_ROWS`) are
+constants at the top of the script. To **schedule a daily snapshot**, register
+`tools\run_governance_health.cmd` in Task Scheduler (it appends the digest to
+`logs\governance_health.log`, exactly like the sync wrappers). To **e-mail it**, pipe the script's
+stdout into your mail step — it is plain text and self-contained.
+
+---
+
 ## Appendix — sync behaviour reference
 
 | Scenario | sync_artifacts.py behaviour |

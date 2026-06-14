@@ -72,3 +72,23 @@ one source of truth — so the registers and the page can never disagree.
   (shared RDL helpers live in `tools/paginated_lib.py`; then re-apply the data
   source connection in Report Builder). The Status Report generator
   (`build_paginated.py`) is independent and unchanged.
+
+---
+
+# Subscriptions — scheduled PDF delivery
+
+Once a report is published to the workspace, schedule it from the **Power BI
+service** (no code; Pro/PPU is enough for shared workspaces):
+
+1. Workspace → the published paginated report → **⋯ → Subscribe to report** (or
+   **Manage subscriptions → New subscription**).
+2. Set the recipients, the **frequency** (e.g. weekly for the Strategic Projects
+   cadence), the time, and **attach full report as PDF**.
+3. For a parameterized report (Dossier `@DocID`, Baseline `@ProjectCode`), the
+   subscription captures the **current parameter value** — one subscription per
+   document/project. To burst every document into one run, drive the `@DocID`
+   parameter from a **Power Automate** flow (loop the doc list, render each to
+   PDF) — paginated reports don't support multi-value bursting natively.
+4. Pair with the **governance health digest** (`tools/governance_health.py`, see
+   `docs/artifact-entry-setup.md`) for the exception side: the registers/dossier
+   give the full picture on a cadence; the digest flags only what needs action.

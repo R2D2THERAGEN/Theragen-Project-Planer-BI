@@ -1,4 +1,4 @@
-# Artifact Entry Setup — Risks, Milestones, Status Reports, Project Activities, Change Requests, Decisions, Baselines, Phase Gates, Change Impact Assessments, Controlled Documents, Document RACI, Document Versions, Document Approvals, Governance Change Requests, Governance Change Assessments
+# Artifact Entry Setup — Risks, Milestones, Status Reports, Project Activities, Change Requests, Decisions, Baselines, Phase Gates, Change Impact Assessments, Controlled Documents, Document RACI, Document Versions, Document Approvals, Governance Change Requests, Governance Change Assessments, Risk Responses
 
 This is the PM-facing reference for filling in the four execution-artifact SharePoint
 Lists that feed the **Project Status Report** Power BI page. The daily 5:40 AM sync
@@ -31,6 +31,7 @@ access (creating and editing items) requires at minimum Edit permission on the s
 | **Document Approvals (e-sig)** | One row per per-version sign-off **attestation** (non-§11) — see §T |
 | **Governance Change Requests** | One row per change request against a controlled document (project-less, `CHG-NNN`) — see §U |
 | **Governance Change Assessments** | One row per department's impact statement on a governance CR — see §V |
+| **Risk Responses** | One row per risk response action (child of a risk) — see §X |
 
 All these Lists live on the root SharePoint site (same site as Project Intake).
 
@@ -1302,6 +1303,47 @@ audit-trail entry is written (only governance *state transitions* are audited).
 
 ---
 
+## X. Risk Responses
+
+Each risk's **response plan** — the concrete action items implementing it — is authored in the **Risk
+Responses** List → `pmbok.risk_response`, a child of a risk (linked by `ParentRiskCode`). This is
+distinct from the risk's own **ResponseType** (§A: the *strategy* — Mitigate / Accept / Avoid /
+Transfer); a Risk Response row is a tracked *action* with an owner, a due date, and a status.
+
+### Required columns
+
+| Column | Type | Notes |
+|--------|------|-------|
+| **ProjectCode** | Text | Scopes the parent-risk lookup (`RiskCode` is unique per project) |
+| **ParentRiskCode** | Text | The parent risk's `RiskCode` (e.g. `R-001`) — must already exist (see §A) |
+| **ActionType** | Choice | `Mitigation` / `Transfer` / `Acceptance` / `Avoidance` |
+| **Description** | Multi-line text | What the action is |
+| **Owner** | Person | The action owner; **falls back to the item author** if blank |
+
+### Optional columns
+
+| Column | Type | Notes |
+|--------|------|-------|
+| **DueDate** | Date | Target date (open-ended when blank) |
+| **Status** | Choice | `Open` (default) / `In progress` / `Blocked` / `Done` |
+
+### Re-parent rule
+
+The parent risk is fixed after first sync — editing `ProjectCode`/`ParentRiskCode` to point at a
+different risk is rejected (`Reparenting not allowed; create a new risk response`). Action type, owner,
+due date, and status are freely editable. No audit-trail entry is written (a response action is
+descriptive content, like §P / §R). Resolution: `SELECT risk_id FROM pmbok.risk WHERE
+project_id = ? AND risk_code = ?`.
+
+### Read-only write-back columns
+
+| Column | Meaning |
+|--------|---------|
+| **SyncStatus** | `Pending` → `Synced` (success) or `Error` (see §H) |
+| **SyncMessage** | Human-readable error detail (e.g. an unknown `ParentRiskCode`); blank on success |
+
+---
+
 ## W. Governance health digest
 
 `tools/governance_health.py` is a **read-only** exceptions report that surfaces the governance items
@@ -1386,4 +1428,7 @@ stdout into your mail step — it is plain text and self-contained.
 | New governance assessment, valid | Resolves the parent gov CR by `CHG-NNN` + the department; inserts row; writes `Synced` back (no code, no audit) |
 | Governance assessment, unknown ParentCRCode / Department | Writes `Error: Unknown ParentCRCode/Department` |
 | Governance assessment, re-parented after sync | Writes `Error: ParentCRCode changed after sync - create a new governance assessment instead` |
+| New risk response, valid | Resolves the parent risk by (ProjectCode, ParentRiskCode) + the owner; inserts row; writes `Synced` back (no code, no audit) |
+| Risk response, unknown ParentRiskCode | Writes `Error: Unknown ParentRiskCode <code> for project <code>` |
+| Risk response, re-parented after sync | Writes `Error: Reparenting not allowed; create a new risk response` |
 | `--dry-run` flag | Prints intent only; no DB writes; no List writes |

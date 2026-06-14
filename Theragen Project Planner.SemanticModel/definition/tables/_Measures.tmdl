@@ -858,6 +858,24 @@ table _Measures
 
 		annotation SummarizationSetBy = User
 
+	/// Per-risk response actions (Mitigation / Transfer / Acceptance / Avoidance).
+	measure 'Risk Actions' = COUNTROWS('Risk Response')
+		formatString: #,0
+		displayFolder: Risk
+		lineageTag: a0ab180c-1312-5471-aca8-afaffd6aa563
+
+	/// Response actions not yet Done.
+	measure 'Open Risk Actions' = CALCULATE([Risk Actions], 'Risk Response'[Action Status] <> "Done")
+		formatString: #,0
+		displayFolder: Risk
+		lineageTag: aba94260-e05e-5500-942e-29b507ef13fe
+
+	/// Open response actions past their due date.
+	measure 'Overdue Risk Actions' = COUNTROWS(FILTER('Risk Response', NOT ISBLANK('Risk Response'[Action Due Date]) && 'Risk Response'[Action Due Date] < TODAY() && 'Risk Response'[Action Status] <> "Done"))
+		formatString: #,0
+		displayFolder: Risk
+		lineageTag: f574723b-0876-5054-a5a0-077bd3b8de30
+
 	partition _Measures = m
 		mode: import
 		source =

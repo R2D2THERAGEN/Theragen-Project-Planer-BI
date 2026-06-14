@@ -162,6 +162,14 @@ LISTS = {
         text("IntakeID"),
         text("DocID"),
     ] + BOOKKEEPING),
+    "raci_list_id": ("Document RACI", [
+        text("ParentDocID"),
+        choice("Department", al.DEPARTMENTS),
+        choice("Role", al.RACI_ROLES),
+        text("Touchpoint", multiline=True),
+        date_only("ValidFrom"),
+        date_only("ValidTo"),
+    ] + BOOKKEEPING),
 }
 
 

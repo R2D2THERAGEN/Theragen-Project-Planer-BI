@@ -840,8 +840,8 @@ table _Measures
 		displayFolder: Change
 		lineageTag: ae84623c-56ff-530c-911b-0595a40fe8bd
 
-	/// Governance CRs whose implementation has been verified.
-	measure 'Verified Governance CRs' = CALCULATE([Governance CRs], 'Governance Change Request'[Status] = "Verified")
+	/// Governance CRs whose implementation has been verified (mirrors Verified CRs).
+	measure 'Verified Governance CRs' = CALCULATE([Governance CRs], 'Governance Change Request'[Implementation Verified] = TRUE())
 		formatString: #,0
 		displayFolder: Change
 		lineageTag: 82158f4f-f5af-5404-8e8c-e84a7dbdbe3e

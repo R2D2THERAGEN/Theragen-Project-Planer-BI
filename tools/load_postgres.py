@@ -80,7 +80,8 @@ def main():
               "13_phase_gate_log.sql", "14_bi_baseline_phasegate_views.sql",
               "15_impact_assessment_external_ref.sql",
               "16_document_external_ref_and_bi.sql",
-              "17_raci_external_ref_and_bi.sql"):
+              "17_raci_external_ref_and_bi.sql",
+              "18_version_approval_external_ref_and_bi.sql"):
         sql = open(os.path.join(ROOT, "db", f), encoding="utf-8").read()
         cur.execute(sql)
         print(f"executed {f}")

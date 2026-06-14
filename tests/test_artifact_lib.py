@@ -1642,3 +1642,164 @@ class TestBuildRaciRow:
 
     def test_valid_to_preserved(self):
         assert self._row(ValidTo="2026-12-31")["valid_to"] == "2026-12-31"
+
+
+# --- Document Versions + e-sig attestations (2c-5) ---------------------------
+
+def _version(**over):
+    base = {
+        "item_id": "10",
+        "ParentDocID": "THG-OPS-CHR-001",
+        "Version": "1.0",
+        "Status": "DRAFT",
+        "ChangeSummary": "Initial baseline of the charter.",
+        "ChangeClass": "A - Minor",
+        "EffectiveDate": None,
+        "StoragePath": "",
+        "AuthorEmail": "sponsor@theragen.com",
+        "SyncStatus": "Pending",
+    }
+    base.update(over)
+    return base
+
+
+def _approval(**over):
+    base = {
+        "item_id": "11",
+        "ParentDocID": "THG-OPS-CHR-001",
+        "ParentVersion": "1.0",
+        "SignatureMeaning": "Approval",
+        "Reason": "Charter approved by sponsor.",
+        "ApproverEmail": "sponsor@theragen.com",
+        "SyncStatus": "Pending",
+    }
+    base.update(over)
+    return base
+
+
+class TestEsigHash:
+    _ARGS = ("THG-OPS-CHR-001", "1.0", "sponsor@theragen.com", "Approval",
+             "2026-06-14T00:00:00+00:00")
+
+    def test_known_vector(self):
+        assert al.esig_hash(*self._ARGS) == \
+            "4426e95dfd496fa16861c8a762cdcc628bcf4eb5826f2c0faf380d7a4a0c3d6d"
+
+    def test_deterministic(self):
+        assert al.esig_hash(*self._ARGS) == al.esig_hash(*self._ARGS)
+
+    def test_64_hex_chars(self):
+        h = al.esig_hash(*self._ARGS)
+        assert len(h) == 64 and all(c in "0123456789abcdef" for c in h)
+
+    def test_sensitive_to_each_field(self):
+        base = al.esig_hash(*self._ARGS)
+        for i in range(5):
+            args = list(self._ARGS)
+            args[i] = "CHANGED"
+            assert al.esig_hash(*args) != base, f"field {i} did not affect the hash"
+
+
+class TestValidateVersion:
+    def test_happy_path(self):
+        assert al.validate_version(_version()) == []
+
+    def test_missing_parent_doc(self):
+        assert any("ParentDocID" in e for e in al.validate_version(_version(ParentDocID="")))
+
+    def test_missing_version(self):
+        assert any("Version" in e for e in al.validate_version(_version(Version="")))
+
+    def test_missing_change_summary(self):
+        assert any("ChangeSummary" in e
+                   for e in al.validate_version(_version(ChangeSummary="")))
+
+    def test_missing_author(self):
+        assert any("Author" in e for e in al.validate_version(_version(AuthorEmail="")))
+
+    def test_bad_status(self):
+        assert any("Status not recognized" in e
+                   for e in al.validate_version(_version(Status="PUBLISHED")))
+
+    def test_bad_change_class(self):
+        assert any("ChangeClass not recognized" in e
+                   for e in al.validate_version(_version(ChangeClass="Z - Huge")))
+
+    def test_blank_change_class_ok(self):
+        assert al.validate_version(_version(ChangeClass="")) == []
+
+
+class TestBuildVersionRow:
+    def _row(self, **over):
+        return al.build_version_row(_version(**over), document_id="doc", author_id="au")
+
+    def test_columns_present(self):
+        r = self._row()
+        assert r["document_id"] == "doc"
+        assert r["version"] == "1.0"
+        assert r["change_summary"] == "Initial baseline of the charter."
+        assert r["author_person_id"] == "au"
+
+    def test_status_default_draft(self):
+        assert self._row(Status="")["status"] == "DRAFT"
+
+    def test_storage_path_default(self):
+        assert self._row(StoragePath="")["storage_path"] == "THG-OPS-CHR-001/v1.0"
+
+    def test_storage_path_preserved(self):
+        assert self._row(StoragePath="x/y")["storage_path"] == "x/y"
+
+    def test_linked_cr_id_none(self):
+        assert self._row()["linked_cr_id"] is None
+
+    def test_change_class_blank_none(self):
+        assert self._row(ChangeClass="")["change_class"] is None
+
+    def test_effective_date_none(self):
+        assert self._row(EffectiveDate=None)["effective_date"] is None
+
+
+class TestValidateApproval:
+    def test_happy_path(self):
+        assert al.validate_approval(_approval()) == []
+
+    def test_missing_parent_doc(self):
+        assert any("ParentDocID" in e for e in al.validate_approval(_approval(ParentDocID="")))
+
+    def test_missing_parent_version(self):
+        assert any("ParentVersion" in e
+                   for e in al.validate_approval(_approval(ParentVersion="")))
+
+    def test_missing_approver(self):
+        assert any("Approver" in e for e in al.validate_approval(_approval(ApproverEmail="")))
+
+    def test_bad_meaning(self):
+        assert any("SignatureMeaning not recognized" in e
+                   for e in al.validate_approval(_approval(SignatureMeaning="Witness")))
+
+    def test_all_meanings_accepted(self):
+        for mng in al.SIGNATURE_MEANINGS:
+            assert al.validate_approval(_approval(SignatureMeaning=mng)) == []
+
+
+class TestBuildApprovalRow:
+    def _row(self, **over):
+        return al.build_approval_row(_approval(**over), version_id="v",
+                                     approver_id="p", signed_at="2026-06-14T00:00:00+00:00",
+                                     esig="deadbeef")
+
+    def test_columns_present(self):
+        r = self._row()
+        assert r["version_id"] == "v"
+        assert r["approver_person_id"] == "p"
+        assert r["signed_at"] == "2026-06-14T00:00:00+00:00"
+        assert r["esig_hash"] == "deadbeef"
+
+    def test_ip_address_none(self):
+        assert self._row()["ip_address"] is None
+
+    def test_meaning_default_approval(self):
+        assert self._row(SignatureMeaning="")["signature_meaning"] == "Approval"
+
+    def test_reason_blank_none(self):
+        assert self._row(Reason="")["reason"] is None

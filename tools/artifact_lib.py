@@ -8,6 +8,7 @@ de-facto contract shared by the Lists, the DB rows, and the report DAX
 filters Milestone Status = "Achieved").
 """
 import datetime
+import hashlib
 import numbers
 import re
 
@@ -699,4 +700,87 @@ def build_raci_row(it, document_id, department_id):
         "touchpoint": it.get("Touchpoint") or None,
         "valid_from": it["ValidFrom"],
         "valid_to": it.get("ValidTo") or None,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Document Versions + e-signature Attestations (2c-5)
+# ---------------------------------------------------------------------------
+
+# Document-approval signature meanings (the doc-approval subset of the enum).
+SIGNATURE_MEANINGS = ["Approval", "Review", "Authorship"]
+
+
+def esig_hash(doc_id, version, approver_email, meaning, signed_at):
+    """Server-computed ATTESTATION hash - NOT a 21 CFR Part 11 signature.
+
+    Deterministic SHA-256 hex over a canonical pipe-joined string. The same five
+    inputs always yield the same 64-char hex, so a stored attestation is
+    verifiable by recomputing it from its row. This is a traceability hash, not a
+    signer-controlled cryptographic signature; true Part 11 signing is deferred.
+    """
+    payload = "|".join([str(doc_id), str(version), str(approver_email),
+                        str(meaning), str(signed_at)])
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def validate_version(it):
+    """Return a list of error strings; empty list means valid.
+
+    ParentDocID resolves to a document and Author to a person in the sync; here
+    we require the human inputs present + in domain.
+    """
+    errs = [f"Missing: {k}" for k in ("ParentDocID", "Version", "ChangeSummary")
+            if _blank(it.get(k))]
+    if _blank(it.get("AuthorEmail")):
+        errs.append("Missing: Author (picker empty and item author unknown)")
+    if it.get("Status") and it["Status"] not in DOC_STATUSES:
+        errs.append(f"Status not recognized: {it['Status']}")
+    if it.get("ChangeClass") and it["ChangeClass"] not in CR_CLASSES:
+        errs.append(f"ChangeClass not recognized: {it['ChangeClass']}")
+    return errs
+
+
+def build_version_row(it, document_id, author_id):
+    """Build the document_version DB column dict. linked_cr_id is None in 2c-5
+    (governance CRs arrive in 2c-6); storage_path defaults to {DocID}/v{Version}."""
+    return {
+        "document_id": document_id,
+        "version": it["Version"],
+        "status": it.get("Status") or "DRAFT",
+        "change_summary": it["ChangeSummary"],
+        "change_class": it.get("ChangeClass") or None,
+        "linked_cr_id": None,
+        "author_person_id": author_id,
+        "effective_date": it.get("EffectiveDate") or None,
+        "storage_path": it.get("StoragePath") or f"{it['ParentDocID']}/v{it['Version']}",
+    }
+
+
+def validate_approval(it):
+    """Return a list of error strings; empty list means valid.
+
+    ParentDocID + ParentVersion resolve to a version_id, and Approver to a
+    person, in the sync. signed_at + esig_hash are server-derived (never typed).
+    """
+    errs = [f"Missing: {k}" for k in ("ParentDocID", "ParentVersion")
+            if _blank(it.get(k))]
+    if _blank(it.get("ApproverEmail")):
+        errs.append("Missing: Approver (picker empty and item author unknown)")
+    if it.get("SignatureMeaning") and it["SignatureMeaning"] not in SIGNATURE_MEANINGS:
+        errs.append(f"SignatureMeaning not recognized: {it['SignatureMeaning']}")
+    return errs
+
+
+def build_approval_row(it, version_id, approver_id, signed_at, esig):
+    """Build the document_approval DB column dict. ip_address is None (no signer
+    IP is captured - part of the honest non-Part-11 scoping)."""
+    return {
+        "version_id": version_id,
+        "approver_person_id": approver_id,
+        "signature_meaning": it.get("SignatureMeaning") or "Approval",
+        "signed_at": signed_at,
+        "esig_hash": esig,
+        "ip_address": None,
+        "reason": it.get("Reason") or None,
     }

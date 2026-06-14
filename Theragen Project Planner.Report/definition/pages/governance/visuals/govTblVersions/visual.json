@@ -1,0 +1,141 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "govTblVersions",
+  "position": {
+    "x": 644,
+    "y": 396,
+    "z": 1000,
+    "width": 628,
+    "height": 316
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Document Version"
+                    }
+                  },
+                  "Property": "Doc ID"
+                }
+              },
+              "queryRef": "Document Version.Doc ID"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Document Version"
+                    }
+                  },
+                  "Property": "Version"
+                }
+              },
+              "queryRef": "Document Version.Version"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Document Version"
+                    }
+                  },
+                  "Property": "Status"
+                }
+              },
+              "queryRef": "Document Version.Status"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Document Version"
+                    }
+                  },
+                  "Property": "Author"
+                }
+              },
+              "queryRef": "Document Version.Author"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Document Version"
+                    }
+                  },
+                  "Property": "Linked CR"
+                }
+              },
+              "queryRef": "Document Version.Linked CR"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Document Version"
+                    }
+                  },
+                  "Property": "Effective Date"
+                }
+              },
+              "queryRef": "Document Version.Effective Date"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Document Version"
+                  }
+                },
+                "Property": "Doc ID"
+              }
+            },
+            "direction": "Ascending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Document versions (with linked CR)'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

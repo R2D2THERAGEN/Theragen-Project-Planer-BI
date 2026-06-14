@@ -2234,3 +2234,75 @@ class TestIsDecisionAuthorized:
         u = uuid.uuid4()
         assert al.is_decision_authorized(str(u), (u, None)) is True
         assert al.is_decision_authorized(u, (str(u),)) is True
+
+
+# === Report Access grants (RLS) ============================================
+
+def _acc(**over):
+    """Minimal valid normalized access-grant item."""
+    base = {
+        "item_id": "1",
+        "UserEmail": "Priya.Nair@theragen.com",
+        "ScopeType": "Project",
+        "ScopeValue": "THG-IT-001",
+        "Active": True,
+        "GrantedByEmail": "richard.allen@theragen.com",
+        "SyncStatus": "Pending",
+    }
+    base.update(over)
+    return base
+
+
+class TestValidateAccess:
+    def test_happy_project(self):
+        assert al.validate_access(_acc()) == []
+
+    def test_happy_department(self):
+        assert al.validate_access(_acc(ScopeType="Department",
+                                       ScopeValue="IT / Data / Security")) == []
+
+    def test_happy_all_no_value(self):
+        assert al.validate_access(_acc(ScopeType="All", ScopeValue="")) == []
+
+    def test_missing_user_email(self):
+        assert any("UserEmail" in e for e in al.validate_access(_acc(UserEmail="")))
+
+    def test_missing_scope_type(self):
+        assert any("ScopeType" in e for e in al.validate_access(_acc(ScopeType="")))
+
+    def test_bad_scope_type(self):
+        assert any("ScopeType not recognized" in e
+                   for e in al.validate_access(_acc(ScopeType="Portfolio")))
+
+    def test_project_requires_value(self):
+        assert any("ScopeValue is required" in e
+                   for e in al.validate_access(_acc(ScopeType="Project", ScopeValue="")))
+
+    def test_department_requires_value(self):
+        assert any("ScopeValue is required" in e
+                   for e in al.validate_access(_acc(ScopeType="Department", ScopeValue="")))
+
+    def test_all_rejects_value(self):
+        assert any("must be blank" in e
+                   for e in al.validate_access(_acc(ScopeType="All", ScopeValue="THG-IT-001")))
+
+
+class TestBuildAccessRow:
+    def _row(self, **over):
+        return al.build_access_row(_acc(**over), granted_by_id=5)
+
+    def test_email_lowercased(self):
+        assert self._row()["user_email"] == "priya.nair@theragen.com"
+
+    def test_scope_value_project(self):
+        assert self._row()["scope_value"] == "THG-IT-001"
+
+    def test_scope_value_none_for_all(self):
+        assert self._row(ScopeType="All", ScopeValue="")["scope_value"] is None
+
+    def test_active_passthrough(self):
+        assert self._row(Active=True)["active"] is True
+        assert self._row(Active=False)["active"] is False
+
+    def test_granted_by(self):
+        assert self._row()["granted_by_person_id"] == 5

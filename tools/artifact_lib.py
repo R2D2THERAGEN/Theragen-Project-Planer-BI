@@ -987,3 +987,43 @@ def is_decision_authorized(decider_id, authorities):
         return False
     allowed = {str(a) for a in authorities if a is not None}
     return str(decider_id) in allowed
+
+
+# ---------------------------------------------------------------------------
+# Report Access grants (compliance hardening) - the authored data behind RLS.
+# A grant scopes a user to a Project, a Department, or All. The "Scoped Viewer"
+# model role reads bi.report_access via USERPRINCIPALNAME().
+# ---------------------------------------------------------------------------
+
+ACCESS_SCOPE_TYPES = ["Project", "Department", "All"]
+
+
+def validate_access(it):
+    """Return a list of error strings; empty list means valid. The ScopeValue is
+    resolved to a real project/department in the sync; here we check coherence."""
+    errs = []
+    if _blank(it.get("UserEmail")):
+        errs.append("Missing: UserEmail")
+    st = it.get("ScopeType") or ""
+    if _blank(st):
+        errs.append("Missing: ScopeType")
+    elif st not in ACCESS_SCOPE_TYPES:
+        errs.append(f"ScopeType not recognized: {st}")
+    if st in ("Project", "Department") and _blank(it.get("ScopeValue")):
+        errs.append(f"ScopeValue is required when ScopeType is {st}")
+    if st == "All" and not _blank(it.get("ScopeValue")):
+        errs.append("ScopeValue must be blank when ScopeType is All")
+    return errs
+
+
+def build_access_row(it, granted_by_id):
+    """Build the report_access DB column dict. Email is lower-cased to match
+    USERPRINCIPALNAME(); scope_value is None for an All grant."""
+    st = it["ScopeType"]
+    return {
+        "user_email": (it["UserEmail"] or "").strip().lower(),
+        "scope_type": st,
+        "scope_value": None if st == "All" else (it.get("ScopeValue") or None),
+        "granted_by_person_id": granted_by_id,
+        "active": it.get("Active", True),
+    }

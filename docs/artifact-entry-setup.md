@@ -1,4 +1,4 @@
-# Artifact Entry Setup — Risks, Milestones, Status Reports, Project Activities, Change Requests, Decisions, Baselines, Phase Gates, Change Impact Assessments, Controlled Documents, Document RACI
+# Artifact Entry Setup — Risks, Milestones, Status Reports, Project Activities, Change Requests, Decisions, Baselines, Phase Gates, Change Impact Assessments, Controlled Documents, Document RACI, Document Versions, Document Approvals
 
 This is the PM-facing reference for filling in the four execution-artifact SharePoint
 Lists that feed the **Project Status Report** Power BI page. The daily 5:40 AM sync
@@ -27,6 +27,8 @@ access (creating and editing items) requires at minimum Edit permission on the s
 | **Change Impact Assessments** | One row per department's impact statement on a change request — see §P |
 | **Controlled Documents** | One row per controlled document (org-wide; minted DocID) — see §Q |
 | **Document RACI** | One row per (document, department) R/A/C/I assignment — see §R |
+| **Document Versions** | One row per document version (child of a document) — see §S |
+| **Document Approvals (e-sig)** | One row per per-version sign-off **attestation** (non-§11) — see §T |
 
 All these Lists live on the root SharePoint site (same site as Project Intake).
 
@@ -1103,6 +1105,99 @@ enforce that in v1.)
 
 ---
 
+## S. Document Versions
+
+The PMO records a document's **version history** in the **Document Versions** List — one row per
+version, a child of a controlled document (linked by `DocID`). It captures what changed, who authored
+it, and the version's status.
+
+### Required columns
+
+| Column | Type | Notes |
+|--------|------|-------|
+| **ParentDocID** | Text | The `DocID` of the parent document (e.g. `THG-OPS-CHR-001`) — must already exist (see §Q) |
+| **Version** | Text | The version string (e.g. `1.0`, `1.1`) — PM-supplied |
+| **ChangeSummary** | Multi-line text | What changed in this version |
+| **Author** | Person | The author; **falls back to the item author** if blank |
+
+### Optional columns
+
+| Column | Type | Notes |
+|--------|------|-------|
+| **Status** | Choice | `DRAFT` / `REVIEW` / `BASELINE` / `AMENDED` / `RETIRED` (default DRAFT) |
+| **ChangeClass** | Choice | `A - Minor` / `B - Substantive` / `C - Controlling` / `Emergency / Safety` |
+| **EffectiveDate** | Date | When this version takes effect |
+| **StoragePath** | Text | Versioned file path; **defaults to `{ParentDocID}/v{Version}`** |
+
+### Identity + audit
+
+`(ParentDocID, Version)` is the version's identity — both are fixed after first sync; editing either is
+rejected (`ParentDocID/Version changed after sync - create a new version instead`). `Status` moves
+freely (DRAFT → … → BASELINE), with each create + status change written to the audit trail
+(`VERSION_CREATE` / `VERSION_STATUS`). (Linking a version to a governance change request arrives with
+2c-6.)
+
+### Read-only write-back columns
+
+| Column | Meaning |
+|--------|---------|
+| **SyncStatus** | `Pending` → `Synced` (success) or `Error` (see §H) |
+| **SyncMessage** | Human-readable error detail; blank on success |
+
+---
+
+## T. Document Approvals — attestations (NOT 21 CFR Part 11 signatures)
+
+> **Honesty note.** A row in this List records a **server-computed attestation**, not a true 21 CFR
+> Part 11 electronic signature. The `esig_hash` is a SHA-256 over
+> `doc_id | version | approver_email | meaning | signed_at`, computed by the nightly sync — it provides
+> **traceability**, not signer-controlled cryptographic non-repudiation. No signer IP is captured
+> (`ip_address` is null). The model and views label this **"Attestation (non-§11)"**. A real §11 signing
+> ceremony (re-authentication, signer-held key, content binding, captured signer IP) is **deferred**.
+> Do not represent these as §11 signatures.
+
+A row attests that a person signed off a specific document **version**; it is a child of a version
+(linked by `ParentDocID` + `ParentVersion`).
+
+### Required columns
+
+| Column | Type | Notes |
+|--------|------|-------|
+| **ParentDocID** | Text | The parent document's `DocID` |
+| **ParentVersion** | Text | The version string (e.g. `1.0`) — with ParentDocID resolves the version |
+| **Approver** | Person | The attesting person; **falls back to the item author** if blank |
+| **SignatureMeaning** | Choice | `Approval` / `Review` / `Authorship` (default Approval) |
+
+### Optional columns
+
+| Column | Type | Notes |
+|--------|------|-------|
+| **Reason** | Multi-line text | Reason / context for the attestation |
+
+### Server-derived (never typed)
+
+| Field | How it is set |
+|-------|---------------|
+| **signed_at** | The item's created timestamp (truncated to the second) — the moment of attestation |
+| **esig_hash** | The SHA-256 attestation hash (above), computed once and **frozen** |
+| **ip_address** | **null** — no signer IP is captured |
+
+### Immutability
+
+An attestation is **append-once**: once synced, the row is frozen and the `esig_hash` is never
+recomputed; List edits to a synced approval do not propagate (create a new approval to re-sign). Each
+attestation is written to the audit trail (`APPROVAL_SIGN`). Because the hash is deterministic, a stored
+attestation is **verifiable** by recomputing it from its row.
+
+### Read-only write-back columns
+
+| Column | Meaning |
+|--------|---------|
+| **SyncStatus** | `Pending` → `Synced` (success) or `Error` (see §H) |
+| **SyncMessage** | Human-readable error detail (e.g. an unknown parent version); blank on success |
+
+---
+
 ## Appendix — sync behaviour reference
 
 | Scenario | sync_artifacts.py behaviour |
@@ -1140,4 +1235,10 @@ enforce that in v1.)
 | RACI, unknown ParentDocID / Department | Writes `Error: Unknown ParentDocID/Department` |
 | RACI, fields changed (same document) | Updates DB row; heals write-back; writes `Synced` |
 | RACI, re-parented after sync | Writes `Error: ParentDocID changed after sync - create a new RACI assignment instead` |
+| New document version, valid | Resolves the parent document + author; inserts row; writes `VERSION_CREATE` audit; writes `Synced` back |
+| Version, status changed | Updates DB row; writes `VERSION_STATUS` audit; heals write-back |
+| Version, ParentDocID/Version changed after sync | Writes `Error: ...create a new version instead` |
+| New approval (attestation), valid | Resolves document→version→approver; computes + freezes the `esig_hash`; writes `APPROVAL_SIGN` audit; writes `Synced` |
+| Approval, unknown ParentVersion | Writes `Error: Unknown ParentVersion <v> for <DocID>` |
+| Approval, already synced (immutable) | No-op; the attestation is frozen (create a new approval to re-sign) |
 | `--dry-run` flag | Prints intent only; no DB writes; no List writes |

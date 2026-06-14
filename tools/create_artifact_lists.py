@@ -162,6 +162,28 @@ LISTS = {
         text("IntakeID"),
         text("DocID"),
     ] + BOOKKEEPING),
+    "govcr_list_id": ("Governance Change Requests", [
+        text("ParentDocID"),  # the target controlled document (no ProjectCode)
+        date_only("RequestedDate"),
+        {"name": "RequestedBy", "personOrGroup": {"allowMultipleSelection": False}},
+        choice("CRClass", al.CR_CLASSES),
+        text("Description", multiline=True),
+        text("Reason", multiline=True),
+        text("IntakeID"),
+        choice("Decision", al.CR_DECISIONS, default="Pending"),
+        {"name": "DecidedBy", "personOrGroup": {"allowMultipleSelection": False}},
+        date_only("DecidedDate"),
+        choice("ImplementationVerified", ["Yes", "No"], default="No"),
+        choice("CRStatus", al.CR_STATUSES, default="Open"),
+        text("CRCode"),
+    ] + BOOKKEEPING),
+    "govassessment_list_id": ("Governance Change Assessments", [
+        text("ParentCRCode"),  # the governance CR (CHG-NNN), globally unique
+        choice("Department", al.DEPARTMENTS),
+        text("ImpactSummary", multiline=True),
+        text("ComplianceImpact", multiline=True),
+        date_only("SubmittedDate"),
+    ] + BOOKKEEPING),
     "raci_list_id": ("Document RACI", [
         text("ParentDocID"),
         choice("Department", al.DEPARTMENTS),
@@ -179,6 +201,7 @@ LISTS = {
         date_only("EffectiveDate"),
         text("StoragePath"),
         {"name": "Author", "personOrGroup": {"allowMultipleSelection": False}},
+        text("LinkedCRCode"),  # 2c-6 loop closure: cite the governance CR (CHG-NNN)
     ] + BOOKKEEPING),
     "approval_list_id": ("Document Approvals (e-sig)", [
         text("ParentDocID"),

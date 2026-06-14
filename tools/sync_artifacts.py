@@ -78,6 +78,8 @@ GOVCR_FIELDS = ("Title,ParentDocID,RequestedDate,RequestedBy,RequestedByLookupId
                 "CRCode,SyncStatus,SyncMessage")
 GOVASSESS_FIELDS = ("Title,ParentCRCode,Department,ImpactSummary,ComplianceImpact,"
                     "SubmittedDate,SyncStatus,SyncMessage")
+RESPONSE_FIELDS = ("Title,ProjectCode,ParentRiskCode,ActionType,Description,"
+                   "Owner,OwnerLookupId,DueDate,Status,SyncStatus,SyncMessage")
 
 
 def _date(v):
@@ -408,6 +410,25 @@ def normalize_govassessment(item, people):
     }
 
 
+def normalize_risk_response(item, people):
+    f = item.get("fields", {})
+    created_by = (((item.get("createdBy") or {}).get("user") or {})
+                  .get("email") or "").lower()
+    return {
+        "item_id": item["id"],
+        "Title": f.get("Title") or "",
+        "ProjectCode": (f.get("ProjectCode") or "").strip(),
+        "ParentRiskCode": (f.get("ParentRiskCode") or "").strip(),
+        "ActionType": f.get("ActionType") or "",
+        "Description": f.get("Description") or "",
+        # Author-fallback covers the NOT NULL owner_person_id.
+        "OwnerEmail": people.email(f.get("OwnerLookupId")) or created_by,
+        "DueDate": _date(f.get("DueDate")),
+        "Status": f.get("Status") or "Open",
+        "SyncStatus": f.get("SyncStatus") or "Pending",
+    }
+
+
 def writeback(g, list_id, item_id, fields):
     g.patch(f"/sites/{M365['site_id']}/lists/{list_id}/items/{item_id}/fields",
             fields)
@@ -586,6 +607,9 @@ GOVASSESS_SELECT = ('SELECT external_ref, gov_impact_id, cr_gov_id, department_i
                     ' impact_summary, compliance_impact, submitted_at'
                     ' FROM doc_mgmt.change_assessment_gov'
                     ' WHERE external_ref IS NOT NULL')
+RESPONSE_SELECT = ('SELECT external_ref, response_id, risk_id, action_type,'
+                   ' description, owner_person_id, due_date, status'
+                   ' FROM pmbok.risk_response WHERE external_ref IS NOT NULL')
 ACTIVITY_SELECT = ('SELECT a.external_ref, a.activity_id, a.wbs_element_id,'
                    ' w.project_id, a.activity_code, a.name, a.start_planned,'
                    ' a.finish_planned, a.start_actual, a.finish_actual,'
@@ -1350,6 +1374,84 @@ def process_impact_assessment(conn, g, it, dry, current):
     writeback(g, list_id, item_id, {"SyncStatus": "Synced", "SyncMessage": ""})
     return (f"OK new impact for CR {it['ParentCRCode']}"
             f" ({it['ProjectCode']}/{it['Department']}, item {item_id})")
+
+
+def resolve_parent_risk(conn, project_id, risk_code):
+    """Resolve a parent risk by (project_id, risk_code) -> risk_id or None.
+    risk_code is UNIQUE per (project_id, risk_code); the registry processes risk
+    before risk_response under autocommit, so a same-morning parent is committed."""
+    row = conn.execute(
+        "SELECT risk_id FROM pmbok.risk WHERE project_id=%s AND risk_code=%s",
+        (project_id, risk_code)).fetchone()
+    return row[0] if row else None
+
+
+def process_risk_response(conn, g, it, dry, current):
+    # Mirror of process_impact_assessment (child-by-code, no audit): a per-risk
+    # response ACTION attached to a parent risk by RiskCode within a project.
+    errs = al.validate_risk_response(it)
+    proj = project_by_code(conn, it["ProjectCode"]) if it["ProjectCode"] else None
+    if it["ProjectCode"] and not proj:
+        errs.append(f"Unknown ProjectCode: {it['ProjectCode']}")
+    owner = (person_id_by_email(conn, it["OwnerEmail"])
+             if it["OwnerEmail"] else None)
+    if it["OwnerEmail"] and not owner:
+        errs.append(f"Owner {it['OwnerEmail']} not in person directory")
+    risk_id = None
+    if it.get("ParentRiskCode") and proj and not errs:
+        risk_id = resolve_parent_risk(conn, proj[0], it["ParentRiskCode"])
+        if risk_id is None:
+            errs.append(f"Unknown ParentRiskCode {it['ParentRiskCode']} for"
+                        f" project {it['ProjectCode']}")
+    if errs:
+        return _error(g, M365["risk_response_list_id"], it, errs, dry,
+                      "risk_response")
+    item_id = it["item_id"]
+    list_id = M365["risk_response_list_id"]
+    desired = al.build_risk_response_row(it, risk_id, owner)
+
+    if current:
+        # Re-parent guard: the parent risk is fixed for a given row.
+        if str(current["risk_id"]) != str(risk_id):
+            return _error(g, list_id, it,
+                          ["Reparenting not allowed; create a new risk response"],
+                          dry, "risk_response")
+        if al.row_changed(current, desired):
+            if dry:
+                return f"DRY risk_response item {item_id}: would update"
+            with conn.transaction():
+                conn.execute(
+                    "UPDATE pmbok.risk_response SET action_type=%s, description=%s,"
+                    " owner_person_id=%s, due_date=%s, status=%s"
+                    " WHERE external_ref=%s",
+                    (desired["action_type"], desired["description"],
+                     desired["owner_person_id"], desired["due_date"],
+                     desired["status"], item_id))
+            writeback(g, list_id, item_id,
+                      {"SyncStatus": "Synced", "SyncMessage": ""})
+            return f"OK risk_response item {item_id}: updated"
+        if it["SyncStatus"] != "Synced":
+            if not dry:
+                writeback(g, list_id, item_id,
+                          {"SyncStatus": "Synced", "SyncMessage": ""})
+            return f"OK risk_response item {item_id}: healed write-back"
+        return f"OK risk_response item {item_id}: no change"
+    # New item
+    if dry:
+        return (f"DRY risk_response item {item_id}: would create for risk"
+                f" {it['ParentRiskCode']} ({it['ProjectCode']})")
+    response_id = str(uuid.uuid5(NS, f"thg/artifact/riskresponse/{item_id}"))
+    with conn.transaction():
+        conn.execute(
+            "INSERT INTO pmbok.risk_response (response_id, risk_id, action_type,"
+            " description, owner_person_id, due_date, status, external_ref)"
+            " VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
+            (response_id, desired["risk_id"], desired["action_type"],
+             desired["description"], desired["owner_person_id"],
+             desired["due_date"], desired["status"], item_id))
+    writeback(g, list_id, item_id, {"SyncStatus": "Synced", "SyncMessage": ""})
+    return (f"OK new risk_response for risk {it['ParentRiskCode']}"
+            f" ({it['ProjectCode']}, item {item_id})")
 
 
 def process_document(conn, g, it, dry, current):
@@ -2163,6 +2265,9 @@ ARTIFACTS = [
     {"kind": "risk", "list_key": "risk_list_id", "fields": RISK_FIELDS,
      "normalize": normalize_risk, "process": process_risk,
      "select": RISK_SELECT},
+    {"kind": "risk_response", "list_key": "risk_response_list_id",
+     "fields": RESPONSE_FIELDS, "normalize": normalize_risk_response,
+     "process": process_risk_response, "select": RESPONSE_SELECT},
     {"kind": "milestone", "list_key": "milestone_list_id",
      "fields": MILESTONE_FIELDS, "normalize": normalize_milestone,
      "process": process_milestone, "select": MILESTONE_SELECT},

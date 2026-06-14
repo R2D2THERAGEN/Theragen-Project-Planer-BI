@@ -51,6 +51,15 @@ LISTS = {
         choice("ComplianceFlag", al.COMPLIANCE_FLAGS, default="None"),
         text("RiskCode"),
     ] + BOOKKEEPING),
+    "risk_response_list_id": ("Risk Responses", [
+        text("ProjectCode"),
+        text("ParentRiskCode"),  # the parent risk's RiskCode (e.g. R-001)
+        choice("ActionType", al.RISK_ACTION_TYPES),
+        text("Description", multiline=True),
+        {"name": "Owner", "personOrGroup": {"allowMultipleSelection": False}},
+        date_only("DueDate"),
+        choice("Status", al.RESPONSE_STATUSES, default="Open"),
+    ] + BOOKKEEPING),
     "milestone_list_id": ("Project Milestones", [
         text("ProjectCode"),
         date_only("BaselineDate"),

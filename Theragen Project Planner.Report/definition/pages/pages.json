@@ -8,7 +8,10 @@
     "risk",
     "change",
     "people",
-    "closing"
+    "closing",
+    "tooltipProjectKpi",
+    "tooltipDocGovernance",
+    "tooltipRisk"
   ],
   "activePageName": "portfolio"
 }

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "name": "c3d4e5f6a1b2c3d4e5f6",
+  "position": {
+    "x": 8,
+    "y": 8,
+    "z": 0,
+    "height": 224,
+    "width": 304
+  },
+  "visual": {
+    "visualType": "multiRowCard",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Open Risks" } }, "queryRef": "_Measures.Open Risks" },
+            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "High Risks" } }, "queryRef": "_Measures.High Risks" },
+            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Total Risk Exposure" } }, "queryRef": "_Measures.Total Risk Exposure" },
+            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Open Risk Actions" } }, "queryRef": "_Measures.Open Risk Actions" },
+            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Overdue Risk Actions" } }, "queryRef": "_Measures.Overdue Risk Actions" }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

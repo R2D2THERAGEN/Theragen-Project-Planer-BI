@@ -742,16 +742,17 @@ def validate_version(it):
     return errs
 
 
-def build_version_row(it, document_id, author_id):
-    """Build the document_version DB column dict. linked_cr_id is None in 2c-5
-    (governance CRs arrive in 2c-6); storage_path defaults to {DocID}/v{Version}."""
+def build_version_row(it, document_id, author_id, linked_cr_id=None):
+    """Build the document_version DB column dict. linked_cr_id is resolved from
+    the optional LinkedCRCode (a governance CR, 2c-6) in the sync - None when the
+    version cites no CR; storage_path defaults to {DocID}/v{Version}."""
     return {
         "document_id": document_id,
         "version": it["Version"],
         "status": it.get("Status") or "DRAFT",
         "change_summary": it["ChangeSummary"],
         "change_class": it.get("ChangeClass") or None,
-        "linked_cr_id": None,
+        "linked_cr_id": linked_cr_id,
         "author_person_id": author_id,
         "effective_date": it.get("EffectiveDate") or None,
         "storage_path": it.get("StoragePath") or f"{it['ParentDocID']}/v{it['Version']}",

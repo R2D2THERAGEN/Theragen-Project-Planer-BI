@@ -1760,6 +1760,12 @@ class TestBuildVersionRow:
     def test_linked_cr_id_none(self):
         assert self._row()["linked_cr_id"] is None
 
+    def test_linked_cr_id_passthrough(self):
+        # 2c-6 loop closure: a resolved governance-CR id flows into the row.
+        r = al.build_version_row(_version(), document_id="doc", author_id="au",
+                                 linked_cr_id="cr-gov-1")
+        assert r["linked_cr_id"] == "cr-gov-1"
+
     def test_change_class_blank_none(self):
         assert self._row(ChangeClass="")["change_class"] is None
 

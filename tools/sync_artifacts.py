@@ -1517,13 +1517,21 @@ def process_document_version(conn, g, it, dry, current):
               if it["AuthorEmail"] else None)
     if it["AuthorEmail"] and not author:
         errs.append(f"Author {it['AuthorEmail']} not in person directory")
+    # 2c-6 loop closure: an optional LinkedCRCode binds the version to the
+    # governance CR that drove it. Blank -> NULL; present-but-unknown -> airlock
+    # the dangling reference rather than silently dropping it.
+    linked_cr_id = None
+    if it.get("LinkedCRCode"):
+        linked_cr_id = resolve_parent_govcr(conn, it["LinkedCRCode"])
+        if linked_cr_id is None:
+            errs.append(f"Unknown LinkedCRCode: {it['LinkedCRCode']}")
     if errs:
         return _error(g, M365["version_list_id"], it, errs, dry, "version")
     item_id = it["item_id"]
     list_id = M365["version_list_id"]
-    desired = al.build_version_row(it, document_id, author)
+    desired = al.build_version_row(it, document_id, author, linked_cr_id)
     mut = ["status", "change_summary", "change_class", "author_person_id",
-           "effective_date", "storage_path"]
+           "effective_date", "storage_path", "linked_cr_id"]
 
     if current:
         # Immutable identity: (document_id, version) defines the version row.

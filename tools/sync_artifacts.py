@@ -80,6 +80,8 @@ GOVASSESS_FIELDS = ("Title,ParentCRCode,Department,ImpactSummary,ComplianceImpac
                     "SubmittedDate,SyncStatus,SyncMessage")
 RESPONSE_FIELDS = ("Title,ProjectCode,ParentRiskCode,ActionType,Description,"
                    "Owner,OwnerLookupId,DueDate,Status,SyncStatus,SyncMessage")
+COST_FIELDS = ("Title,ProjectCode,WBSCode,Period,Amount,Category,Notes,"
+               "EnteredBy,EnteredByLookupId,SyncStatus,SyncMessage")
 
 
 def _date(v):
@@ -429,6 +431,25 @@ def normalize_risk_response(item, people):
     }
 
 
+def normalize_cost_actual(item, people):
+    f = item.get("fields", {})
+    created_by = (((item.get("createdBy") or {}).get("user") or {})
+                  .get("email") or "").lower()
+    return {
+        "item_id": item["id"],
+        "Title": f.get("Title") or "",
+        "ProjectCode": (f.get("ProjectCode") or "").strip(),
+        "WBSCode": (f.get("WBSCode") or "").strip(),
+        "Period": _date(f.get("Period")),
+        "Amount": f.get("Amount"),
+        "Category": f.get("Category") or "",
+        "Notes": f.get("Notes") or None,
+        # entered_by is optional (nullable); author-fallback records who logged it.
+        "EnteredByEmail": people.email(f.get("EnteredByLookupId")) or created_by,
+        "SyncStatus": f.get("SyncStatus") or "Pending",
+    }
+
+
 def writeback(g, list_id, item_id, fields):
     g.patch(f"/sites/{M365['site_id']}/lists/{list_id}/items/{item_id}/fields",
             fields)
@@ -610,6 +631,9 @@ GOVASSESS_SELECT = ('SELECT external_ref, gov_impact_id, cr_gov_id, department_i
 RESPONSE_SELECT = ('SELECT external_ref, response_id, risk_id, action_type,'
                    ' description, owner_person_id, due_date, status'
                    ' FROM pmbok.risk_response WHERE external_ref IS NOT NULL')
+COST_SELECT = ('SELECT external_ref, cost_actual_id, wbs_element_id, period,'
+               ' amount, category, notes, entered_by_person_id'
+               ' FROM pmbok.cost_actual WHERE external_ref IS NOT NULL')
 ACTIVITY_SELECT = ('SELECT a.external_ref, a.activity_id, a.wbs_element_id,'
                    ' w.project_id, a.activity_code, a.name, a.start_planned,'
                    ' a.finish_planned, a.start_actual, a.finish_actual,'
@@ -1454,6 +1478,80 @@ def process_risk_response(conn, g, it, dry, current):
             f" ({it['ProjectCode']}, item {item_id})")
 
 
+def resolve_parent_wbs(conn, project_id, wbs_code):
+    """Resolve a WBS element by (project_id, wbs_code) -> wbs_element_id or None.
+    wbs_code is unique per project; WBS elements are reconciled during activity
+    processing, so the registry orders cost_actual after activity."""
+    row = conn.execute(
+        "SELECT wbs_element_id FROM pmbok.wbs_element"
+        " WHERE project_id=%s AND wbs_code=%s", (project_id, wbs_code)).fetchone()
+    return row[0] if row else None
+
+
+def process_cost_actual(conn, g, it, dry, current):
+    # Mirror of process_impact_assessment (child-by-code, no audit): a per-period
+    # actual cost attached to a WBS work package by WBSCode within a project.
+    errs = al.validate_cost_actual(it)
+    proj = project_by_code(conn, it["ProjectCode"]) if it["ProjectCode"] else None
+    if it["ProjectCode"] and not proj:
+        errs.append(f"Unknown ProjectCode: {it['ProjectCode']}")
+    entered_by = (person_id_by_email(conn, it["EnteredByEmail"])
+                  if it["EnteredByEmail"] else None)  # optional - no error if unresolved
+    wbs_id = None
+    if it.get("WBSCode") and proj and not errs:
+        wbs_id = resolve_parent_wbs(conn, proj[0], it["WBSCode"])
+        if wbs_id is None:
+            errs.append(f"Unknown WBSCode {it['WBSCode']} for project"
+                        f" {it['ProjectCode']}")
+    if errs:
+        return _error(g, M365["cost_actual_list_id"], it, errs, dry, "cost_actual")
+    item_id = it["item_id"]
+    list_id = M365["cost_actual_list_id"]
+    desired = al.build_cost_actual_row(it, wbs_id, entered_by)
+
+    if current:
+        # Re-parent guard: the parent WBS element is fixed for a given row.
+        if str(current["wbs_element_id"]) != str(wbs_id):
+            return _error(g, list_id, it,
+                          ["Reparenting not allowed; create a new cost actual"],
+                          dry, "cost_actual")
+        if al.row_changed(current, desired):
+            if dry:
+                return f"DRY cost_actual item {item_id}: would update"
+            with conn.transaction():
+                conn.execute(
+                    "UPDATE pmbok.cost_actual SET period=%s, amount=%s,"
+                    " category=%s, notes=%s, entered_by_person_id=%s"
+                    " WHERE external_ref=%s",
+                    (desired["period"], desired["amount"], desired["category"],
+                     desired["notes"], desired["entered_by_person_id"], item_id))
+            writeback(g, list_id, item_id,
+                      {"SyncStatus": "Synced", "SyncMessage": ""})
+            return f"OK cost_actual item {item_id}: updated"
+        if it["SyncStatus"] != "Synced":
+            if not dry:
+                writeback(g, list_id, item_id,
+                          {"SyncStatus": "Synced", "SyncMessage": ""})
+            return f"OK cost_actual item {item_id}: healed write-back"
+        return f"OK cost_actual item {item_id}: no change"
+    # New item
+    if dry:
+        return (f"DRY cost_actual item {item_id}: would create {it['WBSCode']}"
+                f" {it['Period']} {it['Amount']} ({it['ProjectCode']})")
+    cost_actual_id = str(uuid.uuid5(NS, f"thg/artifact/costactual/{item_id}"))
+    with conn.transaction():
+        conn.execute(
+            "INSERT INTO pmbok.cost_actual (cost_actual_id, wbs_element_id,"
+            " period, amount, category, notes, entered_by_person_id, external_ref)"
+            " VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
+            (cost_actual_id, desired["wbs_element_id"], desired["period"],
+             desired["amount"], desired["category"], desired["notes"],
+             desired["entered_by_person_id"], item_id))
+    writeback(g, list_id, item_id, {"SyncStatus": "Synced", "SyncMessage": ""})
+    return (f"OK new cost_actual {it['WBSCode']} {it['Period']}"
+            f" ({it['ProjectCode']}, item {item_id})")
+
+
 def process_document(conn, g, it, dry, current):
     errs = al.validate_document(it)
     dtype = (document_type_by_code(conn, it["DocTypeCode"])
@@ -2277,6 +2375,9 @@ ARTIFACTS = [
     {"kind": "activity", "list_key": "activity_list_id",
      "fields": ACTIVITY_FIELDS, "normalize": normalize_activity,
      "process": process_activity, "select": ACTIVITY_SELECT},
+    {"kind": "cost_actual", "list_key": "cost_actual_list_id",
+     "fields": COST_FIELDS, "normalize": normalize_cost_actual,
+     "process": process_cost_actual, "select": COST_SELECT},
     {"kind": "change_request", "list_key": "change_request_list_id",
      "fields": CR_FIELDS, "normalize": normalize_change_request,
      "process": process_change_request, "select": CR_SELECT},

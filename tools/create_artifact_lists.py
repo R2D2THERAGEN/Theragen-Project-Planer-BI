@@ -60,6 +60,15 @@ LISTS = {
         date_only("DueDate"),
         choice("Status", al.RESPONSE_STATUSES, default="Open"),
     ] + BOOKKEEPING),
+    "cost_actual_list_id": ("Cost Actuals", [
+        text("ProjectCode"),
+        text("WBSCode"),  # the work-package WBS code (e.g. 1.1) - resolves the WBS element
+        date_only("Period"),
+        {"name": "Amount", "number": {"decimalPlaces": "two"}},
+        choice("Category", al.COST_CATEGORIES),
+        text("Notes", multiline=True),
+        {"name": "EnteredBy", "personOrGroup": {"allowMultipleSelection": False}},
+    ] + BOOKKEEPING),
     "milestone_list_id": ("Project Milestones", [
         text("ProjectCode"),
         date_only("BaselineDate"),

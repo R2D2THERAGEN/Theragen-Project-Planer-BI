@@ -1301,7 +1301,6 @@ def process_document(conn, g, it, dry, current):
 
 
 def process_raci_assignment(conn, g, it, dry, current):
-    # T4: validate + resolve (document, department); no writes yet (T5 write path).
     errs = al.validate_raci(it)
     document_id = (resolve_parent_document(conn, it["ParentDocID"])
                    if it["ParentDocID"] else None)
@@ -1313,8 +1312,54 @@ def process_raci_assignment(conn, g, it, dry, current):
         errs.append(f"Unknown Department: {it['Department']}")
     if errs:
         return _error(g, M365["raci_list_id"], it, errs, dry, "raci")
-    return (f"DRY raci item {it['item_id']}: {it['Role']} for {it['Department']}"
-            f" on {it['ParentDocID']}; no writes (stub)")
+    dept_id = dept[0]
+    item_id = it["item_id"]
+    list_id = M365["raci_list_id"]
+    desired = al.build_raci_row(it, document_id, dept_id)
+
+    if current:
+        # Re-parent guard: the parent document is fixed for a given row.
+        if str(current["document_id"]) != str(document_id):
+            return _error(g, list_id, it,
+                          ["ParentDocID changed after sync - create a new RACI"
+                           " assignment instead"], dry, "raci")
+        if al.row_changed(current, desired):
+            if dry:
+                return f"DRY raci item {item_id}: would update"
+            with conn.transaction():
+                conn.execute(
+                    "UPDATE doc_mgmt.raci_assignment SET department_id=%s,"
+                    " role=%s, touchpoint=%s, valid_from=%s, valid_to=%s"
+                    " WHERE external_ref=%s",
+                    (desired["department_id"], desired["role"],
+                     desired["touchpoint"], desired["valid_from"],
+                     desired["valid_to"], item_id))
+            writeback(g, list_id, item_id,
+                      {"SyncStatus": "Synced", "SyncMessage": ""})
+            return f"OK raci item {item_id}: updated"
+        if it["SyncStatus"] != "Synced":
+            if not dry:
+                writeback(g, list_id, item_id,
+                          {"SyncStatus": "Synced", "SyncMessage": ""})
+            return f"OK raci item {item_id}: healed write-back"
+        return f"OK raci item {item_id}: no change"
+    # New item
+    if dry:
+        return (f"DRY raci item {item_id}: would create {it['Role']} for"
+                f" {it['Department']} on {it['ParentDocID']}")
+    raci_id = str(uuid.uuid5(NS, f"thg/artifact/raci/{item_id}"))
+    with conn.transaction():
+        conn.execute(
+            "INSERT INTO doc_mgmt.raci_assignment"
+            " (raci_id, document_id, department_id, role, touchpoint,"
+            " valid_from, valid_to, external_ref)"
+            " VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
+            (raci_id, desired["document_id"], desired["department_id"],
+             desired["role"], desired["touchpoint"], desired["valid_from"],
+             desired["valid_to"], item_id))
+    writeback(g, list_id, item_id, {"SyncStatus": "Synced", "SyncMessage": ""})
+    return (f"OK new raci {it['Role']} for {it['Department']} on"
+            f" {it['ParentDocID']} (item {item_id})")
 
 
 def _rows_as_dicts(conn, sql, params=()):

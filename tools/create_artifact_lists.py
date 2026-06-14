@@ -136,6 +136,13 @@ LISTS = {
         date_only("DecidedDate"),
         text("DecisionCode"),
     ] + BOOKKEEPING),
+    "report_access_list_id": ("Report Access", [
+        text("UserEmail"),  # the grantee's UPN/email
+        choice("ScopeType", al.ACCESS_SCOPE_TYPES),
+        text("ScopeValue"),  # a ProjectCode or Department name; blank for All
+        choice("Active", ["Yes", "No"], default="Yes"),
+        {"name": "GrantedBy", "personOrGroup": {"allowMultipleSelection": False}},
+    ] + BOOKKEEPING),
     "baseline_list_id": ("Project Baselines", [
         text("ProjectCode"),
         choice("BaselineType", al.BASELINE_TYPES),

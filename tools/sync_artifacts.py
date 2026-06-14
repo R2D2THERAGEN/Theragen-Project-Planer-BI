@@ -82,6 +82,8 @@ RESPONSE_FIELDS = ("Title,ProjectCode,ParentRiskCode,ActionType,Description,"
                    "Owner,OwnerLookupId,DueDate,Status,SyncStatus,SyncMessage")
 COST_FIELDS = ("Title,ProjectCode,WBSCode,Period,Amount,Category,Notes,"
                "EnteredBy,EnteredByLookupId,SyncStatus,SyncMessage")
+ACCESS_FIELDS = ("Title,UserEmail,ScopeType,ScopeValue,Active,GrantedBy,"
+                 "GrantedByLookupId,SyncStatus,SyncMessage")
 
 
 def _date(v):
@@ -450,6 +452,24 @@ def normalize_cost_actual(item, people):
     }
 
 
+def normalize_access(item, people):
+    f = item.get("fields", {})
+    created_by = (((item.get("createdBy") or {}).get("user") or {})
+                  .get("email") or "").lower()
+    return {
+        "item_id": item["id"],
+        "Title": f.get("Title") or "",
+        "UserEmail": (f.get("UserEmail") or "").strip(),
+        "ScopeType": f.get("ScopeType") or "",
+        "ScopeValue": (f.get("ScopeValue") or "").strip(),
+        # Yes/No -> bool; blank/absent defaults to active.
+        "Active": coerce_bool(f.get("Active")) if f.get("Active") else True,
+        # author-fallback records who authored the grant.
+        "GrantedByEmail": people.email(f.get("GrantedByLookupId")) or created_by,
+        "SyncStatus": f.get("SyncStatus") or "Pending",
+    }
+
+
 def writeback(g, list_id, item_id, fields):
     g.patch(f"/sites/{M365['site_id']}/lists/{list_id}/items/{item_id}/fields",
             fields)
@@ -634,6 +654,9 @@ RESPONSE_SELECT = ('SELECT external_ref, response_id, risk_id, action_type,'
 COST_SELECT = ('SELECT external_ref, cost_actual_id, wbs_element_id, period,'
                ' amount, category, notes, entered_by_person_id'
                ' FROM pmbok.cost_actual WHERE external_ref IS NOT NULL')
+ACCESS_SELECT = ('SELECT external_ref, access_id, user_email, scope_type,'
+                 ' scope_value, active, granted_by_person_id'
+                 ' FROM pmbok.report_access WHERE external_ref IS NOT NULL')
 ACTIVITY_SELECT = ('SELECT a.external_ref, a.activity_id, a.wbs_element_id,'
                    ' w.project_id, a.activity_code, a.name, a.start_planned,'
                    ' a.finish_planned, a.start_actual, a.finish_actual,'
@@ -1557,6 +1580,75 @@ def process_cost_actual(conn, g, it, dry, current):
             f" ({it['ProjectCode']}, item {item_id})")
 
 
+def process_report_access(conn, g, it, dry, current):
+    # Authored access grant (mirror process_decision - no parent-child) with a
+    # ScopeValue airlock + an access audit (ACCESS_GRANT/REVOKE/CHANGE). Feeds
+    # the "Scoped Viewer" RLS role.
+    errs = al.validate_access(it)
+    granted_by = (person_id_by_email(conn, it["GrantedByEmail"])
+                  if it["GrantedByEmail"] else None)
+    if not errs:  # airlock the scope value against real projects/departments
+        st, val = it["ScopeType"], it["ScopeValue"]
+        if st == "Project" and not project_by_code(conn, val):
+            errs.append(f"Unknown ScopeValue (ProjectCode): {val}")
+        elif st == "Department" and val not in al.DEPARTMENTS:
+            errs.append(f"Unknown ScopeValue (Department): {val}")
+    if errs:
+        return _error(g, M365["report_access_list_id"], it, errs, dry, "access")
+    item_id = it["item_id"]
+    list_id = M365["report_access_list_id"]
+    desired = al.build_access_row(it, granted_by)
+
+    if current:
+        if al.row_changed(current, desired):
+            if dry:
+                return f"DRY access item {item_id}: would update"
+            was, now = bool(current.get("active")), bool(desired["active"])
+            action = ("ACCESS_REVOKE" if was and not now
+                      else "ACCESS_GRANT" if not was and now else "ACCESS_CHANGE")
+            with conn.transaction():
+                conn.execute(
+                    "UPDATE pmbok.report_access SET user_email=%s, scope_type=%s,"
+                    " scope_value=%s, granted_by_person_id=%s, active=%s"
+                    " WHERE external_ref=%s",
+                    (desired["user_email"], desired["scope_type"],
+                     desired["scope_value"], desired["granted_by_person_id"],
+                     desired["active"], item_id))
+                before, after = al._trail_states(current, desired,
+                    ["user_email", "scope_type", "scope_value", "active"])
+                audit_lib.write_trail(conn, granted_by, action, "report_access",
+                                      current["access_id"], before, after, None)
+            writeback(g, list_id, item_id,
+                      {"SyncStatus": "Synced", "SyncMessage": ""})
+            return f"OK access item {item_id}: updated ({action})"
+        if it["SyncStatus"] != "Synced":
+            if not dry:
+                writeback(g, list_id, item_id,
+                          {"SyncStatus": "Synced", "SyncMessage": ""})
+            return f"OK access item {item_id}: healed write-back"
+        return f"OK access item {item_id}: no change"
+    # New item
+    if dry:
+        return (f"DRY access item {item_id}: would grant {it['UserEmail']} ->"
+                f" {it['ScopeType']} {it['ScopeValue']}".rstrip())
+    access_id = str(uuid.uuid5(NS, f"thg/artifact/access/{item_id}"))
+    with conn.transaction():
+        conn.execute(
+            "INSERT INTO pmbok.report_access (access_id, user_email, scope_type,"
+            " scope_value, granted_by_person_id, active, external_ref)"
+            " VALUES (%s,%s,%s,%s,%s,%s,%s)",
+            (access_id, desired["user_email"], desired["scope_type"],
+             desired["scope_value"], desired["granted_by_person_id"],
+             desired["active"], item_id))
+        audit_lib.write_trail(
+            conn, granted_by, "ACCESS_GRANT", "report_access", access_id, None,
+            {"user_email": desired["user_email"], "scope_type": desired["scope_type"],
+             "scope_value": desired["scope_value"]}, None)
+    writeback(g, list_id, item_id, {"SyncStatus": "Synced", "SyncMessage": ""})
+    return (f"OK new access grant {it['UserEmail']} -> {it['ScopeType']}"
+            f" {it['ScopeValue']} (item {item_id})".rstrip())
+
+
 def process_document(conn, g, it, dry, current):
     errs = al.validate_document(it)
     dtype = (document_type_by_code(conn, it["DocTypeCode"])
@@ -2397,6 +2489,9 @@ ARTIFACTS = [
     {"kind": "decision", "list_key": "decision_list_id",
      "fields": DECISION_FIELDS, "normalize": normalize_decision,
      "process": process_decision, "select": DECISION_SELECT},
+    {"kind": "report_access", "list_key": "report_access_list_id",
+     "fields": ACCESS_FIELDS, "normalize": normalize_access,
+     "process": process_report_access, "select": ACCESS_SELECT},
     {"kind": "baseline", "list_key": "baseline_list_id",
      "fields": BASELINE_FIELDS, "normalize": normalize_baseline,
      "process": process_baseline, "select": BASELINE_SELECT},

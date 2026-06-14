@@ -1163,8 +1163,6 @@ def process_impact_assessment(conn, g, it, dry, current):
 
 
 def process_document(conn, g, it, dry, current):
-    # T5: validate + resolve (type, dept, owner, approver) + derive lifecycle/cycle;
-    # no writes (the mint/insert/audit/guard write path lands in T6).
     errs = al.validate_document(it)
     dtype = (document_type_by_code(conn, it["DocTypeCode"])
              if it["DocTypeCode"] else None)
@@ -1188,9 +1186,71 @@ def process_document(conn, g, it, dry, current):
     dept_id, dept_code = dept
     lifecycle_phase = it["LifecyclePhase"] or type_phase
     review_cycle = it["ReviewCycle"] or type_cycle
-    return (f"DRY document item {it['item_id']}: {it['DocTypeCode']}/{dept_code}"
-            f" '{it['Title']}' (phase {lifecycle_phase}, {review_cycle});"
-            f" no writes (stub)")
+    item_id = it["item_id"]
+    list_id = M365["document_list_id"]
+
+    if current:
+        # Immutable-identity guard: DocTypeCode + PrimaryDepartment define the
+        # doc_id, so they cannot change after sync.
+        if (str(current["document_type_id"]) != str(type_id)
+                or str(current["primary_department_id"]) != str(dept_id)):
+            return _error(g, list_id, it,
+                          ["DocTypeCode/PrimaryDepartment changed after sync -"
+                           " create a new document instead"], dry, "document")
+        full = al.build_document_row(it, type_id, dept_id, owner, approver,
+                                     lifecycle_phase, review_cycle,
+                                     current["doc_id"])
+        desired = {k: full[k] for k in al.MUTABLE_DOC_COLS}
+        if al.row_changed(current, desired):
+            if dry:
+                return (f"DRY document item {item_id}: would update"
+                        f" {current['doc_id']}")
+            sets = ", ".join(f"{k}=%s" for k in al.MUTABLE_DOC_COLS)
+            with conn.transaction():
+                conn.execute(
+                    f"UPDATE doc_mgmt.document SET {sets}, updated_at=now()"
+                    " WHERE external_ref=%s",
+                    [desired[k] for k in al.MUTABLE_DOC_COLS] + [item_id])
+                if str(current.get("status") or "") != str(desired["status"]):
+                    before, after = al._trail_states(current, desired, ["status"])
+                    audit_lib.write_trail(conn, owner, "DOCUMENT_STATUS",
+                                          "document", current["document_id"],
+                                          before, after, None)
+            writeback(g, list_id, item_id,
+                      {"SyncStatus": "Synced", "SyncMessage": "",
+                       "DocID": current["doc_id"]})
+            return f"OK document item {item_id}: updated {current['doc_id']}"
+        if it["SyncStatus"] != "Synced" or it.get("DocID") != current["doc_id"]:
+            if not dry:
+                writeback(g, list_id, item_id,
+                          {"SyncStatus": "Synced", "SyncMessage": "",
+                           "DocID": current["doc_id"]})
+            return f"OK document item {item_id}: healed write-back"
+        return f"OK document item {item_id}: no change"
+    # New item — mint doc_id per (department, type)
+    existing = [r[0] for r in conn.execute(
+        "SELECT doc_id FROM doc_mgmt.document"
+        " WHERE primary_department_id=%s AND document_type_id=%s",
+        (dept_id, type_id)).fetchall()]
+    doc_id = al.next_doc_id(existing, dept_code, it["DocTypeCode"])
+    if dry:
+        return (f"DRY document item {item_id}: would create {doc_id}"
+                f" '{it['Title']}'")
+    document_id = str(uuid.uuid5(NS, f"thg/artifact/document/{item_id}"))
+    row = al.build_document_row(it, type_id, dept_id, owner, approver,
+                                lifecycle_phase, review_cycle, doc_id)
+    cols = ["document_id"] + list(row.keys()) + ["external_ref"]
+    vals = [document_id] + list(row.values()) + [item_id]
+    with conn.transaction():
+        conn.execute(
+            f"INSERT INTO doc_mgmt.document ({', '.join(cols)})"
+            f" VALUES ({', '.join(['%s'] * len(cols))})", vals)
+        audit_lib.write_trail(conn, owner, "DOCUMENT_CREATE", "document",
+                              document_id, None, {"status": row["status"]}, None)
+    writeback(g, list_id, item_id,
+              {"SyncStatus": "Synced", "SyncMessage": "", "DocID": doc_id})
+    return (f"OK new document {doc_id} '{it['Title']}'"
+            f" ({dept_code}/{it['DocTypeCode']}, item {item_id})")
 
 
 def _rows_as_dicts(conn, sql, params=()):

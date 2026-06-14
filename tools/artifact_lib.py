@@ -931,3 +931,43 @@ def build_risk_response_row(it, risk_id, owner_id):
         "due_date": it.get("DueDate") or None,
         "status": it.get("Status") or "Open",
     }
+
+
+# ---------------------------------------------------------------------------
+# Cost Actuals (post-2c, EVM) - per-work-package, per-period actual cost. Child
+# of a WBS element (by WBSCode within a project). Completes the EVM family:
+# AC = SUM(actuals), CPI = EV/AC, EAC = BAC/CPI.
+# ---------------------------------------------------------------------------
+
+COST_CATEGORIES = ["Labor", "Materials", "Services", "Other"]
+
+
+def validate_cost_actual(it):
+    """Return a list of error strings; empty list means valid. The parent WBS
+    element (WBSCode within ProjectCode) is resolved in the sync."""
+    errs = [f"Missing: {k}" for k in ("ProjectCode", "WBSCode", "Period")
+            if _blank(it.get(k))]
+    raw = it.get("Amount")
+    if _blank(raw):
+        errs.append("Missing: Amount")
+    else:
+        try:
+            float(raw)
+        except (TypeError, ValueError):
+            errs.append(f"Amount must be a number: {raw}")
+    if it.get("Category") and it["Category"] not in COST_CATEGORIES:
+        errs.append(f"Category not recognized: {it['Category']}")
+    return errs
+
+
+def build_cost_actual_row(it, wbs_element_id, entered_by_person_id):
+    """Build the cost_actual DB column dict (blank category/notes -> None)."""
+    raw = it.get("Amount")
+    return {
+        "wbs_element_id": wbs_element_id,
+        "period": it["Period"],
+        "amount": float(raw) if raw not in (None, "") else 0.0,
+        "category": it.get("Category") or None,
+        "notes": it.get("Notes") or None,
+        "entered_by_person_id": entered_by_person_id,
+    }

@@ -2135,3 +2135,79 @@ class TestBuildRiskResponseRow:
 
     def test_due_date_preserved(self):
         assert self._row(DueDate="2026-07-01")["due_date"] == "2026-07-01"
+
+
+# === Cost Actuals (EVM) =====================================================
+
+def _ca(**over):
+    """Minimal valid normalized cost-actual item."""
+    base = {
+        "item_id": "1",
+        "ProjectCode": "THG-IT-001",
+        "WBSCode": "1.1",
+        "Period": "2026-06-30",
+        "Amount": "5000.50",
+        "Category": "Labor",
+        "Notes": "May labor.",
+        "EnteredByEmail": "pm@theragen.com",
+        "SyncStatus": "Pending",
+    }
+    base.update(over)
+    return base
+
+
+class TestValidateCostActual:
+    def test_happy(self):
+        assert al.validate_cost_actual(_ca()) == []
+
+    def test_missing_project_code(self):
+        assert any("ProjectCode" in e for e in al.validate_cost_actual(_ca(ProjectCode="")))
+
+    def test_missing_wbs_code(self):
+        assert any("WBSCode" in e for e in al.validate_cost_actual(_ca(WBSCode="  ")))
+
+    def test_missing_period(self):
+        assert any("Period" in e for e in al.validate_cost_actual(_ca(Period=None)))
+
+    def test_missing_amount(self):
+        assert any("Amount" in e for e in al.validate_cost_actual(_ca(Amount="")))
+
+    def test_non_numeric_amount(self):
+        assert any("Amount must be a number" in e
+                   for e in al.validate_cost_actual(_ca(Amount="lots")))
+
+    def test_zero_amount_is_valid(self):
+        assert al.validate_cost_actual(_ca(Amount="0")) == []
+
+    def test_category_optional(self):
+        assert al.validate_cost_actual(_ca(Category="")) == []
+
+    def test_bad_category(self):
+        assert any("Category not recognized" in e
+                   for e in al.validate_cost_actual(_ca(Category="Travel")))
+
+    def test_all_categories_accepted(self):
+        for cat in al.COST_CATEGORIES:
+            assert al.validate_cost_actual(_ca(Category=cat)) == []
+
+
+class TestBuildCostActualRow:
+    def _row(self, **over):
+        return al.build_cost_actual_row(_ca(**over), wbs_element_id="wbs-1",
+                                        entered_by_person_id=3)
+
+    def test_columns_present(self):
+        r = self._row()
+        assert r["wbs_element_id"] == "wbs-1"
+        assert r["period"] == "2026-06-30"
+        assert r["entered_by_person_id"] == 3
+
+    def test_amount_coerced_to_float(self):
+        assert self._row(Amount="5000.50")["amount"] == 5000.50
+        assert self._row(Amount="")["amount"] == 0.0
+
+    def test_category_blank_none(self):
+        assert self._row(Category="")["category"] is None
+
+    def test_notes_blank_none(self):
+        assert self._row(Notes="")["notes"] is None

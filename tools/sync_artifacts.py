@@ -61,6 +61,10 @@ IMPACT_FIELDS = ("Title,ProjectCode,ParentCRCode,Department,ScopeImpact,"
                  "ScheduleImpactDays,CostImpact,QualityImpact,"
                  "SubmittedBy,SubmittedByLookupId,SubmittedDate,"
                  "SyncStatus,SyncMessage")
+DOC_FIELDS = ("Title,DocTypeCode,Subtitle,PrimaryDepartment,Owner,OwnerLookupId,"
+              "Approver,ApproverLookupId,LifecyclePhase,Status,ReviewCycle,"
+              "Classification,StorageSystem,StoragePath,NextReviewDue,IntakeID,"
+              "DocID,SyncStatus,SyncMessage")
 
 
 def _date(v):
@@ -265,6 +269,32 @@ def normalize_impact_assessment(item, people):
     }
 
 
+def normalize_document(item, people):
+    f = item.get("fields", {})
+    created_by = (((item.get("createdBy") or {}).get("user") or {})
+                  .get("email") or "").lower()
+    return {
+        "item_id": item["id"],
+        "Title": f.get("Title") or "",
+        "DocTypeCode": (f.get("DocTypeCode") or "").strip(),
+        "Subtitle": f.get("Subtitle") or None,
+        "PrimaryDepartment": f.get("PrimaryDepartment") or "",
+        # Author-fallback covers the NOT NULL owner_person_id.
+        "OwnerEmail": people.email(f.get("OwnerLookupId")) or created_by,
+        "ApproverEmail": people.email(f.get("ApproverLookupId")),
+        "LifecyclePhase": f.get("LifecyclePhase") or "",
+        "Status": f.get("Status") or "DRAFT",
+        "ReviewCycle": f.get("ReviewCycle") or "",
+        "Classification": f.get("Classification") or "",
+        "StorageSystem": f.get("StorageSystem") or "",
+        "StoragePath": f.get("StoragePath") or "",
+        "NextReviewDue": _date(f.get("NextReviewDue")),
+        "IntakeID": f.get("IntakeID") or None,
+        "DocID": f.get("DocID") or "",
+        "SyncStatus": f.get("SyncStatus") or "Pending",
+    }
+
+
 def writeback(g, list_id, item_id, fields):
     g.patch(f"/sites/{M365['site_id']}/lists/{list_id}/items/{item_id}/fields",
             fields)
@@ -280,6 +310,20 @@ def project_by_code(conn, code):
     return conn.execute(
         "SELECT project_id, primary_department FROM pmbok.project "
         "WHERE project_code=%s", (code,)).fetchone()
+
+
+def department_by_name(conn, name):
+    """Resolve a doc_mgmt.department NAME to (department_id, code) or None."""
+    return conn.execute(
+        "SELECT department_id, code FROM doc_mgmt.department WHERE name=%s",
+        (name,)).fetchone()
+
+
+def document_type_by_code(conn, code):
+    """Resolve a document_type code to (id, lifecycle_phase, default_review_cycle)."""
+    return conn.execute(
+        "SELECT document_type_id, lifecycle_phase, default_review_cycle"
+        " FROM doc_mgmt.document_type WHERE code=%s", (code,)).fetchone()
 
 
 def project_leads(conn, project_id):
@@ -348,6 +392,12 @@ IMPACT_SELECT = ('SELECT external_ref, impact_id, cr_id, department,'
                  ' quality_impact, submitted_by_person_id, submitted_at'
                  ' FROM pmbok.change_impact_assessment'
                  ' WHERE external_ref IS NOT NULL')
+DOC_SELECT = ('SELECT external_ref, document_id, doc_id, document_type_id,'
+              ' primary_department_id, title, subtitle, lifecycle_phase, status,'
+              ' current_version, owner_person_id, approver_person_id,'
+              ' review_cycle, next_review_due, intake_id, classification,'
+              ' storage_system, storage_path'
+              ' FROM doc_mgmt.document WHERE external_ref IS NOT NULL')
 ACTIVITY_SELECT = ('SELECT a.external_ref, a.activity_id, a.wbs_element_id,'
                    ' w.project_id, a.activity_code, a.name, a.start_planned,'
                    ' a.finish_planned, a.start_actual, a.finish_actual,'
@@ -1112,6 +1162,37 @@ def process_impact_assessment(conn, g, it, dry, current):
             f" ({it['ProjectCode']}/{it['Department']}, item {item_id})")
 
 
+def process_document(conn, g, it, dry, current):
+    # T5: validate + resolve (type, dept, owner, approver) + derive lifecycle/cycle;
+    # no writes (the mint/insert/audit/guard write path lands in T6).
+    errs = al.validate_document(it)
+    dtype = (document_type_by_code(conn, it["DocTypeCode"])
+             if it["DocTypeCode"] else None)
+    if it["DocTypeCode"] and not dtype:
+        errs.append(f"Unknown DocTypeCode: {it['DocTypeCode']}")
+    dept = (department_by_name(conn, it["PrimaryDepartment"])
+            if it["PrimaryDepartment"] else None)
+    if it["PrimaryDepartment"] and not dept:
+        errs.append(f"Unknown PrimaryDepartment: {it['PrimaryDepartment']}")
+    owner = (person_id_by_email(conn, it["OwnerEmail"])
+             if it["OwnerEmail"] else None)
+    if it["OwnerEmail"] and not owner:
+        errs.append(f"Owner {it['OwnerEmail']} not in person directory")
+    approver = (person_id_by_email(conn, it["ApproverEmail"])
+                if it["ApproverEmail"] else None)
+    if it["ApproverEmail"] and not approver:
+        errs.append(f"Approver {it['ApproverEmail']} not in person directory")
+    if errs:
+        return _error(g, M365["document_list_id"], it, errs, dry, "document")
+    type_id, type_phase, type_cycle = dtype
+    dept_id, dept_code = dept
+    lifecycle_phase = it["LifecyclePhase"] or type_phase
+    review_cycle = it["ReviewCycle"] or type_cycle
+    return (f"DRY document item {it['item_id']}: {it['DocTypeCode']}/{dept_code}"
+            f" '{it['Title']}' (phase {lifecycle_phase}, {review_cycle});"
+            f" no writes (stub)")
+
+
 def _rows_as_dicts(conn, sql, params=()):
     """Execute sql, return list of dicts keyed by column name.
 
@@ -1470,6 +1551,9 @@ ARTIFACTS = [
     {"kind": "phase_gate", "list_key": "phase_gate_list_id",
      "fields": PHASE_GATE_FIELDS, "normalize": normalize_phase_gate,
      "process": process_phase_gate, "select": PHASE_GATE_SELECT},
+    {"kind": "document", "list_key": "document_list_id",
+     "fields": DOC_FIELDS, "normalize": normalize_document,
+     "process": process_document, "select": DOC_SELECT},
 ]
 
 

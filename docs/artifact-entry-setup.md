@@ -1,4 +1,4 @@
-# Artifact Entry Setup — Risks, Milestones, Status Reports, Project Activities, Change Requests, Decisions, Baselines, Phase Gates, Change Impact Assessments, Controlled Documents
+# Artifact Entry Setup — Risks, Milestones, Status Reports, Project Activities, Change Requests, Decisions, Baselines, Phase Gates, Change Impact Assessments, Controlled Documents, Document RACI
 
 This is the PM-facing reference for filling in the four execution-artifact SharePoint
 Lists that feed the **Project Status Report** Power BI page. The daily 5:40 AM sync
@@ -26,6 +26,7 @@ access (creating and editing items) requires at minimum Edit permission on the s
 | **Project Phase Gates** | One row per lifecycle-phase handoff per project — see §O |
 | **Change Impact Assessments** | One row per department's impact statement on a change request — see §P |
 | **Controlled Documents** | One row per controlled document (org-wide; minted DocID) — see §Q |
+| **Document RACI** | One row per (document, department) R/A/C/I assignment — see §R |
 
 All these Lists live on the root SharePoint site (same site as Project Intake).
 
@@ -1057,6 +1058,51 @@ the version sync, not by this List.
 
 ---
 
+## R. Document RACI
+
+The PMO records a document's **responsibility matrix** in the **Document RACI** List — one row per
+(document, department, role). Each row attaches an effective-dated **R/A/C/I** role to a controlled
+document for one department: who is **R**esponsible, **A**ccountable, **C**onsulted, or **I**nformed.
+
+### Required columns
+
+| Column | Type | Notes |
+|--------|------|-------|
+| **ParentDocID** | Text | The `DocID` of the parent document (e.g. `THG-OPS-CHR-001`) — must already exist (see §Q) |
+| **Department** | Choice | The department holding the role (one of the eight) |
+| **Role** | Choice | `R` / `A` / `C` / `I` (Responsible / Accountable / Consulted / Informed) |
+
+### Optional columns
+
+| Column | Type | Notes |
+|--------|------|-------|
+| **Touchpoint** | Multi-line text | What the department does on this document (e.g. "Owns and approves the charter") |
+| **ValidFrom** | Date | Effective-from date; **defaults to the item's created date** when blank |
+| **ValidTo** | Date | Effective-to date; leave blank for an open-ended (still-current) assignment |
+
+### Parent link + the no-reparent rule
+
+The sync resolves the parent document by its globally-unique `DocID`; an unknown id is rejected with
+`Unknown ParentDocID: <id>`. Once a row has synced, its **parent document is fixed**: editing
+`ParentDocID` to point at a different document is rejected with `ParentDocID changed after sync -
+create a new RACI assignment instead`. The Department, Role, Touchpoint, and dates all edit in place.
+
+### Assignee is a department; no audit
+
+RACI is recorded **per department**, not per person. A row is **descriptive assignment metadata**, so
+— like Change Impact Assessments — it is **not** written to the audit trail. (RACI best practice is
+exactly one **Accountable** per document; the system records the matrix as authored and does not
+enforce that in v1.)
+
+### Read-only write-back columns
+
+| Column | Meaning |
+|--------|---------|
+| **SyncStatus** | `Pending` → `Synced` (success) or `Error` (see §H) |
+| **SyncMessage** | Human-readable error detail (e.g. an unknown parent document); blank on success |
+
+---
+
 ## Appendix — sync behaviour reference
 
 | Scenario | sync_artifacts.py behaviour |
@@ -1090,4 +1136,8 @@ the version sync, not by this List.
 | Document, unknown DocTypeCode / PrimaryDepartment | Writes `Error: Unknown DocTypeCode/PrimaryDepartment` |
 | Document, status (or other field) changed | Updates DB row; writes `DOCUMENT_STATUS` audit on a status change; heals write-back |
 | Document, DocTypeCode/PrimaryDepartment changed after sync | Writes `Error: ...changed after sync - create a new document instead` |
+| New RACI assignment, valid | Resolves the parent document by DocID + the department; inserts row; writes `Synced` back (no code) |
+| RACI, unknown ParentDocID / Department | Writes `Error: Unknown ParentDocID/Department` |
+| RACI, fields changed (same document) | Updates DB row; heals write-back; writes `Synced` |
+| RACI, re-parented after sync | Writes `Error: ParentDocID changed after sync - create a new RACI assignment instead` |
 | `--dry-run` flag | Prints intent only; no DB writes; no List writes |

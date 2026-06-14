@@ -732,6 +732,36 @@ table _Measures
 		displayFolder: Change
 		lineageTag: d1486865-f1a0-55dc-96de-d2cfe1afa0e4
 
+	/// Count of controlled documents.
+	measure 'Controlled Documents' = COUNTROWS('Controlled Document')
+		formatString: #,0
+		displayFolder: Documents
+		lineageTag: d54d91f1-8d37-5f70-abea-94006c539899
+
+	/// Documents in DRAFT.
+	measure 'Draft Documents' = CALCULATE([Controlled Documents], 'Controlled Document'[Status] = "DRAFT")
+		formatString: #,0
+		displayFolder: Documents
+		lineageTag: bcc85fab-8d8a-5b43-a6f8-c2b61d850102
+
+	/// Documents at BASELINE.
+	measure 'Baseline Documents' = CALCULATE([Controlled Documents], 'Controlled Document'[Status] = "BASELINE")
+		formatString: #,0
+		displayFolder: Documents
+		lineageTag: 5d65c7db-b12e-55d2-8b8c-43e2217019f5
+
+	/// Documents retired.
+	measure 'Retired Documents' = CALCULATE([Controlled Documents], 'Controlled Document'[Status] = "RETIRED")
+		formatString: #,0
+		displayFolder: Documents
+		lineageTag: 9495c90c-f914-5c95-844b-3e95e865267b
+
+	/// Active documents past their next review date.
+	measure 'Documents Due for Review' = CALCULATE([Controlled Documents], FILTER('Controlled Document', NOT ISBLANK('Controlled Document'[Next Review Due]) && 'Controlled Document'[Next Review Due] <= TODAY() && 'Controlled Document'[Status] <> "RETIRED"))
+		formatString: #,0
+		displayFolder: Documents
+		lineageTag: 0e28cfdb-83bf-5620-8134-6265dce80c96
+
 	partition _Measures = m
 		mode: import
 		source =

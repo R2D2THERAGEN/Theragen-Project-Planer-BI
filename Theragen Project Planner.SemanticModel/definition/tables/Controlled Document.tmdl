@@ -1,0 +1,159 @@
+/// Fact - controlled-document register (doc_mgmt spine). One row per controlled document, org-wide.
+table 'Controlled Document'
+	lineageTag: 81d98dce-81c0-5c07-bd5a-d81ed357382d
+
+	column 'Document ID'
+		dataType: string
+		isHidden
+		lineageTag: 3395c89f-1f07-5a1a-88dd-f88249f8d8ce
+		summarizeBy: none
+		sourceColumn: Document ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Doc ID'
+		dataType: string
+		lineageTag: 040061b7-cf81-5849-a591-597b730bea64
+		summarizeBy: none
+		sourceColumn: Doc ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Document Type'
+		dataType: string
+		lineageTag: 1cf5c4d9-50bc-5252-a493-1b3e4591e57a
+		summarizeBy: none
+		sourceColumn: Document Type
+
+		annotation SummarizationSetBy = User
+
+	column Department
+		dataType: string
+		lineageTag: ce11e2a3-b133-5bd3-9689-a3bba8125cab
+		summarizeBy: none
+		sourceColumn: Department
+
+		annotation SummarizationSetBy = User
+
+	column Title
+		dataType: string
+		lineageTag: 6f9fde86-c7bd-53ba-b275-2ac77c60d4c0
+		summarizeBy: none
+		sourceColumn: Title
+
+		annotation SummarizationSetBy = User
+
+	column Subtitle
+		dataType: string
+		lineageTag: 2474b047-734b-5946-8809-751af3cab537
+		summarizeBy: none
+		sourceColumn: Subtitle
+
+		annotation SummarizationSetBy = User
+
+	column 'Lifecycle Phase'
+		dataType: string
+		lineageTag: 3ac06c4e-1f0c-50ae-af98-19b514846fca
+		summarizeBy: none
+		sourceColumn: Lifecycle Phase
+
+		annotation SummarizationSetBy = User
+
+	column Status
+		dataType: string
+		lineageTag: e4d7eed6-1de1-5232-bf6e-0597ce82b7b2
+		summarizeBy: none
+		sourceColumn: Status
+
+		annotation SummarizationSetBy = User
+
+	column 'Current Version'
+		dataType: string
+		lineageTag: c99af174-7e06-5908-bac5-b5339aa79c2b
+		summarizeBy: none
+		sourceColumn: Current Version
+
+		annotation SummarizationSetBy = User
+
+	column Owner
+		dataType: string
+		lineageTag: dcab9298-7d54-5d13-a127-f474237865a6
+		summarizeBy: none
+		sourceColumn: Owner
+
+		annotation SummarizationSetBy = User
+
+	column Approver
+		dataType: string
+		lineageTag: e2c33659-e342-51d6-a741-f63f211fc21d
+		summarizeBy: none
+		sourceColumn: Approver
+
+		annotation SummarizationSetBy = User
+
+	column 'Review Cycle'
+		dataType: string
+		lineageTag: 65889601-7fd6-50a5-8fb9-49b13537dcb6
+		summarizeBy: none
+		sourceColumn: Review Cycle
+
+		annotation SummarizationSetBy = User
+
+	column 'Next Review Due'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 1077c6c9-a185-53a1-82ed-b23808e485d6
+		summarizeBy: none
+		sourceColumn: Next Review Due
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Classification
+		dataType: string
+		lineageTag: d08a1200-094f-5c3a-b1c1-74d676ba9a7f
+		summarizeBy: none
+		sourceColumn: Classification
+
+		annotation SummarizationSetBy = User
+
+	column 'Storage System'
+		dataType: string
+		lineageTag: 56444bbb-e33e-544c-93e2-fd2ad83d695d
+		summarizeBy: none
+		sourceColumn: Storage System
+
+		annotation SummarizationSetBy = User
+
+	column 'Storage Path'
+		dataType: string
+		lineageTag: ad0caeb9-48af-5126-acd0-1a17f2448093
+		summarizeBy: none
+		sourceColumn: Storage Path
+
+		annotation SummarizationSetBy = User
+
+	column 'Created Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 72afd84a-8e66-5daa-8057-64f95b390098
+		summarizeBy: none
+		sourceColumn: Created Date
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition 'Controlled Document' = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "document"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"document_id", "doc_id", "doc_type_name", "primary_department", "title", "subtitle", "lifecycle_phase", "status", "current_version", "owner_name", "approver_name", "review_cycle", "next_review_due", "classification", "storage_system", "storage_path", "created_at"}),
+				    Renamed = Table.RenameColumns(Selected, {{"document_id", "Document ID"}, {"doc_id", "Doc ID"}, {"doc_type_name", "Document Type"}, {"primary_department", "Department"}, {"title", "Title"}, {"subtitle", "Subtitle"}, {"lifecycle_phase", "Lifecycle Phase"}, {"status", "Status"}, {"current_version", "Current Version"}, {"owner_name", "Owner"}, {"approver_name", "Approver"}, {"review_cycle", "Review Cycle"}, {"next_review_due", "Next Review Due"}, {"classification", "Classification"}, {"storage_system", "Storage System"}, {"storage_path", "Storage Path"}, {"created_at", "Created Date"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table

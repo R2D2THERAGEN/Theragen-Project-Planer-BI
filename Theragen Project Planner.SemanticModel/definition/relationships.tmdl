@@ -163,3 +163,7 @@ relationship 22ba022c-5b6a-5cea-8836-4040864a9fe7
 	fromColumn: 'Change Impact Assessment'.'CR ID'
 	toColumn: 'Change Request'.'CR ID'
 
+relationship 4b66ef03-05bf-548d-afe3-0434f1ac575a
+	fromColumn: 'Controlled Document'.Department
+	toColumn: Department.Department
+

@@ -88,7 +88,7 @@ Confirmed from Windows Task Scheduler (2026-06-14):
 **Critical distinctions:**
 - The dataset **refresh is data-only** and is a **Power BI Service** control surface, **not** a Windows task. It cannot surface schema/model changes.
 - A **republish** is a **manual** Desktop step and is the only way model/security/description changes go live.
-- **Runtime-copy note (open item):** the two scheduled tasks execute from `C:\Users\Allen\OneDrive\…\Theragen-Project-Planer-BI`, while the canonical git repo is the relocated **D:** archive. A code/automation change is therefore **not deployed by `git commit` alone** — the runtime C: copy must reflect the committed change (via a `git pull` in that clone, or whatever sync keeps C: current). **TODO: confirm and document the C:↔D: relationship** and the exact step that propagates a commit to the runtime copy.
+- **Runtime copy = canonical repo (resolved 2026-06-14):** the repo lives at **`D:\GitHub\Theragen-Project-Planer-BI`** (off OneDrive), and both scheduled tasks run their wrappers **from that same path** — so the runtime copy *is* the git working tree. A code/automation change is therefore deployed simply by committing to that working tree (no separate copy to keep in sync). _Incident history:_ the tasks previously pointed at a `C:\…\OneDrive\…\Theragen-Project-Planer-BI` copy that OneDrive dehydration **wiped on 2026-06-13**, silently failing the 05:30/05:40 syncs (`0x1`) until they were repointed to D: on 2026-06-14. **Rule: never host the runtime repo inside a OneDrive-synced folder.**
 
 ---
 

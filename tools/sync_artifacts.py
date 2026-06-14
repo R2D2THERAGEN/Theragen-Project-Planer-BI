@@ -65,6 +65,8 @@ DOC_FIELDS = ("Title,DocTypeCode,Subtitle,PrimaryDepartment,Owner,OwnerLookupId,
               "Approver,ApproverLookupId,LifecyclePhase,Status,ReviewCycle,"
               "Classification,StorageSystem,StoragePath,NextReviewDue,IntakeID,"
               "DocID,SyncStatus,SyncMessage")
+RACI_FIELDS = ("Title,ParentDocID,Department,Role,Touchpoint,ValidFrom,ValidTo,"
+               "SyncStatus,SyncMessage")
 
 
 def _date(v):
@@ -295,6 +297,23 @@ def normalize_document(item, people):
     }
 
 
+def normalize_raci(item, people):
+    f = item.get("fields", {})
+    # ValidFrom defaults to createdDateTime date when blank (NOT NULL column).
+    created_date = (item.get("createdDateTime") or "")[:10] or None
+    return {
+        "item_id": item["id"],
+        "Title": f.get("Title") or "",
+        "ParentDocID": (f.get("ParentDocID") or "").strip(),
+        "Department": f.get("Department") or "",
+        "Role": (f.get("Role") or "").strip(),
+        "Touchpoint": f.get("Touchpoint") or None,
+        "ValidFrom": _date(f.get("ValidFrom")) or created_date,
+        "ValidTo": _date(f.get("ValidTo")),
+        "SyncStatus": f.get("SyncStatus") or "Pending",
+    }
+
+
 def writeback(g, list_id, item_id, fields):
     g.patch(f"/sites/{M365['site_id']}/lists/{list_id}/items/{item_id}/fields",
             fields)
@@ -324,6 +343,14 @@ def document_type_by_code(conn, code):
     return conn.execute(
         "SELECT document_type_id, lifecycle_phase, default_review_cycle"
         " FROM doc_mgmt.document_type WHERE code=%s", (code,)).fetchone()
+
+
+def resolve_parent_document(conn, doc_id):
+    """Resolve a document by its globally-unique doc_id -> document_id or None."""
+    row = conn.execute(
+        "SELECT document_id FROM doc_mgmt.document WHERE doc_id=%s",
+        (doc_id,)).fetchone()
+    return row[0] if row else None
 
 
 def project_leads(conn, project_id):
@@ -398,6 +425,9 @@ DOC_SELECT = ('SELECT external_ref, document_id, doc_id, document_type_id,'
               ' review_cycle, next_review_due, intake_id, classification,'
               ' storage_system, storage_path'
               ' FROM doc_mgmt.document WHERE external_ref IS NOT NULL')
+RACI_SELECT = ('SELECT external_ref, raci_id, document_id, department_id, role,'
+               ' touchpoint, valid_from, valid_to'
+               ' FROM doc_mgmt.raci_assignment WHERE external_ref IS NOT NULL')
 ACTIVITY_SELECT = ('SELECT a.external_ref, a.activity_id, a.wbs_element_id,'
                    ' w.project_id, a.activity_code, a.name, a.start_planned,'
                    ' a.finish_planned, a.start_actual, a.finish_actual,'
@@ -1253,6 +1283,23 @@ def process_document(conn, g, it, dry, current):
             f" ({dept_code}/{it['DocTypeCode']}, item {item_id})")
 
 
+def process_raci_assignment(conn, g, it, dry, current):
+    # T4: validate + resolve (document, department); no writes yet (T5 write path).
+    errs = al.validate_raci(it)
+    document_id = (resolve_parent_document(conn, it["ParentDocID"])
+                   if it["ParentDocID"] else None)
+    if it["ParentDocID"] and document_id is None:
+        errs.append(f"Unknown ParentDocID: {it['ParentDocID']}")
+    dept = (department_by_name(conn, it["Department"])
+            if it["Department"] else None)
+    if it["Department"] and not dept:
+        errs.append(f"Unknown Department: {it['Department']}")
+    if errs:
+        return _error(g, M365["raci_list_id"], it, errs, dry, "raci")
+    return (f"DRY raci item {it['item_id']}: {it['Role']} for {it['Department']}"
+            f" on {it['ParentDocID']}; no writes (stub)")
+
+
 def _rows_as_dicts(conn, sql, params=()):
     """Execute sql, return list of dicts keyed by column name.
 
@@ -1614,6 +1661,9 @@ ARTIFACTS = [
     {"kind": "document", "list_key": "document_list_id",
      "fields": DOC_FIELDS, "normalize": normalize_document,
      "process": process_document, "select": DOC_SELECT},
+    {"kind": "raci", "list_key": "raci_list_id",
+     "fields": RACI_FIELDS, "normalize": normalize_raci,
+     "process": process_raci_assignment, "select": RACI_SELECT},
 ]
 
 

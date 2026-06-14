@@ -1,4 +1,4 @@
-# Artifact Entry Setup — Risks, Milestones, Status Reports, Project Activities, Change Requests, Decisions, Baselines, Phase Gates, Change Impact Assessments, Controlled Documents, Document RACI, Document Versions, Document Approvals, Governance Change Requests, Governance Change Assessments, Risk Responses, Cost Actuals
+# Artifact Entry Setup — Risks, Milestones, Status Reports, Project Activities, Change Requests, Decisions, Baselines, Phase Gates, Change Impact Assessments, Controlled Documents, Document RACI, Document Versions, Document Approvals, Governance Change Requests, Governance Change Assessments, Risk Responses, Cost Actuals, Report Access
 
 This is the PM-facing reference for filling in the four execution-artifact SharePoint
 Lists that feed the **Project Status Report** Power BI page. The daily 5:40 AM sync
@@ -33,6 +33,7 @@ access (creating and editing items) requires at minimum Edit permission on the s
 | **Governance Change Assessments** | One row per department's impact statement on a governance CR — see §V |
 | **Risk Responses** | One row per risk response action (child of a risk) — see §X |
 | **Cost Actuals** | One row per actual cost (work package × period) — the EVM AC feed — see §Y |
+| **Report Access** | One row per RLS access grant (user → Project / Department / All) — see §Z |
 
 All these Lists live on the root SharePoint site (same site as Project Intake).
 
@@ -1393,6 +1394,44 @@ editable. No audit-trail entry (actuals are descriptive content). `AC = SUM(Amou
 
 ---
 
+## Z. Report Access (Row-Level Security)
+
+Who can see which projects is **authored data**, not a hardcoded rule. Each row of the **Report Access**
+List → `pmbok.report_access` is a **grant**; the Power BI **"Scoped Viewer"** model role reads the active
+grants via `USERPRINCIPALNAME()` and filters `Project` (which propagates to every fact). **Default-deny:**
+with RLS on, a user with no grant sees nothing. A user gets the **union** of their grants.
+
+### Columns
+
+| Column | Type | Notes |
+|--------|------|-------|
+| **UserEmail** | Text | The grantee's UPN / email (must match how they sign in — e.g. `p.nair@theragen.com`). Lower-cased on sync |
+| **ScopeType** | Choice | `Project` / `Department` / `All` |
+| **ScopeValue** | Text | A **ProjectCode** (for `Project`), a **Department name** (for `Department`), or **blank** (for `All`). Airlocked — an unknown project/department is an error |
+| **Active** | Choice | `Yes` (default) / `No` — soft-disable a grant without deleting it |
+| **GrantedBy** | Person | Who authored the grant; **falls back to the item author** |
+
+### Behaviour
+
+Authored content (no parent-child). Each change is **audited**: `ACCESS_GRANT` on create / re-activation,
+`ACCESS_REVOKE` on deactivation, `ACCESS_CHANGE` on a scope edit (`doc_mgmt.audit_trail_entry`).
+Examples: a contractor scoped to one project = `(them, Project, THG-IT-005)`; a department lead =
+`(them, Department, IT / Data / Security)`; the PMO = `(them, All, ⌀)`.
+
+### Turning RLS on (Service, out-of-band — Allen)
+
+1. **Republish** the model so the `Report Access` table + the two roles exist in the Service.
+2. **Test first in Desktop**: *Modeling → View as → Scoped Viewer*, with a sample UPN, and confirm a
+   Project / Department / All grantee each sees exactly the right projects (and an ungranted user sees
+   none).
+3. **Seed the PMO `All` grants BEFORE sharing** — default-deny means an unconfigured admin is locked
+   out. Assign users / Entra groups to **Scoped Viewer** (and admins to **All Access**) under the
+   dataset's Security in the workspace.
+4. RLS only takes effect for users opening the report under **their own** identity — it is inert for the
+   shared `richard.allen` refresh account.
+
+---
+
 ## W. Governance health digest
 
 `tools/governance_health.py` is a **read-only** exceptions report that surfaces the governance items
@@ -1483,4 +1522,8 @@ stdout into your mail step — it is plain text and self-contained.
 | New cost actual, valid | Resolves the WBS work package by (ProjectCode, WBSCode); inserts row; writes `Synced` back (no code, no audit) |
 | Cost actual, unknown WBSCode | Writes `Error: Unknown WBSCode <code> for project <code>` |
 | Cost actual, re-parented after sync | Writes `Error: Reparenting not allowed; create a new cost actual` |
+| New access grant, valid | Inserts row; writes `ACCESS_GRANT` audit; writes `Synced` back (no code) |
+| Access grant, unknown ScopeValue | Writes `Error: Unknown ScopeValue (ProjectCode/Department): <value>` |
+| Access grant, Active toggled No / Yes | Updates row; writes `ACCESS_REVOKE` / `ACCESS_GRANT` audit |
+| Access grant, scope edited | Updates row; writes `ACCESS_CHANGE` audit |
 | `--dry-run` flag | Prints intent only; no DB writes; no List writes |

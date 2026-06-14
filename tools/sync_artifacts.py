@@ -1422,7 +1422,6 @@ def process_raci_assignment(conn, g, it, dry, current):
 
 
 def process_document_version(conn, g, it, dry, current):
-    # T4: validate + resolve (document, author); no writes yet (T5 write path).
     errs = al.validate_version(it)
     document_id = (resolve_parent_document(conn, it["ParentDocID"])
                    if it["ParentDocID"] else None)
@@ -1434,8 +1433,65 @@ def process_document_version(conn, g, it, dry, current):
         errs.append(f"Author {it['AuthorEmail']} not in person directory")
     if errs:
         return _error(g, M365["version_list_id"], it, errs, dry, "version")
-    return (f"DRY version item {it['item_id']}: {it['ParentDocID']} v{it['Version']}"
-            f" ({it['Status']}); no writes (stub)")
+    item_id = it["item_id"]
+    list_id = M365["version_list_id"]
+    desired = al.build_version_row(it, document_id, author)
+    mut = ["status", "change_summary", "change_class", "author_person_id",
+           "effective_date", "storage_path"]
+
+    if current:
+        # Immutable identity: (document_id, version) defines the version row.
+        if (str(current["document_id"]) != str(document_id)
+                or str(current["version"]) != str(it["Version"])):
+            return _error(g, list_id, it,
+                          ["ParentDocID/Version changed after sync - create a new"
+                           " version instead"], dry, "version")
+        slim = {k: desired[k] for k in mut}
+        if al.row_changed(current, slim):
+            if dry:
+                return f"DRY version item {item_id}: would update v{it['Version']}"
+            sets = ", ".join(f"{k}=%s" for k in mut)
+            with conn.transaction():
+                conn.execute(
+                    f"UPDATE doc_mgmt.document_version SET {sets}"
+                    " WHERE external_ref=%s", [slim[k] for k in mut] + [item_id])
+                if str(current.get("status") or "") != str(slim["status"]):
+                    before, after = al._trail_states(current, slim, ["status"])
+                    audit_lib.write_trail(conn, author, "VERSION_STATUS",
+                                          "document_version", current["version_id"],
+                                          before, after, None)
+            writeback(g, list_id, item_id,
+                      {"SyncStatus": "Synced", "SyncMessage": ""})
+            return f"OK version item {item_id}: updated v{it['Version']}"
+        if it["SyncStatus"] != "Synced":
+            if not dry:
+                writeback(g, list_id, item_id,
+                          {"SyncStatus": "Synced", "SyncMessage": ""})
+            return f"OK version item {item_id}: healed write-back"
+        return f"OK version item {item_id}: no change"
+    # New item
+    if dry:
+        return (f"DRY version item {item_id}: would create {it['ParentDocID']}"
+                f" v{it['Version']}")
+    version_id = str(uuid.uuid5(NS, f"thg/artifact/version/{item_id}"))
+    with conn.transaction():
+        conn.execute(
+            "INSERT INTO doc_mgmt.document_version"
+            " (version_id, document_id, version, status, change_summary,"
+            " change_class, linked_cr_id, author_person_id, effective_date,"
+            " storage_path, external_ref)"
+            " VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+            (version_id, desired["document_id"], desired["version"],
+             desired["status"], desired["change_summary"], desired["change_class"],
+             desired["linked_cr_id"], desired["author_person_id"],
+             desired["effective_date"], desired["storage_path"], item_id))
+        audit_lib.write_trail(
+            conn, author, "VERSION_CREATE", "document_version", version_id,
+            None, {"version": desired["version"], "status": desired["status"]},
+            None)
+    writeback(g, list_id, item_id, {"SyncStatus": "Synced", "SyncMessage": ""})
+    return (f"OK new version {it['ParentDocID']} v{it['Version']}"
+            f" ({desired['status']}, item {item_id})")
 
 
 def process_document_approval(conn, g, it, dry, current):

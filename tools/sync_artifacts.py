@@ -1495,7 +1495,6 @@ def process_document_version(conn, g, it, dry, current):
 
 
 def process_document_approval(conn, g, it, dry, current):
-    # T4: validate + resolve (document, version, approver); no writes yet (T6).
     errs = al.validate_approval(it)
     document_id = (resolve_parent_document(conn, it["ParentDocID"])
                    if it["ParentDocID"] else None)
@@ -1513,8 +1512,48 @@ def process_document_approval(conn, g, it, dry, current):
         errs.append(f"Approver {it['ApproverEmail']} not in person directory")
     if errs:
         return _error(g, M365["approval_list_id"], it, errs, dry, "approval")
-    return (f"DRY approval item {it['item_id']}: {it['SignatureMeaning']} on"
-            f" {it['ParentDocID']} v{it['ParentVersion']}; no writes (stub)")
+    item_id = it["item_id"]
+    list_id = M365["approval_list_id"]
+
+    # ---- existing (already synced) branch: append-once / immutable ----
+    if current:
+        # An attestation, once signed, is frozen: the esig_hash is never
+        # recomputed and List edits do not propagate. Heal a lost write-back only.
+        if it["SyncStatus"] != "Synced":
+            if not dry:
+                writeback(g, list_id, item_id,
+                          {"SyncStatus": "Synced", "SyncMessage": ""})
+            return f"OK approval item {item_id}: healed write-back"
+        return (f"OK approval item {item_id}: no change"
+                " (attestation is immutable; create a new approval to re-sign)")
+
+    # ---- new branch: compute + freeze the attestation ----
+    if dry:
+        return (f"DRY approval item {item_id}: would create {it['SignatureMeaning']}"
+                f" on {it['ParentDocID']} v{it['ParentVersion']}")
+    # Canonical signed_at: the item createdDateTime, truncated to whole seconds
+    # ("…Z"), so the esig_hash is reproducible from the stored TIMESTAMPTZ.
+    signed_at = (it["CreatedAt"] or "")[:19] + "Z"
+    meaning = it.get("SignatureMeaning") or "Approval"
+    esig = al.esig_hash(it["ParentDocID"], it["ParentVersion"],
+                        it["ApproverEmail"], meaning, signed_at)
+    approval_id = str(uuid.uuid5(NS, f"thg/artifact/approval/{item_id}"))
+    row = al.build_approval_row(it, version_id, approver, signed_at, esig)
+    with conn.transaction():
+        conn.execute(
+            "INSERT INTO doc_mgmt.document_approval"
+            " (approval_id, version_id, approver_person_id, signature_meaning,"
+            " signed_at, esig_hash, ip_address, reason, external_ref)"
+            " VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+            (approval_id, row["version_id"], row["approver_person_id"],
+             row["signature_meaning"], row["signed_at"], row["esig_hash"],
+             row["ip_address"], row["reason"], item_id))
+        audit_lib.write_trail(
+            conn, approver, "APPROVAL_SIGN", "document_approval", approval_id,
+            None, {"meaning": meaning, "esig_hash": esig}, None)
+    writeback(g, list_id, item_id, {"SyncStatus": "Synced", "SyncMessage": ""})
+    return (f"OK new approval {meaning} on {it['ParentDocID']}"
+            f" v{it['ParentVersion']} (item {item_id})")
 
 
 def _rows_as_dicts(conn, sql, params=()):

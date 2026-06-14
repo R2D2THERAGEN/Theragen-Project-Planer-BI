@@ -1,0 +1,93 @@
+/// Fact - per-department impact assessments on a governance change request. One row per department's impact statement on a gov CR.
+table 'Governance Change Assessment'
+	lineageTag: 182b42b8-97e7-5ad7-8672-36a9deda634c
+
+	column 'Gov Impact ID'
+		dataType: string
+		isHidden
+		lineageTag: fb2c9d98-9df3-504e-a6b0-e59f004ab7b9
+		summarizeBy: none
+		sourceColumn: Gov Impact ID
+
+		annotation SummarizationSetBy = User
+
+	column 'CR Gov ID'
+		dataType: string
+		isHidden
+		lineageTag: e6d8cc02-2a2c-595b-9d34-fef6e026e576
+		summarizeBy: none
+		sourceColumn: CR Gov ID
+
+		annotation SummarizationSetBy = User
+
+	column 'CR Code'
+		dataType: string
+		lineageTag: b9f1d8bf-6133-554c-90be-d82aee13e71c
+		summarizeBy: none
+		sourceColumn: CR Code
+
+		annotation SummarizationSetBy = User
+
+	column 'Doc ID'
+		dataType: string
+		lineageTag: 019e41a0-73b6-50f4-ada1-d05affa37de1
+		summarizeBy: none
+		sourceColumn: Doc ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Doc Title'
+		dataType: string
+		lineageTag: 5dcb54e1-799b-538b-8943-d8f65ba868fb
+		summarizeBy: none
+		sourceColumn: Doc Title
+
+		annotation SummarizationSetBy = User
+
+	column Department
+		dataType: string
+		lineageTag: 2c0cffbf-a05c-50ac-bc57-d679c5d82df3
+		summarizeBy: none
+		sourceColumn: Department
+
+		annotation SummarizationSetBy = User
+
+	column 'Impact Summary'
+		dataType: string
+		lineageTag: c096c43a-6a43-582c-ba0c-bd3131f104df
+		summarizeBy: none
+		sourceColumn: Impact Summary
+
+		annotation SummarizationSetBy = User
+
+	column 'Compliance Impact'
+		dataType: string
+		lineageTag: ab95d6d5-520a-5888-bf31-43569df1c909
+		summarizeBy: none
+		sourceColumn: Compliance Impact
+
+		annotation SummarizationSetBy = User
+
+	column 'Submitted Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 096d4dc4-d9f5-5433-bd66-4c99f9e4cce8
+		summarizeBy: none
+		sourceColumn: Submitted Date
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition 'Governance Change Assessment' = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "change_assessment_gov"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"gov_impact_id", "cr_gov_id", "cr_code", "doc_id", "doc_title", "department", "impact_summary", "compliance_impact", "submitted_at"}),
+				    Renamed = Table.RenameColumns(Selected, {{"gov_impact_id", "Gov Impact ID"}, {"cr_gov_id", "CR Gov ID"}, {"cr_code", "CR Code"}, {"doc_id", "Doc ID"}, {"doc_title", "Doc Title"}, {"department", "Department"}, {"impact_summary", "Impact Summary"}, {"compliance_impact", "Compliance Impact"}, {"submitted_at", "Submitted Date"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table

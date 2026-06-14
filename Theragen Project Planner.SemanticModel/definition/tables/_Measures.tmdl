@@ -822,6 +822,42 @@ table _Measures
 		displayFolder: Documents
 		lineageTag: 11c5f746-815a-56f2-b7f0-f48c9511e087
 
+	/// Governance change requests against controlled documents (CHG-NNN).
+	measure 'Governance CRs' = COUNTROWS('Governance Change Request')
+		formatString: #,0
+		displayFolder: Change
+		lineageTag: aea05c8b-3236-5d5f-99ec-ee64005a80d8
+
+	/// Governance CRs not yet closed.
+	measure 'Open Governance CRs' = CALCULATE([Governance CRs], 'Governance Change Request'[Status] = "Open")
+		formatString: #,0
+		displayFolder: Change
+		lineageTag: 6c78624e-c5c7-5a24-8c08-929620bb0933
+
+	/// Governance CRs whose decision is Approved.
+	measure 'Approved Governance CRs' = CALCULATE([Governance CRs], 'Governance Change Request'[Decision] = "Approved")
+		formatString: #,0
+		displayFolder: Change
+		lineageTag: ae84623c-56ff-530c-911b-0595a40fe8bd
+
+	/// Governance CRs whose implementation has been verified.
+	measure 'Verified Governance CRs' = CALCULATE([Governance CRs], 'Governance Change Request'[Status] = "Verified")
+		formatString: #,0
+		displayFolder: Change
+		lineageTag: 82158f4f-f5af-5404-8e8c-e84a7dbdbe3e
+
+	/// Per-department impact assessments on governance CRs.
+	measure 'Governance Assessments' = COUNTROWS('Governance Change Assessment')
+		formatString: #,0
+		displayFolder: Change
+		lineageTag: 12ae2f06-effa-5736-b982-afe4a5fff733
+
+	/// Distinct governance CRs that have at least one department assessment.
+	measure 'Assessed Governance CRs' = DISTINCTCOUNT('Governance Change Assessment'[CR Gov ID])
+		formatString: #,0
+		displayFolder: Change
+		lineageTag: d3730271-c3cb-50b6-8d87-e5c635a2b272
+
 	partition _Measures = m
 		mode: import
 		source =

@@ -179,3 +179,11 @@ relationship 5a9a79de-9934-5798-9eaa-0f2a0f0145b6
 	fromColumn: 'Document Approval'.'Version ID'
 	toColumn: 'Document Version'.'Version ID'
 
+relationship 253fdc45-8852-59c1-8ebb-a261d36326aa
+	fromColumn: 'Governance Change Request'.'Document ID'
+	toColumn: 'Controlled Document'.'Document ID'
+
+relationship 4a2e9854-c2d2-5e23-86e7-f306a72159b0
+	fromColumn: 'Governance Change Assessment'.'CR Gov ID'
+	toColumn: 'Governance Change Request'.'CR Gov ID'
+

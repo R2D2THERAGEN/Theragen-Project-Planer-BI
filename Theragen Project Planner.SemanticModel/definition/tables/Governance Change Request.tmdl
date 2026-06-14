@@ -1,0 +1,152 @@
+/// Fact - governance change requests (CHG-NNN) against controlled documents (SOP-003). Document-scoped, project-less; reuses the two-axis Decision/Status workflow.
+table 'Governance Change Request'
+	lineageTag: 81c9d21e-89b9-504e-9b39-14a49edf5a8f
+
+	column 'CR Gov ID'
+		dataType: string
+		isHidden
+		lineageTag: ffdd236b-50ce-580e-babc-fa2c66718613
+		summarizeBy: none
+		sourceColumn: CR Gov ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Document ID'
+		dataType: string
+		isHidden
+		lineageTag: c758eab2-ca30-548a-8489-55b6db0b944a
+		summarizeBy: none
+		sourceColumn: Document ID
+
+		annotation SummarizationSetBy = User
+
+	column 'CR Code'
+		dataType: string
+		lineageTag: f6d8dcf8-f94e-57c8-9080-3c1d998cd54d
+		summarizeBy: none
+		sourceColumn: CR Code
+
+		annotation SummarizationSetBy = User
+
+	column 'Doc ID'
+		dataType: string
+		lineageTag: eb211c82-496d-55fa-ad30-a878178a1b53
+		summarizeBy: none
+		sourceColumn: Doc ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Doc Title'
+		dataType: string
+		lineageTag: dee47172-5391-567f-9628-0c44dda8330b
+		summarizeBy: none
+		sourceColumn: Doc Title
+
+		annotation SummarizationSetBy = User
+
+	column 'Requested Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 50b19ed6-f34a-5d9a-a520-16c4a09f2a94
+		summarizeBy: none
+		sourceColumn: Requested Date
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Requested By'
+		dataType: string
+		lineageTag: e6fa6795-000a-5c17-abab-43b9a85d76f3
+		summarizeBy: none
+		sourceColumn: Requested By
+
+		annotation SummarizationSetBy = User
+
+	column 'CR Class'
+		dataType: string
+		lineageTag: 6d35213e-5f7e-5b80-a13d-f8c452078888
+		summarizeBy: none
+		sourceColumn: CR Class
+
+		annotation SummarizationSetBy = User
+
+	column Description
+		dataType: string
+		lineageTag: 9abc991e-feae-5c8e-bf33-5eaf78bb7c4d
+		summarizeBy: none
+		sourceColumn: Description
+
+		annotation SummarizationSetBy = User
+
+	column Reason
+		dataType: string
+		lineageTag: 8ad793e8-3cf8-574c-843d-13bc55a913ea
+		summarizeBy: none
+		sourceColumn: Reason
+
+		annotation SummarizationSetBy = User
+
+	column Decision
+		dataType: string
+		lineageTag: 29b2ea38-2744-5354-ab8d-c414adcadf7a
+		summarizeBy: none
+		sourceColumn: Decision
+
+		annotation SummarizationSetBy = User
+
+	column 'Decided By'
+		dataType: string
+		lineageTag: 84eeb04f-41ef-5337-bbb2-f5a605ecdb48
+		summarizeBy: none
+		sourceColumn: Decided By
+
+		annotation SummarizationSetBy = User
+
+	column 'Decided Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 74061ced-5171-5429-a0e6-c14c5d701e64
+		summarizeBy: none
+		sourceColumn: Decided Date
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Implementation Verified'
+		dataType: boolean
+		lineageTag: 0df6ae83-4751-5679-9cbc-d05b3d13571d
+		summarizeBy: none
+		sourceColumn: Implementation Verified
+
+		annotation SummarizationSetBy = User
+
+	column Status
+		dataType: string
+		lineageTag: 89fc5fc5-569e-5fd4-9f96-8d0b2eab388b
+		summarizeBy: none
+		sourceColumn: Status
+
+		annotation SummarizationSetBy = User
+
+	column 'Intake ID'
+		dataType: string
+		lineageTag: dde102df-8961-5001-a7d3-a64018d6dc26
+		summarizeBy: none
+		sourceColumn: Intake ID
+
+		annotation SummarizationSetBy = User
+
+	partition 'Governance Change Request' = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "change_request_gov"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"cr_gov_id", "document_id", "cr_code", "doc_id", "doc_title", "requested_at", "requested_by_name", "cr_class", "description", "reason", "decision", "decided_by_name", "decided_at", "implementation_verified", "status", "intake_id"}),
+				    Renamed = Table.RenameColumns(Selected, {{"cr_gov_id", "CR Gov ID"}, {"document_id", "Document ID"}, {"cr_code", "CR Code"}, {"doc_id", "Doc ID"}, {"doc_title", "Doc Title"}, {"requested_at", "Requested Date"}, {"requested_by_name", "Requested By"}, {"cr_class", "CR Class"}, {"description", "Description"}, {"reason", "Reason"}, {"decision", "Decision"}, {"decided_by_name", "Decided By"}, {"decided_at", "Decided Date"}, {"implementation_verified", "Implementation Verified"}, {"status", "Status"}, {"intake_id", "Intake ID"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table

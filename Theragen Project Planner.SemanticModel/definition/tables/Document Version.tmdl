@@ -106,14 +106,22 @@ table 'Document Version'
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	column 'Linked CR'
+		dataType: string
+		lineageTag: 8ed33af9-84c6-5d91-bdca-8a3e137b8dbd
+		summarizeBy: none
+		sourceColumn: Linked CR
+
+		annotation SummarizationSetBy = User
+
 	partition 'Document Version' = m
 		mode: import
 		source =
 				let
 				    Source = PostgreSQL.Database(PgServer, PgDatabase),
 				    Data = Source{[Schema = "bi", Item = "document_version"]}[Data],
-				    Selected = Table.SelectColumns(Data, {"version_id", "document_id", "doc_id", "doc_title", "version", "status", "change_summary", "change_class", "author_name", "effective_date", "storage_path", "created_at"}),
-				    Renamed = Table.RenameColumns(Selected, {{"version_id", "Version ID"}, {"document_id", "Document ID"}, {"doc_id", "Doc ID"}, {"doc_title", "Document Title"}, {"version", "Version"}, {"status", "Status"}, {"change_summary", "Change Summary"}, {"change_class", "Change Class"}, {"author_name", "Author"}, {"effective_date", "Effective Date"}, {"storage_path", "Storage Path"}, {"created_at", "Created Date"}})
+				    Selected = Table.SelectColumns(Data, {"version_id", "document_id", "doc_id", "doc_title", "version", "status", "change_summary", "change_class", "author_name", "effective_date", "storage_path", "created_at", "linked_cr_code"}),
+				    Renamed = Table.RenameColumns(Selected, {{"version_id", "Version ID"}, {"document_id", "Document ID"}, {"doc_id", "Doc ID"}, {"doc_title", "Document Title"}, {"version", "Version"}, {"status", "Status"}, {"change_summary", "Change Summary"}, {"change_class", "Change Class"}, {"author_name", "Author"}, {"effective_date", "Effective Date"}, {"storage_path", "Storage Path"}, {"created_at", "Created Date"}, {"linked_cr_code", "Linked CR"}})
 				in
 				    Renamed
 

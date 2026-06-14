@@ -890,3 +890,44 @@ def build_govassessment_row(it, cr_gov_id, department_id, submitted_at):
         "compliance_impact": it.get("ComplianceImpact") or None,
         "submitted_at": submitted_at,
     }
+
+
+# ---------------------------------------------------------------------------
+# Risk Responses (post-2c) - per-risk response ACTIONS implementing a risk's
+# strategy. Child of a risk (by RiskCode). Distinct from RESPONSE_TYPES, which
+# is the strategy choice on the risk itself; action_type is the action category.
+# ---------------------------------------------------------------------------
+
+RISK_ACTION_TYPES = ["Mitigation", "Transfer", "Acceptance", "Avoidance"]
+RESPONSE_STATUSES = ["Open", "In progress", "Blocked", "Done"]
+
+
+def validate_risk_response(it):
+    """Return a list of error strings; empty list means valid.
+
+    The parent risk (ParentRiskCode within ProjectCode) and the owner are
+    resolved in the sync; here we require the human inputs present + in domain.
+    """
+    errs = [f"Missing: {k}" for k in
+            ("ProjectCode", "ParentRiskCode", "ActionType", "Description")
+            if _blank(it.get(k))]
+    if _blank(it.get("OwnerEmail")):
+        errs.append("Missing: Owner (picker empty and item author unknown)")
+    if it.get("ActionType") and it["ActionType"] not in RISK_ACTION_TYPES:
+        errs.append(f"ActionType not recognized: {it['ActionType']}")
+    st = it.get("Status") or "Open"
+    if st not in RESPONSE_STATUSES:
+        errs.append(f"Status not recognized: {st}")
+    return errs
+
+
+def build_risk_response_row(it, risk_id, owner_id):
+    """Build the risk_response DB column dict (blank due date -> None)."""
+    return {
+        "risk_id": risk_id,
+        "action_type": it["ActionType"],
+        "description": it["Description"],
+        "owner_person_id": owner_id,
+        "due_date": it.get("DueDate") or None,
+        "status": it.get("Status") or "Open",
+    }

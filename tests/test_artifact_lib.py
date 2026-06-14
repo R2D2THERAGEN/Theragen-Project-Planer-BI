@@ -2056,3 +2056,82 @@ class TestBuildGovassessmentRow:
     def test_compliance_preserved_when_set(self):
         r = self._row(ComplianceImpact="ISO 13485 clause 4.2.4")
         assert r["compliance_impact"] == "ISO 13485 clause 4.2.4"
+
+
+# === Risk Responses (post-2c) ==============================================
+
+def _rr(**over):
+    """Minimal valid normalized risk-response item."""
+    base = {
+        "item_id": "1",
+        "ProjectCode": "THG-IT-001",
+        "ParentRiskCode": "R-001",
+        "ActionType": "Mitigation",
+        "Description": "Stand up a fallback sync host.",
+        "OwnerEmail": "pm@theragen.com",
+        "DueDate": "2026-07-01",
+        "Status": "Open",
+        "SyncStatus": "Pending",
+    }
+    base.update(over)
+    return base
+
+
+class TestValidateRiskResponse:
+    def test_happy(self):
+        assert al.validate_risk_response(_rr()) == []
+
+    def test_missing_project_code(self):
+        assert any("ProjectCode" in e for e in al.validate_risk_response(_rr(ProjectCode="")))
+
+    def test_missing_parent_risk(self):
+        assert any("ParentRiskCode" in e
+                   for e in al.validate_risk_response(_rr(ParentRiskCode="  ")))
+
+    def test_missing_action_type(self):
+        assert any("ActionType" in e for e in al.validate_risk_response(_rr(ActionType="")))
+
+    def test_missing_description(self):
+        assert any("Description" in e for e in al.validate_risk_response(_rr(Description=None)))
+
+    def test_owner_empty_flagged(self):
+        assert any("Owner" in e for e in al.validate_risk_response(_rr(OwnerEmail="")))
+
+    def test_bad_action_type(self):
+        # "Mitigate" is the risk STRATEGY (RESPONSE_TYPES), not the action type
+        assert any("ActionType not recognized" in e
+                   for e in al.validate_risk_response(_rr(ActionType="Mitigate")))
+
+    def test_bad_status(self):
+        assert any("Status not recognized" in e
+                   for e in al.validate_risk_response(_rr(Status="Closed")))
+
+    def test_all_action_types_accepted(self):
+        for a in al.RISK_ACTION_TYPES:
+            assert al.validate_risk_response(_rr(ActionType=a)) == []
+
+    def test_all_statuses_accepted(self):
+        for s in al.RESPONSE_STATUSES:
+            assert al.validate_risk_response(_rr(Status=s)) == []
+
+
+class TestBuildRiskResponseRow:
+    def _row(self, **over):
+        return al.build_risk_response_row(_rr(**over), risk_id="risk-1", owner_id=7)
+
+    def test_columns_present(self):
+        r = self._row()
+        assert r["risk_id"] == "risk-1"
+        assert r["action_type"] == "Mitigation"
+        assert r["description"] == "Stand up a fallback sync host."
+        assert r["owner_person_id"] == 7
+
+    def test_status_default_open(self):
+        assert self._row(Status=None)["status"] == "Open"
+
+    def test_due_date_blank_none(self):
+        assert self._row(DueDate="")["due_date"] is None
+        assert self._row(DueDate=None)["due_date"] is None
+
+    def test_due_date_preserved(self):
+        assert self._row(DueDate="2026-07-01")["due_date"] == "2026-07-01"

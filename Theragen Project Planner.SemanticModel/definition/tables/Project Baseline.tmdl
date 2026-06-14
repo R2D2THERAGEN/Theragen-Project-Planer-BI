@@ -70,8 +70,6 @@ table 'Project Baseline'
 
 		annotation SummarizationSetBy = User
 
-		annotation UnderlyingDateTimeDataType = Date
-
 	column 'Baselined By'
 		dataType: string
 		lineageTag: 7ef90217-1610-5698-bbc8-9003e841b238
@@ -110,3 +108,4 @@ table 'Project Baseline'
 				    Renamed
 
 	annotation PBI_ResultType = Table
+

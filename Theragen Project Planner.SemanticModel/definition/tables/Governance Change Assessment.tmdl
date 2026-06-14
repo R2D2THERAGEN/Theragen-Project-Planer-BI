@@ -91,3 +91,4 @@ table 'Governance Change Assessment'
 				    Renamed
 
 	annotation PBI_ResultType = Table
+

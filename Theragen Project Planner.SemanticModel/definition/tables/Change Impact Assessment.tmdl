@@ -109,3 +109,4 @@ table 'Change Impact Assessment'
 				    Renamed
 
 	annotation PBI_ResultType = Table
+

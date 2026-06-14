@@ -143,8 +143,6 @@ table 'Controlled Document'
 
 		annotation SummarizationSetBy = User
 
-		annotation UnderlyingDateTimeDataType = Date
-
 	partition 'Controlled Document' = m
 		mode: import
 		source =
@@ -157,3 +155,4 @@ table 'Controlled Document'
 				    Renamed
 
 	annotation PBI_ResultType = Table
+

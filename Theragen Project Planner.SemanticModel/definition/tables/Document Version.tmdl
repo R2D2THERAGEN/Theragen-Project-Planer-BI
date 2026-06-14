@@ -104,8 +104,6 @@ table 'Document Version'
 
 		annotation SummarizationSetBy = User
 
-		annotation UnderlyingDateTimeDataType = Date
-
 	column 'Linked CR'
 		dataType: string
 		lineageTag: 8ed33af9-84c6-5d91-bdca-8a3e137b8dbd
@@ -126,3 +124,4 @@ table 'Document Version'
 				    Renamed
 
 	annotation PBI_ResultType = Table
+

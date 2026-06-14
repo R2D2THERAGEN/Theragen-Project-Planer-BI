@@ -29,6 +29,10 @@ ref table Stakeholder
 ref table 'Team Member'
 ref table 'Lesson Learned'
 ref table 'Closure Item'
+ref table Date
+ref table 'Recent Accomplishment'
+ref table 'Upcoming Next Step'
+ref table _Measures
 ref table Decision
 ref table 'Project Baseline'
 ref table 'Phase Gate Log'
@@ -39,10 +43,6 @@ ref table 'Document Version'
 ref table 'Document Approval'
 ref table 'Governance Change Request'
 ref table 'Governance Change Assessment'
-ref table Date
-ref table 'Recent Accomplishment'
-ref table 'Upcoming Next Step'
-ref table _Measures
 
 ref cultureInfo en-US
 

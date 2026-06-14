@@ -105,3 +105,4 @@ table 'Document Approval'
 				    Renamed
 
 	annotation PBI_ResultType = Table
+

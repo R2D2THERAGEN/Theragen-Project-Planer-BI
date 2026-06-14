@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "0565f59e381c5e25bc2a",
   "position": {
-    "x": 962,
-    "y": 88,
+    "x": 962.39401496259347,
+    "y": 87.980049875311721,
     "z": 1000,
-    "width": 310,
-    "height": 190
+    "height": 278.30423940149626,
+    "width": 309.72568578553614
   },
   "visual": {
     "visualType": "tableEx",
@@ -44,13 +44,9 @@
         }
       }
     },
-    "drillFilterOtherVisuals": true,
     "objects": {
       "values": [
         {
-          "selector": {
-            "metadata": "_Measures.Latest Area Status"
-          },
           "properties": {
             "fontColorPrimary": {
               "solid": {
@@ -68,6 +64,9 @@
                 }
               }
             }
+          },
+          "selector": {
+            "metadata": "_Measures.Latest Area Status"
           }
         }
       ]
@@ -93,6 +92,7 @@
           }
         }
       ]
-    }
+    },
+    "drillFilterOtherVisuals": true
   }
 }

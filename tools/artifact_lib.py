@@ -563,3 +563,97 @@ def build_phase_gate_row(it, project_id, from_phase, to_phase, approver_id):
             "approved_by_person_id": approver_id,
             "decided_at": it.get("DecidedDate"),
             "gate_notes": it.get("GateNotes")}
+
+
+# ---------------------------------------------------------------------------
+# Controlled Document (2c-3) - org-wide controlled-document register
+# ---------------------------------------------------------------------------
+
+DOC_TYPE_CODES = ["CHR", "SOP", "PLN", "SCP", "RPT", "POL", "WI", "FRM"]
+DOC_STATUSES = ["DRAFT", "REVIEW", "BASELINE", "AMENDED", "RETIRED"]
+DOC_LIFECYCLE_PHASES = ["Initiating", "Planning", "Executing", "Monitoring",
+                        "Closing", "Cross-Lifecycle", "Intake", "Governance",
+                        "Reference"]
+REVIEW_CYCLES = ["Annual", "Semi-Annual", "Quarterly", "Monthly",
+                 "On Major Revision", "On Phase Gate"]
+DOC_CLASSIFICATIONS = ["Public", "Confidential – Internal",
+                       "Confidential – Restricted", "PHI – HIPAA"]
+STORAGE_SYSTEMS = ["PMO SharePoint", "eQMS", "eTMF", "HIPAA-controlled store",
+                   "ERP", "HRIS", "Other"]
+# Columns process_document re-applies on edit (row_changed + UPDATE). Excludes
+# the immutable identity (doc_id / document_type_id / primary_department_id) and
+# current_version (owned by the 2c-5 version sync, not by this surface).
+MUTABLE_DOC_COLS = ["title", "subtitle", "lifecycle_phase", "status",
+                    "owner_person_id", "approver_person_id", "review_cycle",
+                    "next_review_due", "intake_id", "classification",
+                    "storage_system", "storage_path"]
+
+_DOC_ID = re.compile(r"^THG-[A-Z]+-[A-Z]+-(\d{3,})$")
+
+
+def next_doc_id(existing, dept_code, type_code):
+    """Next THG-{dept}-{type}-NNN within one (department, type) family.
+
+    Overflow widens rather than truncates. `existing` is the doc_ids already
+    minted for that family (the caller scopes the SELECT by dept + type).
+    """
+    nums = [int(m.group(1)) for s in existing if s and (m := _DOC_ID.match(s))]
+    n = max(nums) + 1 if nums else 1
+    return f"THG-{dept_code}-{type_code}-{n:03d}"
+
+
+def validate_document(it):
+    """Return a list of error strings; empty list means valid.
+
+    DocTypeCode / PrimaryDepartment / Owner are resolved to ids in the sync;
+    here we require the human inputs present + in domain. LifecyclePhase /
+    ReviewCycle are derived from the type when blank, so they are optional.
+    """
+    errs = [f"Missing: {k}" for k in ("DocTypeCode", "Title", "PrimaryDepartment")
+            if _blank(it.get(k))]
+    if _blank(it.get("OwnerEmail")):
+        errs.append("Missing: Owner (picker empty and item author unknown)")
+    if it.get("DocTypeCode") and it["DocTypeCode"] not in DOC_TYPE_CODES:
+        errs.append(f"DocTypeCode not recognized: {it['DocTypeCode']}")
+    if it.get("PrimaryDepartment") and it["PrimaryDepartment"] not in DEPARTMENTS:
+        errs.append(f"PrimaryDepartment not recognized: {it['PrimaryDepartment']}")
+    for field, domain, label in (
+            ("Status", DOC_STATUSES, "Status"),
+            ("LifecyclePhase", DOC_LIFECYCLE_PHASES, "LifecyclePhase"),
+            ("ReviewCycle", REVIEW_CYCLES, "ReviewCycle"),
+            ("Classification", DOC_CLASSIFICATIONS, "Classification"),
+            ("StorageSystem", STORAGE_SYSTEMS, "StorageSystem")):
+        if it.get(field) and it[field] not in domain:
+            errs.append(f"{label} not recognized: {it[field]}")
+    return errs
+
+
+def build_document_row(it, type_id, dept_id, owner_id, approver_id,
+                       lifecycle_phase, review_cycle, doc_id):
+    """Build the full doc_mgmt.document column dict (used for INSERT).
+
+    type_id / dept_id / owner_id / approver_id are resolved by the caller;
+    lifecycle_phase / review_cycle are the type-derived (or List-overridden)
+    values; doc_id is the minted code. current_version is "0.1" at creation
+    (versioning is owned by 2c-5). storage_path defaults to
+    "{storage_system}/{doc_id}" when blank (the column is NOT NULL).
+    """
+    storage_system = it.get("StorageSystem") or "PMO SharePoint"
+    return {
+        "doc_id": doc_id,
+        "document_type_id": type_id,
+        "primary_department_id": dept_id,
+        "title": it["Title"],
+        "subtitle": it.get("Subtitle") or None,
+        "lifecycle_phase": lifecycle_phase,
+        "status": it.get("Status") or "DRAFT",
+        "current_version": "0.1",
+        "owner_person_id": owner_id,
+        "approver_person_id": approver_id,
+        "review_cycle": review_cycle,
+        "next_review_due": it.get("NextReviewDue") or None,
+        "intake_id": it.get("IntakeID") or None,
+        "classification": it.get("Classification") or "Confidential – Internal",
+        "storage_system": storage_system,
+        "storage_path": it.get("StoragePath") or f"{storage_system}/{doc_id}",
+    }

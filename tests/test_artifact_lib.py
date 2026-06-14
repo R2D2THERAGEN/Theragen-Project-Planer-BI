@@ -1414,3 +1414,147 @@ class TestBuildImpactAssessmentRow:
     def test_scope_preserved_when_set(self):
         row = self._row(ScopeImpact="Adds two cycles")
         assert row["scope_impact"] == "Adds two cycles"
+
+
+# --- Controlled Document (2c-3) ----------------------------------------------
+
+def _document(**over):
+    """Minimal valid normalized controlled-document item (normalizer output:
+    OwnerEmail already resolved from the picker or item-author fallback)."""
+    base = {
+        "item_id": "5",
+        "DocTypeCode": "CHR",
+        "Title": "APNE Project Charter",
+        "Subtitle": "",
+        "PrimaryDepartment": "Operations / PMO",
+        "OwnerEmail": "sponsor@theragen.com",
+        "ApproverEmail": "",
+        "LifecyclePhase": "",
+        "Status": "DRAFT",
+        "ReviewCycle": "",
+        "Classification": "",
+        "StorageSystem": "",
+        "StoragePath": "",
+        "NextReviewDue": None,
+        "IntakeID": "",
+        "DocID": "",
+        "SyncStatus": "Pending",
+    }
+    base.update(over)
+    return base
+
+
+class TestNextDocId:
+    def test_empty_starts_001(self):
+        assert al.next_doc_id([], "OPS", "CHR") == "THG-OPS-CHR-001"
+
+    def test_increments_within_family(self):
+        assert al.next_doc_id(["THG-OPS-CHR-001", "THG-OPS-CHR-002"],
+                              "OPS", "CHR") == "THG-OPS-CHR-003"
+
+    def test_per_family_scoping(self):
+        assert al.next_doc_id([], "IT", "SOP") == "THG-IT-SOP-001"
+
+    def test_widens_past_999(self):
+        assert al.next_doc_id(["THG-OPS-CHR-999"], "OPS", "CHR") == "THG-OPS-CHR-1000"
+
+    def test_ignores_non_matching(self):
+        assert al.next_doc_id(["garbage", "C-001", None, "THG-OPS-CHR-004"],
+                              "OPS", "CHR") == "THG-OPS-CHR-005"
+
+
+class TestValidateDocument:
+    def test_happy_path(self):
+        assert al.validate_document(_document()) == []
+
+    def test_missing_doc_type(self):
+        assert any("DocTypeCode" in e
+                   for e in al.validate_document(_document(DocTypeCode="")))
+
+    def test_missing_title(self):
+        assert any("Title" in e for e in al.validate_document(_document(Title="")))
+
+    def test_missing_department(self):
+        assert any("PrimaryDepartment" in e
+                   for e in al.validate_document(_document(PrimaryDepartment="")))
+
+    def test_missing_owner(self):
+        assert any("Owner" in e for e in al.validate_document(_document(OwnerEmail="")))
+
+    def test_bad_doc_type(self):
+        assert any("DocTypeCode not recognized" in e
+                   for e in al.validate_document(_document(DocTypeCode="XXX")))
+
+    def test_bad_department(self):
+        assert any("PrimaryDepartment not recognized" in e
+                   for e in al.validate_document(_document(PrimaryDepartment="Legal")))
+
+    def test_bad_status(self):
+        assert any("Status not recognized" in e
+                   for e in al.validate_document(_document(Status="PUBLISHED")))
+
+    def test_bad_lifecycle(self):
+        assert any("LifecyclePhase not recognized" in e
+                   for e in al.validate_document(_document(LifecyclePhase="Wrapping")))
+
+    def test_bad_review_cycle(self):
+        assert any("ReviewCycle not recognized" in e
+                   for e in al.validate_document(_document(ReviewCycle="Hourly")))
+
+    def test_blank_optional_domains_ok(self):
+        assert al.validate_document(_document(
+            LifecyclePhase="", ReviewCycle="", Classification="",
+            StorageSystem="")) == []
+
+    def test_all_doc_types_accepted(self):
+        for c in al.DOC_TYPE_CODES:
+            assert al.validate_document(_document(DocTypeCode=c)) == [], \
+                f"type {c} should be valid"
+
+
+class TestBuildDocumentRow:
+    def _row(self, **over):
+        it = _document(**over)
+        return al.build_document_row(
+            it, type_id="t", dept_id="d", owner_id="o", approver_id=None,
+            lifecycle_phase="Initiating", review_cycle="On Major Revision",
+            doc_id="THG-OPS-CHR-001")
+
+    def test_identity_and_fks(self):
+        r = self._row()
+        assert r["doc_id"] == "THG-OPS-CHR-001"
+        assert r["document_type_id"] == "t"
+        assert r["primary_department_id"] == "d"
+        assert r["owner_person_id"] == "o"
+        assert r["approver_person_id"] is None
+
+    def test_current_version_default(self):
+        assert self._row()["current_version"] == "0.1"
+
+    def test_status_default_draft(self):
+        assert self._row(Status="")["status"] == "DRAFT"
+        assert self._row(Status="BASELINE")["status"] == "BASELINE"
+
+    def test_storage_path_default(self):
+        r = self._row(StoragePath="", StorageSystem="")
+        assert r["storage_path"] == "PMO SharePoint/THG-OPS-CHR-001"
+        assert r["storage_system"] == "PMO SharePoint"
+
+    def test_storage_path_preserved(self):
+        assert self._row(StoragePath="https://x/y")["storage_path"] == "https://x/y"
+
+    def test_classification_default(self):
+        assert self._row()["classification"] == "Confidential – Internal"
+
+    def test_lifecycle_and_cycle_from_args(self):
+        r = self._row()
+        assert r["lifecycle_phase"] == "Initiating"
+        assert r["review_cycle"] == "On Major Revision"
+
+    def test_subtitle_blank_none(self):
+        assert self._row(Subtitle="")["subtitle"] is None
+
+    def test_mutable_cols_exclude_identity_and_version(self):
+        for c in ("doc_id", "document_type_id", "primary_department_id",
+                  "current_version"):
+            assert c not in al.MUTABLE_DOC_COLS

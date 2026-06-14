@@ -2211,3 +2211,26 @@ class TestBuildCostActualRow:
 
     def test_notes_blank_none(self):
         assert self._row(Notes="")["notes"] is None
+
+
+# === Approval authority (hard-enforcement gate) =============================
+
+class TestIsDecisionAuthorized:
+    def test_authorized(self):
+        assert al.is_decision_authorized(5, (5, 9)) is True
+
+    def test_not_authorized(self):
+        assert al.is_decision_authorized(7, (5, 9)) is False
+
+    def test_none_decider_never_authorized(self):
+        assert al.is_decision_authorized(None, (5, 9)) is False
+
+    def test_none_authority_slots_ignored(self):
+        assert al.is_decision_authorized(5, (None, 5)) is True
+        assert al.is_decision_authorized(5, (None, None)) is False
+
+    def test_uuid_string_match(self):
+        import uuid
+        u = uuid.uuid4()
+        assert al.is_decision_authorized(str(u), (u, None)) is True
+        assert al.is_decision_authorized(u, (str(u),)) is True

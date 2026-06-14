@@ -502,6 +502,12 @@ DecidedBy <email> is not the project sponsor or PM — authority advisory only
 The `SyncStatus` is still written as `Synced`. The audit trail records who decided.
 To clear the advisory, the Sponsor or PM should re-enter themselves as `DecidedBy`.
 
+**Optional hard enforcement.** Set `"enforce_decision_authority": true` in `db/.m365.local.json`
+to turn the advisory into a **hard gate**: a non-Pending decision by anyone who is not the project
+Sponsor or PM (or, for governance CRs in §U, the document Owner or Approver) is **rejected**
+(`SyncStatus = Error`, no DB write) instead of warned. Default is `false` (the advisory above), so the
+toggle is non-breaking — pilot it before enabling org-wide.
+
 ### Audit trail
 
 Every CR creation, decision change, and status change is recorded as an append-only

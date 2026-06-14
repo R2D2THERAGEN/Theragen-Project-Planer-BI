@@ -1134,7 +1134,12 @@ def process_change_request(conn, g, it, dry, current):
     warn = ""
     if it["Decision"] != "Pending" and decider:
         sponsor_id, pm_id = project_leads(conn, project_id)
-        if decider not in (sponsor_id, pm_id):
+        if not al.is_decision_authorized(decider, (sponsor_id, pm_id)):
+            if M365.get("enforce_decision_authority"):
+                return _error(g, M365["change_request_list_id"], it,
+                              [f"DecidedBy {it['DecidedByEmail']} is not the"
+                               " project Sponsor or PM (authority enforcement"
+                               " is on)"], dry, "change_request")
             warn = (f"DecidedBy {it['DecidedByEmail']} is not the project"
                     " sponsor or PM — authority advisory only")
     if current:
@@ -2205,7 +2210,12 @@ def process_change_request_gov(conn, g, it, dry, current):
     warn = ""
     if it["Decision"] != "Pending" and decider:
         owner_id, approver_id = doc_leads(conn, document_id)
-        if decider not in (owner_id, approver_id):
+        if not al.is_decision_authorized(decider, (owner_id, approver_id)):
+            if M365.get("enforce_decision_authority"):
+                return _error(g, M365["govcr_list_id"], it,
+                              [f"DecidedBy {it['DecidedByEmail']} is not the"
+                               " document Owner or Approver (authority"
+                               " enforcement is on)"], dry, "govcr")
             warn = (f"DecidedBy {it['DecidedByEmail']} is not the document"
                     " Owner or Approver - authority advisory only")
     if current:

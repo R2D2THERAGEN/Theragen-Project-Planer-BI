@@ -971,3 +971,19 @@ def build_cost_actual_row(it, wbs_element_id, entered_by_person_id):
         "notes": it.get("Notes") or None,
         "entered_by_person_id": entered_by_person_id,
     }
+
+
+# ---------------------------------------------------------------------------
+# Approval authority (post-2c) - the shared check behind both the soft warning
+# and the optional hard enforcement gate (config: enforce_decision_authority).
+# ---------------------------------------------------------------------------
+
+def is_decision_authorized(decider_id, authorities):
+    """True if the decider is one of the authorized persons. authorities is an
+    iterable of person ids (e.g. project sponsor + PM, or doc owner + approver);
+    None slots are ignored. A null decider is never authorized. Compared as
+    strings so UUID and text ids match."""
+    if decider_id is None:
+        return False
+    allowed = {str(a) for a in authorities if a is not None}
+    return str(decider_id) in allowed

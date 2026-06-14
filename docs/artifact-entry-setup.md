@@ -1405,7 +1405,7 @@ with RLS on, a user with no grant sees nothing. A user gets the **union** of the
 
 | Column | Type | Notes |
 |--------|------|-------|
-| **UserEmail** | Text | The grantee's UPN / email (must match how they sign in — e.g. `p.nair@theragen.com`). Lower-cased on sync |
+| **UserEmail** | Text | The grantee's email (e.g. `p.nair@theragen.com`; for externals, their real email — see *External / B2B guest grantees*). Lower-cased on sync |
 | **ScopeType** | Choice | `Project` / `Department` / `All` |
 | **ScopeValue** | Text | A **ProjectCode** (for `Project`), a **Department name** (for `Department`), or **blank** (for `All`). Airlocked — an unknown project/department is an error |
 | **Active** | Choice | `Yes` (default) / `No` — soft-disable a grant without deleting it |
@@ -1417,6 +1417,22 @@ Authored content (no parent-child). Each change is **audited**: `ACCESS_GRANT` o
 `ACCESS_REVOKE` on deactivation, `ACCESS_CHANGE` on a scope edit (`doc_mgmt.audit_trail_entry`).
 Examples: a contractor scoped to one project = `(them, Project, THG-IT-005)`; a department lead =
 `(them, Department, IT / Data / Security)`; the PMO = `(them, All, ⌀)`.
+
+### External / B2B guest grantees
+
+Grant **external** people (a CRO analyst, a contractor, a vendor) by their **real email** — e.g.
+`(jane@cro.com, Project, THG-IT-005)`. The `Scoped Viewer` role handles the Entra B2B identity wrinkle
+automatically: an external user invited as a guest signs into *this* tenant under a **mangled UPN**
+(`jane_cro.com#EXT#@<tenant>.onmicrosoft.com`, **not** `jane@cro.com`), so the role forward-mangles the
+grant email (`@`→`_`) and matches it against the part of the UPN before `#EXT#`. You author the grant
+with the email you invited them with; no need to know or type the mangled form. (Internal UPNs still
+match directly.)
+
+**Policy — externals get `Project` scope only.** Author external grantees with `ScopeType = Project`
+(one row per project they need), never `Department` or `All` — least privilege for people outside the
+org. `Department`/`All` are for internal staff and the PMO. (This is a convention, not yet a hard
+validation; a future `governance_health` check can flag any `Department`/`All` grant whose `UserEmail`
+domain isn't `theragen.com`.)
 
 ### Turning RLS on (Service, out-of-band — Allen)
 

@@ -1811,3 +1811,242 @@ class TestBuildApprovalRow:
 
     def test_reason_blank_none(self):
         assert self._row(Reason="")["reason"] is None
+
+
+# === Governance Change Requests + Assessments (2c-6) ========================
+
+def _govcr(**over):
+    """Minimal valid normalized governance-CR item (Pending + no decider).
+
+    Project-less + no ChangeType - the gov CR is keyed to a document.
+    """
+    base = {
+        "item_id": "1",
+        "ParentDocID": "THG-OPS-CHR-001",
+        "RequestedDate": "2026-06-01",
+        "RequestedByEmail": "pm@theragen.com",
+        "CRClass": "B - Substantive",
+        "Description": "Revise section 4 of the charter.",
+        "Reason": "Regulatory feedback requires clarification.",
+        "IntakeID": None,
+        "Decision": "Pending",
+        "DecidedByEmail": None,
+        "DecidedDate": None,
+        "ImplementationVerified": False,
+        "CRStatus": "Open",
+        "CRCode": "",
+        "SyncStatus": "Pending",
+    }
+    base.update(over)
+    return base
+
+
+def _govassessment(**over):
+    """Minimal valid normalized governance-assessment item (dept-scoped)."""
+    base = {
+        "item_id": "2",
+        "ParentCRCode": "CHG-001",
+        "Department": "Regulatory / Quality",
+        "ImpactSummary": "Requires re-validation of the affected SOP.",
+        "ComplianceImpact": "Touches 21 CFR 820.40 document control.",
+        "SubmittedDate": "2026-06-03",
+        "SyncStatus": "Pending",
+    }
+    base.update(over)
+    return base
+
+
+# --- next_govcr_code --------------------------------------------------------
+
+class TestNextGovcrCode:
+    def test_empty_list(self):
+        assert al.next_govcr_code([]) == "CHG-001"
+
+    def test_sequences_and_widens(self):
+        assert al.next_govcr_code(["CHG-001", "CHG-007", None, "x"]) == "CHG-008"
+
+    def test_widens_beyond_999(self):
+        assert al.next_govcr_code(["CHG-999"]) == "CHG-1000"
+
+    def test_non_matching_strings_ignored(self):
+        # project CRs (C-NNN) and decisions (D-NNN) must not count
+        assert al.next_govcr_code(["C-001", "D-001", "R-001"]) == "CHG-001"
+
+    def test_global_not_truncated(self):
+        assert al.next_govcr_code(["CHG-012", "CHG-003"]) == "CHG-013"
+
+
+# --- validate_govcr ---------------------------------------------------------
+
+class TestValidateGovcr:
+    def test_happy_pending(self):
+        assert al.validate_govcr(_govcr()) == []
+
+    def test_no_project_code_required(self):
+        # gov CRs are project-less - absence of ProjectCode is NOT an error
+        assert al.validate_govcr(_govcr()) == []
+
+    def test_no_change_type_required(self):
+        # gov CRs have no change_type column - absence is NOT an error
+        assert al.validate_govcr(_govcr()) == []
+
+    def test_missing_parent_doc(self):
+        assert any("ParentDocID" in e
+                   for e in al.validate_govcr(_govcr(ParentDocID="")))
+
+    def test_missing_description(self):
+        assert any("Description" in e
+                   for e in al.validate_govcr(_govcr(Description="  ")))
+
+    def test_missing_reason(self):
+        assert any("Reason" in e for e in al.validate_govcr(_govcr(Reason=None)))
+
+    def test_missing_cr_class(self):
+        assert any("CRClass" in e for e in al.validate_govcr(_govcr(CRClass="")))
+
+    def test_requester_empty_flagged(self):
+        assert any("RequestedBy" in e
+                   for e in al.validate_govcr(_govcr(RequestedByEmail="")))
+
+    def test_bad_cr_class(self):
+        assert any("CRClass" in e
+                   for e in al.validate_govcr(_govcr(CRClass="X - Unknown")))
+
+    def test_bad_decision(self):
+        assert any("Decision" in e
+                   for e in al.validate_govcr(_govcr(Decision="Maybe")))
+
+    def test_bad_cr_status(self):
+        assert any("CRStatus" in e
+                   for e in al.validate_govcr(_govcr(CRStatus="Unknown")))
+
+    def test_decision_set_requires_decider_and_date(self):
+        errs = al.validate_govcr(_govcr(Decision="Approved"))
+        assert any("DecidedBy is empty" in e for e in errs)
+        assert any("DecidedDate is empty" in e for e in errs)
+
+    def test_pending_must_have_blank_decided_date(self):
+        errs = al.validate_govcr(_govcr(Decision="Pending", DecidedDate="2026-06-05"))
+        assert any("DecidedDate must be blank" in e for e in errs)
+
+    def test_rejected_requires_status_rejected(self):
+        errs = al.validate_govcr(_govcr(
+            Decision="Rejected", DecidedByEmail="a@theragen.com",
+            DecidedDate="2026-06-05", CRStatus="Open"))
+        assert any("Rejected decision requires CRStatus = Rejected" in e
+                   for e in errs)
+
+    def test_verified_requires_approved(self):
+        errs = al.validate_govcr(_govcr(
+            Decision="Pending", CRStatus="Verified"))
+        assert any("requires Decision = Approved" in e for e in errs)
+
+    def test_decided_before_requested_flagged(self):
+        errs = al.validate_govcr(_govcr(
+            Decision="Approved", DecidedByEmail="a@theragen.com",
+            RequestedDate="2026-06-10", DecidedDate="2026-06-05"))
+        assert any("on/after RequestedDate" in e for e in errs)
+
+    def test_fully_valid_approved_implementing(self):
+        assert al.validate_govcr(_govcr(
+            Decision="Approved", DecidedByEmail="a@theragen.com",
+            DecidedDate="2026-06-10", CRStatus="Implementing")) == []
+
+
+# --- build_govcr_row --------------------------------------------------------
+
+class TestBuildGovcrRow:
+    def _row(self, **over):
+        return al.build_govcr_row(_govcr(**over), document_id="doc-1",
+                                  requester_id=1, decider_id=None,
+                                  cr_code="CHG-001")
+
+    def test_basic_columns_present(self):
+        row = self._row()
+        assert row["cr_code"] == "CHG-001"
+        assert row["document_id"] == "doc-1"
+        assert row["requested_by_person_id"] == 1
+        assert row["decided_by_person_id"] is None
+
+    def test_no_project_or_changetype_columns(self):
+        # the lean gov-CR shape has no project/change_type/impact columns
+        row = self._row()
+        for absent in ("project_id", "change_types", "affected_artifacts",
+                       "impact_scope", "impact_schedule_days", "impact_cost",
+                       "impact_quality", "linked_artifacts_updated"):
+            assert absent not in row
+
+    def test_decision_defaults_pending(self):
+        assert self._row(Decision=None)["decision"] == "Pending"
+
+    def test_status_defaults_open(self):
+        assert self._row(CRStatus=None)["status"] == "Open"
+
+    def test_intake_blank_none(self):
+        assert self._row(IntakeID="")["intake_id"] is None
+
+    def test_implementation_verified_passthrough_bool(self):
+        assert self._row(ImplementationVerified=True)["implementation_verified"] is True
+        assert self._row(ImplementationVerified=False)["implementation_verified"] is False
+
+    def test_requested_at_equals_requested_date(self):
+        assert self._row(RequestedDate="2026-05-15")["requested_at"] == "2026-05-15"
+
+    def test_decided_at_set_when_provided(self):
+        row = al.build_govcr_row(
+            _govcr(Decision="Approved", DecidedByEmail="a@theragen.com",
+                   DecidedDate="2026-06-10"),
+            document_id="doc-1", requester_id=1, decider_id=5, cr_code="CHG-002")
+        assert row["decided_at"] == "2026-06-10"
+        assert row["decided_by_person_id"] == 5
+
+
+# --- validate_govassessment -------------------------------------------------
+
+class TestValidateGovassessment:
+    def test_happy(self):
+        assert al.validate_govassessment(_govassessment()) == []
+
+    def test_missing_parent_cr(self):
+        assert any("ParentCRCode" in e
+                   for e in al.validate_govassessment(_govassessment(ParentCRCode="")))
+
+    def test_missing_department(self):
+        assert any("Department" in e
+                   for e in al.validate_govassessment(_govassessment(Department="")))
+
+    def test_missing_impact_summary(self):
+        assert any("ImpactSummary" in e
+                   for e in al.validate_govassessment(_govassessment(ImpactSummary="  ")))
+
+    def test_bad_department(self):
+        assert any("Department not recognized" in e
+                   for e in al.validate_govassessment(_govassessment(Department="Legal")))
+
+    def test_all_departments_accepted(self):
+        for dep in al.DEPARTMENTS:
+            assert al.validate_govassessment(_govassessment(Department=dep)) == []
+
+
+# --- build_govassessment_row ------------------------------------------------
+
+class TestBuildGovassessmentRow:
+    def _row(self, **over):
+        return al.build_govassessment_row(_govassessment(**over), cr_gov_id="cr-1",
+                                          department_id="dep-1",
+                                          submitted_at="2026-06-03")
+
+    def test_columns_present(self):
+        r = self._row()
+        assert r["cr_gov_id"] == "cr-1"
+        assert r["department_id"] == "dep-1"
+        assert r["impact_summary"] == "Requires re-validation of the affected SOP."
+        assert r["submitted_at"] == "2026-06-03"
+
+    def test_compliance_blank_none(self):
+        assert self._row(ComplianceImpact="")["compliance_impact"] is None
+        assert self._row(ComplianceImpact=None)["compliance_impact"] is None
+
+    def test_compliance_preserved_when_set(self):
+        r = self._row(ComplianceImpact="ISO 13485 clause 4.2.4")
+        assert r["compliance_impact"] == "ISO 13485 clause 4.2.4"

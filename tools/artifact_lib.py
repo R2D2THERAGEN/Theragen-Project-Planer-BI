@@ -785,3 +785,107 @@ def build_approval_row(it, version_id, approver_id, signed_at, esig):
         "ip_address": None,
         "reason": it.get("Reason") or None,
     }
+
+
+# ---------------------------------------------------------------------------
+# Governance Change Requests (2c-6) - document-scoped CRs + per-dept assessments
+# ---------------------------------------------------------------------------
+# Governance CRs reuse the 2b two-axis enums verbatim (CR_CLASSES / CR_DECISIONS
+# / CR_STATUSES) - the doc_mgmt enums are byte-identical to the pmbok ones. The
+# only differences from a project CR: the gov CR is keyed to a DOCUMENT (not a
+# project), has no change_type column, and mints a GLOBAL CHG-NNN code.
+
+_GOVCR_CODE = re.compile(r"^CHG-(\d{3,})$")
+
+
+def next_govcr_code(existing):
+    """Next CHG-NNN GLOBALLY (cr_code is UNIQUE across all governance CRs, not
+    scoped per project/document). Overflow widens rather than truncates."""
+    nums = [int(m.group(1)) for s in existing if s and (m := _GOVCR_CODE.match(s))]
+    return f"CHG-{(max(nums) + 1 if nums else 1):03d}"
+
+
+def validate_govcr(it):
+    """Return a list of error strings; empty list means valid.
+
+    The 2b two-axis coherence rules carried over verbatim, minus ProjectCode
+    (gov CRs are project-less) and ChangeType (no change_type column). The target
+    document (ParentDocID) and the requester/decider persons are resolved in the
+    sync; here we only require the human inputs be present + coherent.
+    """
+    errs = [f"Missing: {k}" for k in
+            ("ParentDocID", "Description", "Reason", "CRClass")
+            if _blank(it.get(k))]
+    if _blank(it.get("RequestedByEmail")):
+        errs.append("Missing: RequestedBy (picker empty and item author unknown)")
+    if it.get("CRClass") and it["CRClass"] not in CR_CLASSES:
+        errs.append(f"CRClass not recognized: {it['CRClass']}")
+    dec, st = it.get("Decision") or "Pending", it.get("CRStatus") or "Open"
+    if dec not in CR_DECISIONS:
+        errs.append(f"Decision not recognized: {dec}")
+    if st not in CR_STATUSES:
+        errs.append(f"CRStatus not recognized: {st}")
+    if dec != "Pending":
+        if _blank(it.get("DecidedByEmail")):
+            errs.append("Decision set but DecidedBy is empty")
+        if _blank(it.get("DecidedDate")):
+            errs.append("Decision set but DecidedDate is empty")
+    elif not _blank(it.get("DecidedDate")):
+        errs.append("DecidedDate must be blank while Decision is Pending")
+    if dec == "Rejected" and st != "Rejected":
+        errs.append("Rejected decision requires CRStatus = Rejected")
+    if st in ("Verified", "Closed") and dec != "Approved":
+        errs.append(f"CRStatus {st} requires Decision = Approved")
+    if (not _blank(it.get("DecidedDate")) and not _blank(it.get("RequestedDate"))
+            and it["DecidedDate"] < it["RequestedDate"]):
+        errs.append("DecidedDate must be on/after RequestedDate")
+    return errs
+
+
+def build_govcr_row(it, document_id, requester_id, decider_id, cr_code):
+    """Build the change_request_gov DB column dict.
+
+    implementation_verified arrives as an already-coerced Python bool (the
+    normalizer does Yes/No->bool); build_govcr_row passes it through unchanged.
+    """
+    return {
+        "cr_code": cr_code,
+        "document_id": document_id,
+        "intake_id": it.get("IntakeID") or None,
+        "requested_at": it["RequestedDate"],
+        "requested_by_person_id": requester_id,
+        "cr_class": it["CRClass"],
+        "description": it["Description"],
+        "reason": it["Reason"],
+        "decision": it.get("Decision") or "Pending",
+        "decided_by_person_id": decider_id,
+        "decided_at": it.get("DecidedDate") or None,
+        "implementation_verified": it.get("ImplementationVerified") or False,
+        "status": it.get("CRStatus") or "Open",
+    }
+
+
+def validate_govassessment(it):
+    """Return a list of error strings; empty list means valid.
+
+    The parent gov CR (ParentCRCode) and assessing department are resolved in the
+    sync; here we only require the human inputs be present + in domain. The
+    assessment is department-scoped (no person column); compliance_impact is
+    optional free text.
+    """
+    errs = [f"Missing: {k}" for k in ("ParentCRCode", "Department", "ImpactSummary")
+            if _blank(it.get(k))]
+    if it.get("Department") and it["Department"] not in DEPARTMENTS:
+        errs.append(f"Department not recognized: {it['Department']}")
+    return errs
+
+
+def build_govassessment_row(it, cr_gov_id, department_id, submitted_at):
+    """Build the change_assessment_gov DB column dict (blank compliance -> None)."""
+    return {
+        "cr_gov_id": cr_gov_id,
+        "department_id": department_id,
+        "impact_summary": it["ImpactSummary"],
+        "compliance_impact": it.get("ComplianceImpact") or None,
+        "submitted_at": submitted_at,
+    }

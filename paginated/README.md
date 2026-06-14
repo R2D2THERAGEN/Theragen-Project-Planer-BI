@@ -36,3 +36,39 @@ reports can never disagree.
   project, or a Power Automate flow looping the parameter.
 - Regenerate from source after layout changes: `python tools/build_paginated.py`
   (then re-apply the data source connection in Report Builder).
+
+---
+
+# Governance & document reports (.rdl)
+
+Four print / PDF / archive-ready **records** for the governance + controlled-document
+data (the audit-oriented counterpart to the interactive **Governance & Documents**
+page). All bind to the same published semantic model via DAX as the Status Report —
+one source of truth — so the registers and the page can never disagree.
+
+| Report | Parameter | Contents |
+|--------|-----------|----------|
+| **Theragen Governance Dossier.rdl** | `@DocID` | One printable packet per controlled document: metadata header + RACI matrix + version history + **approval attestations (non-§11)** + the governance change requests (CHG-NNN) that target it. The audit dossier. |
+| **Theragen Governance CR Register.rdl** | none | Every governance change request with class / decision / decider / status, plus the per-department impact assessments. |
+| **Theragen Controlled Document Register.rdl** | none | The org-wide controlled-document portfolio (type / department / owner / status / version / next-review-due). |
+| **Theragen Baseline & Phase Gate Register.rdl** | `@ProjectCode` | Project baselines (schedule / budget / scope, versioned, immutable) + the phase-gate transition log. |
+
+## Setup (same as the Status Report)
+
+1. **Republish the semantic model first** — these DAX datasets reference the
+   governance tables (`Governance Change Request`, `Document Version[Linked CR]`,
+   etc.), which only exist in the published model after a republish from Desktop.
+2. Open each `.rdl` in Power BI Report Builder → repoint the **TheragenModel**
+   data source at the published model (Build permission) → Run (F5) → Publish to
+   the **Playground** workspace.
+
+## Notes
+
+- The approval section labels every row **"Attestation (non-§11)"** (sourced from
+  the model's `Attestation Kind`) — never represent these as 21 CFR Part 11
+  signatures.
+- Tables grow and paginate (a 40-version history prints all 40 rows).
+- Regenerate all four after edits: `python tools/build_paginated_governance.py`
+  (shared RDL helpers live in `tools/paginated_lib.py`; then re-apply the data
+  source connection in Report Builder). The Status Report generator
+  (`build_paginated.py`) is independent and unchanged.

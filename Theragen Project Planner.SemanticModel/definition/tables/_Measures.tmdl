@@ -876,6 +876,42 @@ table _Measures
 		displayFolder: Risk
 		lineageTag: f574723b-0876-5054-a5a0-077bd3b8de30
 
+	/// AC - cumulative actual cost to date (sum of logged cost actuals).
+	measure 'AC (Actual Cost)' = SUM('Cost Actual'[Amount])
+		formatString: \$#,##0;(\$#,##0);\$0
+		displayFolder: EVM
+		lineageTag: 222842a7-48fc-5fb4-80a9-e8a17db795df
+
+	/// CV = EV - AC. Negative = over budget.
+	measure 'Cost Variance (CV)' = [Earned Value] - [AC (Actual Cost)]
+		formatString: \$#,##0;(\$#,##0);\$0
+		displayFolder: EVM
+		lineageTag: 1aa07da3-d1a8-5696-991a-4661b8bc5e73
+
+	/// Cost Performance Index = EV / AC. Below 1.0 = over budget.
+	measure CPI = DIVIDE([Earned Value], [AC (Actual Cost)])
+		formatString: 0.00
+		displayFolder: EVM
+		lineageTag: 05f53f7c-f8a7-56ea-bb7e-9208771dc9bd
+
+	/// Estimate at Completion = BAC / CPI (performance-based forecast).
+	measure EAC = DIVIDE([BAC (WBS Estimates)], [CPI])
+		formatString: \$#,##0;(\$#,##0);\$0
+		displayFolder: EVM
+		lineageTag: 671440f9-bd1b-5ee7-92fa-5e5af1d2e7a3
+
+	/// Variance at Completion = BAC - EAC. Negative = projected overrun.
+	measure VAC = [BAC (WBS Estimates)] - [EAC]
+		formatString: \$#,##0;(\$#,##0);\$0
+		displayFolder: EVM
+		lineageTag: 4a2e2164-3ea6-5eee-a8bd-493572d4879c
+
+	/// To-Complete Performance Index = (BAC - EV) / (BAC - AC). Above 1.0 = tighter cost control needed to finish on budget.
+	measure TCPI = DIVIDE([BAC (WBS Estimates)] - [Earned Value], [BAC (WBS Estimates)] - [AC (Actual Cost)])
+		formatString: 0.00
+		displayFolder: EVM
+		lineageTag: 09861b0e-c2b5-58a4-ba01-a8105a0c06b6
+
 	partition _Measures = m
 		mode: import
 		source =

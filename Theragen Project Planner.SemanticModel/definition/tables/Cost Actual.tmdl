@@ -1,0 +1,102 @@
+/// Fact - per-work-package, per-period actual cost (EVM AC). One row per logged cost actual against a WBS work package.
+table 'Cost Actual'
+	lineageTag: 3d20ccc0-137f-585d-8950-1422f0df3b60
+
+	column 'Cost Actual ID'
+		dataType: string
+		isHidden
+		lineageTag: 326d5d58-8bcf-5d33-add2-5edca6d2d5e6
+		summarizeBy: none
+		sourceColumn: Cost Actual ID
+
+		annotation SummarizationSetBy = User
+
+	column 'WBS ID'
+		dataType: string
+		isHidden
+		lineageTag: dbe3f356-a624-5dc4-835b-d128509ec1dd
+		summarizeBy: none
+		sourceColumn: WBS ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Project Code'
+		dataType: string
+		lineageTag: 22b8cba8-7de3-50a7-9d79-af23532182d0
+		summarizeBy: none
+		sourceColumn: Project Code
+
+		annotation SummarizationSetBy = User
+
+	column 'WBS Code'
+		dataType: string
+		lineageTag: 4f633138-7517-5b03-b729-2f67283e90c1
+		summarizeBy: none
+		sourceColumn: WBS Code
+
+		annotation SummarizationSetBy = User
+
+	column 'Work Package'
+		dataType: string
+		lineageTag: 0455ca97-fcb0-5fa3-ba19-b4e743aa71e3
+		summarizeBy: none
+		sourceColumn: Work Package
+
+		annotation SummarizationSetBy = User
+
+	column Period
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 84bb01ab-b507-5d66-bab9-d205226195c4
+		summarizeBy: none
+		sourceColumn: Period
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Amount
+		dataType: double
+		formatString: \$#,##0.00;(\$#,##0.00);\$0
+		lineageTag: eb58bfcc-5672-5cc6-810b-b27b68c99fd9
+		summarizeBy: sum
+		sourceColumn: Amount
+
+		annotation SummarizationSetBy = User
+
+	column Category
+		dataType: string
+		lineageTag: 0e2b54ed-692d-5eed-869b-944bc4395bd1
+		summarizeBy: none
+		sourceColumn: Category
+
+		annotation SummarizationSetBy = User
+
+	column 'Entered By'
+		dataType: string
+		lineageTag: ced9265d-3ad6-5222-8fb2-97b18cbfa6f7
+		summarizeBy: none
+		sourceColumn: Entered By
+
+		annotation SummarizationSetBy = User
+
+	column Notes
+		dataType: string
+		lineageTag: 9f59f61a-160a-50f9-8e05-cf704145cfad
+		summarizeBy: none
+		sourceColumn: Notes
+
+		annotation SummarizationSetBy = User
+
+	partition 'Cost Actual' = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "cost_actual"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"cost_actual_id", "wbs_element_id", "project_code", "wbs_code", "work_package", "period", "amount", "category", "entered_by_name", "notes"}),
+				    Renamed = Table.RenameColumns(Selected, {{"cost_actual_id", "Cost Actual ID"}, {"wbs_element_id", "WBS ID"}, {"project_code", "Project Code"}, {"wbs_code", "WBS Code"}, {"work_package", "Work Package"}, {"period", "Period"}, {"amount", "Amount"}, {"category", "Category"}, {"entered_by_name", "Entered By"}, {"notes", "Notes"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table

@@ -187,3 +187,7 @@ relationship 4a2e9854-c2d2-5e23-86e7-f306a72159b0
 	fromColumn: 'Governance Change Assessment'.'CR Gov ID'
 	toColumn: 'Governance Change Request'.'CR Gov ID'
 
+relationship 05f3ed21-097b-5f4f-bc09-de42d87beb75
+	fromColumn: 'Cost Actual'.'WBS ID'
+	toColumn: 'WBS Element'.'WBS ID'
+

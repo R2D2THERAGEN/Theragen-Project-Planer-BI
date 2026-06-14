@@ -1,4 +1,4 @@
-# Artifact Entry Setup — Risks, Milestones, Status Reports, Project Activities, Change Requests, Decisions, Baselines, Phase Gates, Change Impact Assessments, Controlled Documents, Document RACI, Document Versions, Document Approvals, Governance Change Requests, Governance Change Assessments, Risk Responses
+# Artifact Entry Setup — Risks, Milestones, Status Reports, Project Activities, Change Requests, Decisions, Baselines, Phase Gates, Change Impact Assessments, Controlled Documents, Document RACI, Document Versions, Document Approvals, Governance Change Requests, Governance Change Assessments, Risk Responses, Cost Actuals
 
 This is the PM-facing reference for filling in the four execution-artifact SharePoint
 Lists that feed the **Project Status Report** Power BI page. The daily 5:40 AM sync
@@ -32,6 +32,7 @@ access (creating and editing items) requires at minimum Edit permission on the s
 | **Governance Change Requests** | One row per change request against a controlled document (project-less, `CHG-NNN`) — see §U |
 | **Governance Change Assessments** | One row per department's impact statement on a governance CR — see §V |
 | **Risk Responses** | One row per risk response action (child of a risk) — see §X |
+| **Cost Actuals** | One row per actual cost (work package × period) — the EVM AC feed — see §Y |
 
 All these Lists live on the root SharePoint site (same site as Project Intake).
 
@@ -1344,6 +1345,48 @@ project_id = ? AND risk_code = ?`.
 
 ---
 
+## Y. Cost Actuals (EVM)
+
+Actual cost is logged per **work package** per **period** in the **Cost Actuals** List →
+`pmbok.cost_actual`, a child of a WBS element (linked by `WBSCode`). This is the **actual-cost (AC)**
+feed that completes Earned Value Management: BAC / EV / PV / SPI already derive from WBS estimates +
+activity % complete; the cost actuals supply **AC**, which lights up `Cost Variance (CV)`, `CPI`, `EAC`,
+`VAC`, and `TCPI`.
+
+### Required columns
+
+| Column | Type | Notes |
+|--------|------|-------|
+| **ProjectCode** | Text | Scopes the WBS lookup (`WBSCode` is unique per project) |
+| **WBSCode** | Text | The work-package WBS code (e.g. `1.1`) — must already exist (it is derived from the project's activities, see §D) |
+| **Period** | Date | The period the cost was incurred (e.g. a month-end) |
+| **Amount** | Number | The actual cost in that period (a number; 0 is allowed) |
+
+### Optional columns
+
+| Column | Type | Notes |
+|--------|------|-------|
+| **Category** | Choice | `Labor` / `Materials` / `Services` / `Other` |
+| **Notes** | Multi-line text | Free text |
+| **EnteredBy** | Person | Who logged it; **falls back to the item author** if blank |
+
+### Grain + rules
+
+One row per (work package, period[, category]) — the sync sums them into the cumulative **AC**. The
+parent WBS element is fixed after first sync (editing `ProjectCode`/`WBSCode` is rejected:
+`Reparenting not allowed; create a new cost actual`); amount, period, category, and notes are freely
+editable. No audit-trail entry (actuals are descriptive content). `AC = SUM(Amount)` cumulative;
+`CPI = EV / AC`; `EAC = BAC / CPI`; `CV = EV − AC`; `VAC = BAC − EAC`; `TCPI = (BAC − EV) / (BAC − AC)`.
+
+### Read-only write-back columns
+
+| Column | Meaning |
+|--------|---------|
+| **SyncStatus** | `Pending` → `Synced` (success) or `Error` (see §H) |
+| **SyncMessage** | Human-readable error detail (e.g. an unknown `WBSCode`); blank on success |
+
+---
+
 ## W. Governance health digest
 
 `tools/governance_health.py` is a **read-only** exceptions report that surfaces the governance items
@@ -1431,4 +1474,7 @@ stdout into your mail step — it is plain text and self-contained.
 | New risk response, valid | Resolves the parent risk by (ProjectCode, ParentRiskCode) + the owner; inserts row; writes `Synced` back (no code, no audit) |
 | Risk response, unknown ParentRiskCode | Writes `Error: Unknown ParentRiskCode <code> for project <code>` |
 | Risk response, re-parented after sync | Writes `Error: Reparenting not allowed; create a new risk response` |
+| New cost actual, valid | Resolves the WBS work package by (ProjectCode, WBSCode); inserts row; writes `Synced` back (no code, no audit) |
+| Cost actual, unknown WBSCode | Writes `Error: Unknown WBSCode <code> for project <code>` |
+| Cost actual, re-parented after sync | Writes `Error: Reparenting not allowed; create a new cost actual` |
 | `--dry-run` flag | Prints intent only; no DB writes; no List writes |

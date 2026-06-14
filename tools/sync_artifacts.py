@@ -345,6 +345,19 @@ def document_type_by_code(conn, code):
         " FROM doc_mgmt.document_type WHERE code=%s", (code,)).fetchone()
 
 
+def intake_exists(conn, intake_id):
+    """True if intake_id is present in doc_mgmt.intake_submission.
+
+    Airlocks the FK columns doc_mgmt.document.intake_id and
+    pmbok.change_request.intake_id: a typo'd/unknown IntakeID becomes a clean
+    validation error (like the project/person/type/dept resolvers) instead of a
+    raw psycopg ForeignKeyViolation surfaced at INSERT/UPDATE time.
+    """
+    return conn.execute(
+        "SELECT 1 FROM doc_mgmt.intake_submission WHERE intake_id=%s",
+        (intake_id,)).fetchone() is not None
+
+
 def resolve_parent_document(conn, doc_id):
     """Resolve a document by its globally-unique doc_id -> document_id or None."""
     row = conn.execute(
@@ -918,6 +931,8 @@ def process_change_request(conn, g, it, dry, current):
                if it["DecidedByEmail"] else None)
     if it["DecidedByEmail"] and not decider:
         errs.append(f"DecidedBy {it['DecidedByEmail']} not in person directory")
+    if it.get("IntakeID") and not intake_exists(conn, it["IntakeID"]):
+        errs.append(f"Unknown IntakeID: {it['IntakeID']}")
     if errs:
         return _error(g, M365["change_request_list_id"], it, errs, dry,
                       "change_request")
@@ -1210,6 +1225,8 @@ def process_document(conn, g, it, dry, current):
                 if it["ApproverEmail"] else None)
     if it["ApproverEmail"] and not approver:
         errs.append(f"Approver {it['ApproverEmail']} not in person directory")
+    if it.get("IntakeID") and not intake_exists(conn, it["IntakeID"]):
+        errs.append(f"Unknown IntakeID: {it['IntakeID']}")
     if errs:
         return _error(g, M365["document_list_id"], it, errs, dry, "document")
     type_id, type_phase, type_cycle = dtype

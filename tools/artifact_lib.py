@@ -657,3 +657,46 @@ def build_document_row(it, type_id, dept_id, owner_id, approver_id,
         "storage_system": storage_system,
         "storage_path": it.get("StoragePath") or f"{storage_system}/{doc_id}",
     }
+
+
+# ---------------------------------------------------------------------------
+# Document RACI (2c-4) - per-document, per-department R/A/C/I assignment
+# ---------------------------------------------------------------------------
+
+RACI_ROLES = ["R", "A", "C", "I"]
+
+
+def validate_raci(it):
+    """Return a list of error strings; empty list means valid.
+
+    ParentDocID resolves to a document and Department to a department_id in the
+    sync; here we require the human inputs present + in domain. ValidFrom is
+    defaulted to the item created date in the normalizer, so it is not required.
+    """
+    errs = [f"Missing: {k}" for k in ("ParentDocID", "Department", "Role")
+            if _blank(it.get(k))]
+    if it.get("Department") and it["Department"] not in DEPARTMENTS:
+        errs.append(f"Department not recognized: {it['Department']}")
+    if it.get("Role") and it["Role"] not in RACI_ROLES:
+        errs.append(f"Role not recognized: {it['Role']} (use R/A/C/I)")
+    vf, vt = it.get("ValidFrom"), it.get("ValidTo")
+    if not _blank(vf) and not _blank(vt) and vt < vf:
+        errs.append("ValidTo must be on/after ValidFrom")
+    return errs
+
+
+def build_raci_row(it, document_id, department_id):
+    """Build the raci_assignment DB column dict.
+
+    document_id / department_id are resolved by the caller. touchpoint and
+    valid_to are nullable (blank -> None); valid_from is the normalizer's
+    createdDate-defaulted value.
+    """
+    return {
+        "document_id": document_id,
+        "department_id": department_id,
+        "role": it["Role"],
+        "touchpoint": it.get("Touchpoint") or None,
+        "valid_from": it["ValidFrom"],
+        "valid_to": it.get("ValidTo") or None,
+    }

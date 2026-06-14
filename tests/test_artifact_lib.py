@@ -1558,3 +1558,87 @@ class TestBuildDocumentRow:
         for c in ("doc_id", "document_type_id", "primary_department_id",
                   "current_version"):
             assert c not in al.MUTABLE_DOC_COLS
+
+
+# --- Document RACI (2c-4) -----------------------------------------------------
+
+def _raci(**over):
+    """Minimal valid normalized Document RACI item (ValidFrom already
+    createdDate-defaulted by the normalizer)."""
+    base = {
+        "item_id": "9",
+        "ParentDocID": "THG-OPS-CHR-001",
+        "Department": "Operations / PMO",
+        "Role": "A",
+        "Touchpoint": "Owns and approves the charter.",
+        "ValidFrom": "2026-06-13",
+        "ValidTo": None,
+        "SyncStatus": "Pending",
+    }
+    base.update(over)
+    return base
+
+
+class TestValidateRaci:
+    def test_happy_path(self):
+        assert al.validate_raci(_raci()) == []
+
+    def test_missing_parent_doc(self):
+        assert any("ParentDocID" in e for e in al.validate_raci(_raci(ParentDocID="")))
+
+    def test_missing_department(self):
+        assert any("Department" in e for e in al.validate_raci(_raci(Department="")))
+
+    def test_missing_role(self):
+        assert any("Role" in e for e in al.validate_raci(_raci(Role="")))
+
+    def test_bad_department(self):
+        assert any("Department not recognized" in e
+                   for e in al.validate_raci(_raci(Department="Legal")))
+
+    def test_bad_role(self):
+        assert any("Role not recognized" in e
+                   for e in al.validate_raci(_raci(Role="X")))
+
+    def test_all_roles_accepted(self):
+        for r in al.RACI_ROLES:
+            assert al.validate_raci(_raci(Role=r)) == [], f"role {r} should be valid"
+
+    def test_valid_to_before_from_flagged(self):
+        errs = al.validate_raci(_raci(ValidFrom="2026-06-13", ValidTo="2026-06-10"))
+        assert any("ValidTo" in e for e in errs)
+
+    def test_valid_to_equal_ok(self):
+        assert al.validate_raci(_raci(ValidFrom="2026-06-13", ValidTo="2026-06-13")) == []
+
+    def test_valid_to_after_ok(self):
+        assert al.validate_raci(_raci(ValidFrom="2026-06-13", ValidTo="2026-12-31")) == []
+
+    def test_blank_valid_to_ok(self):
+        assert al.validate_raci(_raci(ValidTo=None)) == []
+        assert al.validate_raci(_raci(ValidTo="")) == []
+
+
+class TestBuildRaciRow:
+    def _row(self, **over):
+        return al.build_raci_row(_raci(**over), document_id="doc", department_id="dep")
+
+    def test_columns_present(self):
+        r = self._row()
+        assert r["document_id"] == "doc"
+        assert r["department_id"] == "dep"
+        assert r["role"] == "A"
+        assert r["valid_from"] == "2026-06-13"
+
+    def test_touchpoint_blank_none(self):
+        assert self._row(Touchpoint="")["touchpoint"] is None
+
+    def test_touchpoint_preserved(self):
+        assert self._row(Touchpoint="Reviews")["touchpoint"] == "Reviews"
+
+    def test_valid_to_blank_none(self):
+        assert self._row(ValidTo=None)["valid_to"] is None
+        assert self._row(ValidTo="")["valid_to"] is None
+
+    def test_valid_to_preserved(self):
+        assert self._row(ValidTo="2026-12-31")["valid_to"] == "2026-12-31"

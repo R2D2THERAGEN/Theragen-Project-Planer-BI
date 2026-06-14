@@ -170,6 +170,23 @@ LISTS = {
         date_only("ValidFrom"),
         date_only("ValidTo"),
     ] + BOOKKEEPING),
+    "version_list_id": ("Document Versions", [
+        text("ParentDocID"),
+        text("Version"),
+        choice("Status", al.DOC_STATUSES, default="DRAFT"),
+        text("ChangeSummary", multiline=True),
+        choice("ChangeClass", al.CR_CLASSES),
+        date_only("EffectiveDate"),
+        text("StoragePath"),
+        {"name": "Author", "personOrGroup": {"allowMultipleSelection": False}},
+    ] + BOOKKEEPING),
+    "approval_list_id": ("Document Approvals (e-sig)", [
+        text("ParentDocID"),
+        text("ParentVersion"),
+        {"name": "Approver", "personOrGroup": {"allowMultipleSelection": False}},
+        choice("SignatureMeaning", al.SIGNATURE_MEANINGS, default="Approval"),
+        text("Reason", multiline=True),
+    ] + BOOKKEEPING),
 }
 
 

@@ -1699,6 +1699,14 @@ class TestEsigHash:
             args[i] = "CHANGED"
             assert al.esig_hash(*args) != base, f"field {i} did not affect the hash"
 
+    def test_production_canonical_form(self):
+        # process_document_approval canonicalizes signed_at as "...Z" (UTC,
+        # whole seconds). Lock that exact production form so the canonicalization
+        # recipe can't drift undetected.
+        assert al.esig_hash("THG-OPS-CHR-001", "1.0", "sponsor@theragen.com",
+                            "Approval", "2026-06-14T00:00:00Z") == \
+            "55181c0ade7d32c0297405c8fab0956f17aef6ebeed6dbc27c9184bf83b0020d"
+
 
 class TestValidateVersion:
     def test_happy_path(self):

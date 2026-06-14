@@ -1187,7 +1187,8 @@ A row attests that a person signed off a specific document **version**; it is a 
 An attestation is **append-once**: once synced, the row is frozen and the `esig_hash` is never
 recomputed; List edits to a synced approval do not propagate (create a new approval to re-sign). Each
 attestation is written to the audit trail (`APPROVAL_SIGN`). Because the hash is deterministic, a stored
-attestation is **verifiable** by recomputing it from its row.
+attestation is **verifiable** by recomputing it from its row — read `signed_at` back **in UTC** and
+canonicalize it the same way (`YYYY-MM-DDTHH:MM:SSZ`, whole seconds) before re-hashing.
 
 ### Read-only write-back columns
 

@@ -583,7 +583,8 @@ STORAGE_SYSTEMS = ["PMO SharePoint", "eQMS", "eTMF", "HIPAA-controlled store",
                    "ERP", "HRIS", "Other"]
 # Columns process_document re-applies on edit (row_changed + UPDATE). Excludes
 # the immutable identity (doc_id / document_type_id / primary_department_id) and
-# current_version (owned by the 2c-5 version sync, not by this surface).
+# current_version (the document's own version pointer, left at its initial
+# value - this authoring surface does not maintain it).
 MUTABLE_DOC_COLS = ["title", "subtitle", "lifecycle_phase", "status",
                     "owner_person_id", "approver_person_id", "review_cycle",
                     "next_review_due", "intake_id", "classification",

@@ -2,6 +2,7 @@
 table 'Upcoming Next Step'
 	lineageTag: c233b4ed-4951-5d33-b91f-49de66fd1f28
 
+	/// (hidden) Surrogate key of the owning project; joins to the Project dimension.
 	column 'Project ID'
 		dataType: string
 		isHidden
@@ -11,6 +12,7 @@ table 'Upcoming Next Step'
 
 		annotation SummarizationSetBy = User
 
+	/// Name of the open activity or upcoming milestone targeted next.
 	column 'Next Step'
 		dataType: string
 		lineageTag: ba06df3d-7b13-5a41-9871-6ad32a35fec9
@@ -19,6 +21,7 @@ table 'Upcoming Next Step'
 
 		annotation SummarizationSetBy = User
 
+	/// Planned finish (activity) or forecast/baseline date (milestone) the next step is due.
 	column 'Target Date'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -28,6 +31,7 @@ table 'Upcoming Next Step'
 
 		annotation SummarizationSetBy = User
 
+	/// Activity owner or milestone owner role responsible for the next step.
 	column Owner
 		dataType: string
 		lineageTag: b1c49688-8d6b-5e86-97da-a36e7fd85acc
@@ -36,6 +40,7 @@ table 'Upcoming Next Step'
 
 		annotation SummarizationSetBy = User
 
+	/// Origin of the next-step row: Activity or Milestone.
 	column Source
 		dataType: string
 		lineageTag: 08daaed9-6ad9-5e7c-821f-d7dcd3a060c9

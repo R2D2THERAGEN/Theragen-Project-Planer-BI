@@ -2,6 +2,7 @@
 table Stakeholder
 	lineageTag: 93b1cda5-0c54-5226-9561-ab27307b116b
 
+	/// (hidden) Surrogate key for the stakeholder register entry.
 	column 'Stakeholder ID'
 		dataType: string
 		isHidden
@@ -11,6 +12,7 @@ table Stakeholder
 
 		annotation SummarizationSetBy = User
 
+	/// (hidden) Surrogate key joining the stakeholder to its project.
 	column 'Project ID'
 		dataType: string
 		isHidden
@@ -20,6 +22,7 @@ table Stakeholder
 
 		annotation SummarizationSetBy = User
 
+	/// Human-readable project code the stakeholder belongs to.
 	column 'Project Code'
 		dataType: string
 		lineageTag: 8bd4fd4b-1edc-5da6-8041-9ad401d73267
@@ -28,6 +31,7 @@ table Stakeholder
 
 		annotation SummarizationSetBy = User
 
+	/// Minted stakeholder code identifying this register entry within the project.
 	column 'Stk Code'
 		dataType: string
 		lineageTag: f1461f77-4536-55e2-968d-280c42aed178
@@ -36,6 +40,7 @@ table Stakeholder
 
 		annotation SummarizationSetBy = User
 
+	/// (hidden) Surrogate key joining the stakeholder to the Person directory.
 	column 'Person ID'
 		dataType: string
 		isHidden
@@ -45,6 +50,7 @@ table Stakeholder
 
 		annotation SummarizationSetBy = User
 
+	/// Display name of the stakeholder (person or group with interest in the project).
 	column Stakeholder
 		dataType: string
 		lineageTag: 039a7175-f46b-56e9-a06d-c8365cfc34c8
@@ -53,6 +59,7 @@ table Stakeholder
 
 		annotation SummarizationSetBy = User
 
+	/// The stakeholder's role or title relative to the project.
 	column 'Stakeholder Role'
 		dataType: string
 		lineageTag: 7493670e-9772-5387-a929-9651201b6b62
@@ -61,6 +68,7 @@ table Stakeholder
 
 		annotation SummarizationSetBy = User
 
+	/// Theragen department the stakeholder is affiliated with.
 	column Department
 		dataType: string
 		lineageTag: 71acbcf7-4317-5ed5-84f8-3287fac1c0bc
@@ -69,6 +77,7 @@ table Stakeholder
 
 		annotation SummarizationSetBy = User
 
+	/// RACI engagement role on the project: R, A, C, or I.
 	column Engagement
 		dataType: string
 		lineageTag: a1bfcac6-771f-5159-9205-5cf68c1112b2
@@ -77,6 +86,7 @@ table Stakeholder
 
 		annotation SummarizationSetBy = User
 
+	/// Stakeholder's level of interest in the project: High, Medium, or Low.
 	column Interest
 		dataType: string
 		lineageTag: c457848f-06e7-585d-bf06-9ca993af00b7
@@ -85,6 +95,7 @@ table Stakeholder
 
 		annotation SummarizationSetBy = User
 
+	/// Stakeholder's level of influence over the project: High, Medium, or Low.
 	column Influence
 		dataType: string
 		lineageTag: 80bb41f0-f45f-5fad-b0bc-46b2ca9c3533
@@ -93,6 +104,7 @@ table Stakeholder
 
 		annotation SummarizationSetBy = User
 
+	/// The stakeholder's preferred communication channel or cadence.
 	column 'Comm Preference'
 		dataType: string
 		lineageTag: eb1f6a32-d7d0-5c58-b3e7-cfcdacdceb76

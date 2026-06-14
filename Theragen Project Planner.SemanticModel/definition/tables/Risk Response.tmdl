@@ -2,6 +2,7 @@
 table 'Risk Response'
 	lineageTag: fee95c47-50ff-531e-b5e2-f9d6cf903251
 
+	/// (hidden) Surrogate key for the risk response action row.
 	column 'Response ID'
 		dataType: string
 		isHidden
@@ -11,6 +12,7 @@ table 'Risk Response'
 
 		annotation SummarizationSetBy = User
 
+	/// (hidden) Surrogate key of the parent risk; joins the action back to the Risk register.
 	column 'Risk ID'
 		dataType: string
 		isHidden
@@ -20,6 +22,7 @@ table 'Risk Response'
 
 		annotation SummarizationSetBy = User
 
+	/// Human-readable project code the response action belongs to (e.g. PRJ-001).
 	column 'Project Code'
 		dataType: string
 		lineageTag: 04161071-5ae3-5f93-bba0-3c10e8dede5f
@@ -28,6 +31,7 @@ table 'Risk Response'
 
 		annotation SummarizationSetBy = User
 
+	/// Human-readable code of the risk this action addresses (e.g. R-001).
 	column 'Risk Code'
 		dataType: string
 		lineageTag: 4376860b-14bb-5234-a798-a9868404542b
@@ -36,6 +40,7 @@ table 'Risk Response'
 
 		annotation SummarizationSetBy = User
 
+	/// Response strategy of the action: Mitigation, Transfer, Acceptance, or Avoidance.
 	column 'Action Type'
 		dataType: string
 		lineageTag: 4488730a-715d-517f-a257-054f982453bf
@@ -44,6 +49,7 @@ table 'Risk Response'
 
 		annotation SummarizationSetBy = User
 
+	/// Free-text statement of the response action to be taken against the risk.
 	column 'Action Description'
 		dataType: string
 		lineageTag: ceaaf7ed-cec6-58f2-b1cb-c2667a5eb6df
@@ -52,6 +58,7 @@ table 'Risk Response'
 
 		annotation SummarizationSetBy = User
 
+	/// Display name of the person responsible for carrying out the response action.
 	column 'Action Owner'
 		dataType: string
 		lineageTag: 3620e144-45a2-5230-9876-e3ea174f079c
@@ -60,6 +67,7 @@ table 'Risk Response'
 
 		annotation SummarizationSetBy = User
 
+	/// Target date by which the response action should be completed; drives overdue-action flags.
 	column 'Action Due Date'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -71,6 +79,7 @@ table 'Risk Response'
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	/// Progress state of the response action: Open, In progress, Blocked, or Done.
 	column 'Action Status'
 		dataType: string
 		lineageTag: d4aa0f7f-cc11-5ea9-bc63-865c09f80294

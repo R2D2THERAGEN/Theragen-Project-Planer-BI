@@ -2,6 +2,7 @@
 table 'Status Report'
 	lineageTag: 83c4f3e2-ab15-570d-be74-0e02121abc7d
 
+	/// (hidden) Surrogate key for the status report; child area rows join on this.
 	column 'Report ID'
 		dataType: string
 		isHidden
@@ -11,6 +12,7 @@ table 'Status Report'
 
 		annotation SummarizationSetBy = User
 
+	/// (hidden) Surrogate key joining the report to its project.
 	column 'Project ID'
 		dataType: string
 		isHidden
@@ -20,6 +22,7 @@ table 'Status Report'
 
 		annotation SummarizationSetBy = User
 
+	/// Human-readable project code the report belongs to.
 	column 'Project Code'
 		dataType: string
 		lineageTag: 1386c874-518f-5efc-84d3-19bd10f9f006
@@ -28,6 +31,7 @@ table 'Status Report'
 
 		annotation SummarizationSetBy = User
 
+	/// Sequential number of this report in the project's reporting cadence.
 	column 'Report Number'
 		dataType: int64
 		formatString: #,0
@@ -37,6 +41,7 @@ table 'Status Report'
 
 		annotation SummarizationSetBy = User
 
+	/// First day of the reporting period this status covers.
 	column 'Period Start'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -48,6 +53,7 @@ table 'Status Report'
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	/// Last day of the reporting period; the report's effective as-of date.
 	column 'Period End'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -59,6 +65,7 @@ table 'Status Report'
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	/// Overall project health for the period: Green, Yellow, or Red.
 	column 'Overall Status'
 		dataType: string
 		lineageTag: cbac3a55-f9e6-5e4a-86b3-5aa2cee12c8c
@@ -67,6 +74,7 @@ table 'Status Report'
 
 		annotation SummarizationSetBy = User
 
+	/// Direction of project health since the prior report: improving, steady, or declining.
 	column Trend
 		dataType: string
 		lineageTag: cb4433e0-b732-5087-9e0b-19687d3f3d9a
@@ -75,6 +83,7 @@ table 'Status Report'
 
 		annotation SummarizationSetBy = User
 
+	/// Narrative summary of progress, issues, and outlook for the period.
 	column 'Executive Summary'
 		dataType: string
 		lineageTag: 6b74483e-7dd9-572e-abda-cddb03303a2f
@@ -83,6 +92,7 @@ table 'Status Report'
 
 		annotation SummarizationSetBy = User
 
+	/// Open decisions or escalations the report flags for leadership action.
 	column 'Decisions Needed'
 		dataType: string
 		lineageTag: 8f6f23b4-fcfc-5a92-bb27-8dda32fbf98c
@@ -91,6 +101,7 @@ table 'Status Report'
 
 		annotation SummarizationSetBy = User
 
+	/// Display name of the person who submitted the status report.
 	column 'Submitted By'
 		dataType: string
 		lineageTag: 29fa6f88-34b6-5972-ae4b-89c31cede74f
@@ -99,6 +110,7 @@ table 'Status Report'
 
 		annotation SummarizationSetBy = User
 
+	/// Date the status report was submitted.
 	column 'Submitted Date'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -110,6 +122,7 @@ table 'Status Report'
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	/// Display name of the approver who signed off the status report.
 	column 'Approved By'
 		dataType: string
 		lineageTag: aadb525a-f9c2-5475-9e13-d93d4bd774fb
@@ -118,6 +131,7 @@ table 'Status Report'
 
 		annotation SummarizationSetBy = User
 
+	/// Date the approver signed off the status report.
 	column 'Approved Date'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -129,6 +143,7 @@ table 'Status Report'
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	/// TRUE when the report has received formal approver sign-off.
 	column 'Is Signed Off'
 		dataType: boolean
 		lineageTag: d1957e31-44e3-52e3-8233-1812fd949107

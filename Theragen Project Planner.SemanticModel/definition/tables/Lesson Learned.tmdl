@@ -2,6 +2,7 @@
 table 'Lesson Learned'
 	lineageTag: fca77cc0-7649-5185-8d03-29fe863dc48f
 
+	/// (hidden) Surrogate key of the lessons-learned row; joins to the lesson source.
 	column 'Lesson ID'
 		dataType: string
 		isHidden
@@ -11,6 +12,7 @@ table 'Lesson Learned'
 
 		annotation SummarizationSetBy = User
 
+	/// (hidden) Surrogate key of the owning project; joins to the Project dimension.
 	column 'Project ID'
 		dataType: string
 		isHidden
@@ -20,6 +22,7 @@ table 'Lesson Learned'
 
 		annotation SummarizationSetBy = User
 
+	/// Human-readable project code the lesson belongs to.
 	column 'Project Code'
 		dataType: string
 		lineageTag: 141c12db-8148-5362-9ee9-b552c6cd85c1
@@ -28,6 +31,7 @@ table 'Lesson Learned'
 
 		annotation SummarizationSetBy = User
 
+	/// Theme classifying the lesson (e.g. schedule, cost, quality, process).
 	column 'Lesson Category'
 		dataType: string
 		lineageTag: d39f6dbf-b8d2-59b3-82fa-fffc9d413aca
@@ -36,6 +40,7 @@ table 'Lesson Learned'
 
 		annotation SummarizationSetBy = User
 
+	/// Short title of the retrospective insight captured.
 	column Lesson
 		dataType: string
 		lineageTag: d4544e6a-9790-5eaa-843a-d29d87a538db
@@ -44,6 +49,7 @@ table 'Lesson Learned'
 
 		annotation SummarizationSetBy = User
 
+	/// Narrative of the situation or event that prompted the lesson.
 	column 'What Happened'
 		dataType: string
 		lineageTag: 961ec4a4-5460-5206-844e-bd734161d4e0
@@ -52,6 +58,7 @@ table 'Lesson Learned'
 
 		annotation SummarizationSetBy = User
 
+	/// Recommended action or practice change to carry forward.
 	column Recommendation
 		dataType: string
 		lineageTag: 6ca85ade-ba99-5b85-9338-433634589d67
@@ -60,6 +67,7 @@ table 'Lesson Learned'
 
 		annotation SummarizationSetBy = User
 
+	/// Role accountable for acting on the recommendation.
 	column 'Follow-up Owner'
 		dataType: string
 		lineageTag: e1bcf5ed-df41-5395-8997-3c1ece06eed3
@@ -68,6 +76,7 @@ table 'Lesson Learned'
 
 		annotation SummarizationSetBy = User
 
+	/// Adoption state of the lesson: Open (awaiting action) or Adopted (folded into practice).
 	column 'Lesson Status'
 		dataType: string
 		lineageTag: f7102773-1fa2-56ed-91d7-5b59c977cf3b

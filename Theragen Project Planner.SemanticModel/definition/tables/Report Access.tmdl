@@ -3,6 +3,7 @@ table 'Report Access'
 	isHidden
 	lineageTag: 2ac357be-2d53-53a4-bd46-9698e4048668
 
+	/// (hidden) Surrogate key of the RLS grant row; joins to the access-grant source.
 	column 'Access ID'
 		dataType: string
 		isHidden
@@ -12,6 +13,7 @@ table 'Report Access'
 
 		annotation SummarizationSetBy = User
 
+	/// Sign-in email of the grantee whose report access this grant authorizes (matched against USERPRINCIPALNAME).
 	column 'User Email'
 		dataType: string
 		lineageTag: 29182ad0-c69e-5bb2-8ca0-430939904476
@@ -20,6 +22,7 @@ table 'Report Access'
 
 		annotation SummarizationSetBy = User
 
+	/// Breadth of the grant: Project, Department, or All.
 	column 'Scope Type'
 		dataType: string
 		lineageTag: 4135a6e6-8e11-5c3d-89ff-6c18985362d1
@@ -28,6 +31,7 @@ table 'Report Access'
 
 		annotation SummarizationSetBy = User
 
+	/// The specific project code or department the grant applies to (blank for an All-scope grant).
 	column 'Scope Value'
 		dataType: string
 		lineageTag: 54f1934b-a760-57a8-b7f2-f5fb5927af96
@@ -36,6 +40,7 @@ table 'Report Access'
 
 		annotation SummarizationSetBy = User
 
+	/// TRUE when the grant is currently in force; revoked grants are FALSE and grant no access.
 	column Active
 		dataType: boolean
 		lineageTag: 6e7dc08e-ab8d-5092-afa4-fed763bb8b55
@@ -44,6 +49,7 @@ table 'Report Access'
 
 		annotation SummarizationSetBy = User
 
+	/// Display name of the PMO administrator who authored the grant.
 	column 'Granted By'
 		dataType: string
 		lineageTag: bbb6d1a9-be44-5e9b-be79-357beeb47ea7
@@ -52,6 +58,7 @@ table 'Report Access'
 
 		annotation SummarizationSetBy = User
 
+	/// Date the access grant was authored.
 	column 'Granted Date'
 		dataType: dateTime
 		formatString: yyyy-mm-dd

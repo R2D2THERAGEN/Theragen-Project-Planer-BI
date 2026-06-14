@@ -2,6 +2,7 @@
 table 'Status Report Area'
 	lineageTag: d3978997-ade8-5607-9dc2-c1c6bda75037
 
+	/// (hidden) Surrogate key for the per-knowledge-area health entry.
 	column 'Area ID'
 		dataType: string
 		isHidden
@@ -11,6 +12,7 @@ table 'Status Report Area'
 
 		annotation SummarizationSetBy = User
 
+	/// (hidden) Surrogate key joining the area entry to its parent status report.
 	column 'Report ID'
 		dataType: string
 		isHidden
@@ -20,6 +22,7 @@ table 'Status Report Area'
 
 		annotation SummarizationSetBy = User
 
+	/// Human-readable project code the area entry belongs to.
 	column 'Project Code'
 		dataType: string
 		lineageTag: eb852233-6b5d-53b1-995e-e1131803b0f2
@@ -28,6 +31,7 @@ table 'Status Report Area'
 
 		annotation SummarizationSetBy = User
 
+	/// PMI knowledge area this health entry rates (Scope, Schedule, Cost, Quality, Risk, etc.).
 	column 'Knowledge Area'
 		dataType: string
 		lineageTag: 220c3e95-4583-5d30-b8ce-1e7a08d301d0
@@ -36,6 +40,7 @@ table 'Status Report Area'
 
 		annotation SummarizationSetBy = User
 
+	/// Health of this knowledge area for the period: Green, Yellow, or Red.
 	column 'Area Status'
 		dataType: string
 		lineageTag: 7a4e1cd4-c597-54c1-984f-be8ba4409ae8

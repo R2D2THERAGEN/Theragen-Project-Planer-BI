@@ -2,6 +2,7 @@
 table 'Recent Accomplishment'
 	lineageTag: aa85aea5-2274-5d74-8ebf-0ea8d744dfd1
 
+	/// (hidden) Surrogate key of the owning project; joins to the Project dimension.
 	column 'Project ID'
 		dataType: string
 		isHidden
@@ -11,6 +12,7 @@ table 'Recent Accomplishment'
 
 		annotation SummarizationSetBy = User
 
+	/// Name of the completed activity or achieved milestone reported as an accomplishment.
 	column Accomplishment
 		dataType: string
 		lineageTag: 796453ad-110d-5c72-8c0c-95817cf9566c
@@ -19,6 +21,7 @@ table 'Recent Accomplishment'
 
 		annotation SummarizationSetBy = User
 
+	/// Date the activity finished or the milestone was achieved.
 	column 'Completed Date'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -28,6 +31,7 @@ table 'Recent Accomplishment'
 
 		annotation SummarizationSetBy = User
 
+	/// Origin of the accomplishment row: Activity or Milestone.
 	column Source
 		dataType: string
 		lineageTag: d5c4f33c-a0d2-55bd-842e-30fffeb76a2c

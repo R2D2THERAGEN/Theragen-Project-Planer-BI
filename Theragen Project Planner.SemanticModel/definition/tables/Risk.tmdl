@@ -2,6 +2,7 @@
 table Risk
 	lineageTag: a2df0eeb-9b9b-5b4c-ad79-aa6aa62118ab
 
+	/// (hidden) Surrogate key for the risk register row; joins risk responses back to their parent risk.
 	column 'Risk ID'
 		dataType: string
 		isHidden
@@ -11,6 +12,7 @@ table Risk
 
 		annotation SummarizationSetBy = User
 
+	/// (hidden) Surrogate key of the owning project; joins the risk to the Project dimension.
 	column 'Project ID'
 		dataType: string
 		isHidden
@@ -20,6 +22,7 @@ table Risk
 
 		annotation SummarizationSetBy = User
 
+	/// Human-readable project code the risk belongs to (e.g. PRJ-001).
 	column 'Project Code'
 		dataType: string
 		lineageTag: 907c0178-76e5-5a9a-899d-fef0aa98d13c
@@ -28,6 +31,7 @@ table Risk
 
 		annotation SummarizationSetBy = User
 
+	/// Human-readable risk code (e.g. R-001); the per-project identifier shown on the risk register.
 	column 'Risk Code'
 		dataType: string
 		lineageTag: 5c134f32-2637-5c14-be7d-24a8d24c5eb4
@@ -36,6 +40,7 @@ table Risk
 
 		annotation SummarizationSetBy = User
 
+	/// Classification of the risk by type (e.g. technical, schedule, regulatory, financial).
 	column 'Risk Category'
 		dataType: string
 		lineageTag: 7fa38c59-9fb9-56f7-b146-6c1cda8f4bba
@@ -44,6 +49,7 @@ table Risk
 
 		annotation SummarizationSetBy = User
 
+	/// Free-text statement of the uncertain event and its potential effect on the project.
 	column 'Risk Description'
 		dataType: string
 		lineageTag: a11c04d4-0267-5247-bf94-b8e3f3ddc062
@@ -52,6 +58,7 @@ table Risk
 
 		annotation SummarizationSetBy = User
 
+	/// Probability score (1-5) that the risk occurs; one axis of the 5x5 matrix.
 	column Likelihood
 		dataType: int64
 		formatString: #,0
@@ -61,6 +68,7 @@ table Risk
 
 		annotation SummarizationSetBy = User
 
+	/// Severity score (1-5) of the risk if it occurs; the other axis of the 5x5 matrix.
 	column Impact
 		dataType: int64
 		formatString: #,0
@@ -70,6 +78,7 @@ table Risk
 
 		annotation SummarizationSetBy = User
 
+	/// Likelihood x Impact on the 5x5 matrix (1-25); the headline severity score (High >=12, Critical >=20).
 	column 'Risk Score'
 		dataType: int64
 		formatString: #,0
@@ -79,6 +88,7 @@ table Risk
 
 		annotation SummarizationSetBy = User
 
+	/// Planned response strategy for the risk: Mitigation, Transfer, Acceptance, or Avoidance.
 	column 'Response Type'
 		dataType: string
 		lineageTag: a8942d8a-c82f-553d-890c-e6a0b3fc91ce
@@ -87,6 +97,7 @@ table Risk
 
 		annotation SummarizationSetBy = User
 
+	/// (hidden) Surrogate key of the risk owner; joins to the Person directory.
 	column 'Owner ID'
 		dataType: string
 		isHidden
@@ -96,6 +107,7 @@ table Risk
 
 		annotation SummarizationSetBy = User
 
+	/// Display name of the person accountable for managing the risk.
 	column Owner
 		dataType: string
 		lineageTag: dbc0f95f-a869-56a4-8eac-616bc037d27e
@@ -104,6 +116,7 @@ table Risk
 
 		annotation SummarizationSetBy = User
 
+	/// Theragen department that owns or is most exposed to the risk.
 	column Department
 		dataType: string
 		lineageTag: 9b4884d5-0fce-5ba6-af1d-61d229b17533
@@ -112,6 +125,7 @@ table Risk
 
 		annotation SummarizationSetBy = User
 
+	/// Target date by which the planned mitigation should be completed.
 	column 'Due Date'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -123,6 +137,7 @@ table Risk
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	/// Lifecycle state of the risk: Open, Mitigating, Monitoring, Realized, or Closed.
 	column 'Risk Status'
 		dataType: string
 		lineageTag: a4e48868-6fa0-5af2-ae90-71814abda89a
@@ -131,6 +146,7 @@ table Risk
 
 		annotation SummarizationSetBy = User
 
+	/// Risk score expected to remain after planned mitigation; drives residual exposure.
 	column 'Residual Score'
 		dataType: int64
 		formatString: #,0
@@ -140,6 +156,7 @@ table Risk
 
 		annotation SummarizationSetBy = User
 
+	/// Regulatory or compliance framework the risk maps to (e.g. 21 CFR Part 11, ISO, GxP).
 	column 'Compliance Frame'
 		dataType: string
 		lineageTag: 609146b4-5da0-57c5-b4ea-19b1c6710522

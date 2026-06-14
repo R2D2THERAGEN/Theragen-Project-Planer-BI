@@ -2,6 +2,7 @@
 table 'Controlled Document'
 	lineageTag: 81d98dce-81c0-5c07-bd5a-d81ed357382d
 
+	/// (hidden) Surrogate key of the controlled document; joins RACI, version and approval facts back to this register.
 	column 'Document ID'
 		dataType: string
 		isHidden
@@ -11,6 +12,7 @@ table 'Controlled Document'
 
 		annotation SummarizationSetBy = User
 
+	/// Human-readable document id, THG-{DEPT}-{TYPE}-NNN (e.g. THG-OPS-CHR-001); globally unique.
 	column 'Doc ID'
 		dataType: string
 		lineageTag: 040061b7-cf81-5849-a591-597b730bea64
@@ -19,6 +21,7 @@ table 'Controlled Document'
 
 		annotation SummarizationSetBy = User
 
+	/// Document-type code embedded in the Doc ID: CHR/SOP/PLN/SCP/RPT/POL/WI/FRM.
 	column 'Document Type'
 		dataType: string
 		lineageTag: 1cf5c4d9-50bc-5252-a493-1b3e4591e57a
@@ -27,6 +30,7 @@ table 'Controlled Document'
 
 		annotation SummarizationSetBy = User
 
+	/// Owning department, one of the 8 Theragen departments (Clinical/Regulatory/R&D/Operations/Finance/Commercial/IT/HR).
 	column Department
 		dataType: string
 		lineageTag: ce11e2a3-b133-5bd3-9689-a3bba8125cab
@@ -35,6 +39,7 @@ table 'Controlled Document'
 
 		annotation SummarizationSetBy = User
 
+	/// Official title of the controlled document.
 	column Title
 		dataType: string
 		lineageTag: 6f9fde86-c7bd-53ba-b275-2ac77c60d4c0
@@ -43,6 +48,7 @@ table 'Controlled Document'
 
 		annotation SummarizationSetBy = User
 
+	/// Optional secondary title or descriptive subline for the document.
 	column Subtitle
 		dataType: string
 		lineageTag: 2474b047-734b-5946-8809-751af3cab537
@@ -51,6 +57,7 @@ table 'Controlled Document'
 
 		annotation SummarizationSetBy = User
 
+	/// Lifecycle phase the document sits in (authoring/review/effective stage of its governed life).
 	column 'Lifecycle Phase'
 		dataType: string
 		lineageTag: 3ac06c4e-1f0c-50ae-af98-19b514846fca
@@ -59,6 +66,7 @@ table 'Controlled Document'
 
 		annotation SummarizationSetBy = User
 
+	/// Document lifecycle status: DRAFT / REVIEW / BASELINE / AMENDED / RETIRED.
 	column Status
 		dataType: string
 		lineageTag: e4d7eed6-1de1-5232-bf6e-0597ce82b7b2
@@ -67,6 +75,7 @@ table 'Controlled Document'
 
 		annotation SummarizationSetBy = User
 
+	/// Version string of the document's currently effective revision.
 	column 'Current Version'
 		dataType: string
 		lineageTag: c99af174-7e06-5908-bac5-b5339aa79c2b
@@ -75,6 +84,7 @@ table 'Controlled Document'
 
 		annotation SummarizationSetBy = User
 
+	/// Display name of the document owner accountable for keeping it current.
 	column Owner
 		dataType: string
 		lineageTag: dcab9298-7d54-5d13-a127-f474237865a6
@@ -83,6 +93,7 @@ table 'Controlled Document'
 
 		annotation SummarizationSetBy = User
 
+	/// Display name of the approver authorized to sign off the document.
 	column Approver
 		dataType: string
 		lineageTag: e2c33659-e342-51d6-a741-f63f211fc21d
@@ -91,6 +102,7 @@ table 'Controlled Document'
 
 		annotation SummarizationSetBy = User
 
+	/// Recurring review cadence for the document (how often it must be re-reviewed).
 	column 'Review Cycle'
 		dataType: string
 		lineageTag: 65889601-7fd6-50a5-8fb9-49b13537dcb6
@@ -99,6 +111,7 @@ table 'Controlled Document'
 
 		annotation SummarizationSetBy = User
 
+	/// Date the document's next periodic review falls due per its review cycle.
 	column 'Next Review Due'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -110,6 +123,7 @@ table 'Controlled Document'
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	/// Information classification / sensitivity label governing how the document may be handled.
 	column Classification
 		dataType: string
 		lineageTag: d08a1200-094f-5c3a-b1c1-74d676ba9a7f
@@ -118,6 +132,7 @@ table 'Controlled Document'
 
 		annotation SummarizationSetBy = User
 
+	/// Repository system where the document file is stored (e.g. SharePoint).
 	column 'Storage System'
 		dataType: string
 		lineageTag: 56444bbb-e33e-544c-93e2-fd2ad83d695d
@@ -126,6 +141,7 @@ table 'Controlled Document'
 
 		annotation SummarizationSetBy = User
 
+	/// Location of the document file within its storage system.
 	column 'Storage Path'
 		dataType: string
 		lineageTag: ad0caeb9-48af-5126-acd0-1a17f2448093
@@ -134,6 +150,7 @@ table 'Controlled Document'
 
 		annotation SummarizationSetBy = User
 
+	/// Date the controlled document was first created in the register.
 	column 'Created Date'
 		dataType: dateTime
 		formatString: yyyy-mm-dd

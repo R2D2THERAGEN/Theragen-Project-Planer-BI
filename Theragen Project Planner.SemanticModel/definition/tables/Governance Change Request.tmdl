@@ -2,6 +2,7 @@
 table 'Governance Change Request'
 	lineageTag: 81c9d21e-89b9-504e-9b39-14a49edf5a8f
 
+	/// (hidden) Surrogate key for the governance change request; joins assessments via change_request_gov.cr_gov_id.
 	column 'CR Gov ID'
 		dataType: string
 		isHidden
@@ -11,6 +12,7 @@ table 'Governance Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// (hidden) Surrogate key of the controlled document this CR targets; joins to 'Controlled Document'.
 	column 'Document ID'
 		dataType: string
 		isHidden
@@ -20,6 +22,7 @@ table 'Governance Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// Human-readable governance change-request code, CHG-NNN (e.g. CHG-001); globally unique, project-less.
 	column 'CR Code'
 		dataType: string
 		lineageTag: f6d8dcf8-f94e-57c8-9080-3c1d998cd54d
@@ -28,6 +31,7 @@ table 'Governance Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// Minted identifier of the targeted controlled document, THG-{DEPT}-{TYPE}-NNN.
 	column 'Doc ID'
 		dataType: string
 		lineageTag: eb211c82-496d-55fa-ad30-a878178a1b53
@@ -36,6 +40,7 @@ table 'Governance Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// Title of the controlled document the change request targets.
 	column 'Doc Title'
 		dataType: string
 		lineageTag: dee47172-5391-567f-9628-0c44dda8330b
@@ -44,6 +49,7 @@ table 'Governance Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// Date the governance change request was raised.
 	column 'Requested Date'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -55,6 +61,7 @@ table 'Governance Change Request'
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	/// Display name of the person who raised the change request.
 	column 'Requested By'
 		dataType: string
 		lineageTag: e6fa6795-000a-5c17-abab-43b9a85d76f3
@@ -63,6 +70,7 @@ table 'Governance Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// Severity/control level of the change: A - Minor, B - Substantive, C - Controlling, or Emergency / Safety.
 	column 'CR Class'
 		dataType: string
 		lineageTag: 6d35213e-5f7e-5b80-a13d-f8c452078888
@@ -71,6 +79,7 @@ table 'Governance Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// Narrative of the proposed change to the controlled document.
 	column Description
 		dataType: string
 		lineageTag: 9abc991e-feae-5c8e-bf33-5eaf78bb7c4d
@@ -79,6 +88,7 @@ table 'Governance Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// Justification for why the change is needed.
 	column Reason
 		dataType: string
 		lineageTag: 8ad793e8-3cf8-574c-843d-13bc55a913ea
@@ -87,6 +97,7 @@ table 'Governance Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// Gate verdict (first workflow axis): Pending, Approved, Deferred, or Rejected.
 	column Decision
 		dataType: string
 		lineageTag: 29b2ea38-2744-5354-ab8d-c414adcadf7a
@@ -95,6 +106,7 @@ table 'Governance Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// Display name of the person who recorded the decision.
 	column 'Decided By'
 		dataType: string
 		lineageTag: 84eeb04f-41ef-5337-bbb2-f5a605ecdb48
@@ -103,6 +115,7 @@ table 'Governance Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// Date the decision was recorded.
 	column 'Decided Date'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -114,6 +127,7 @@ table 'Governance Change Request'
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	/// TRUE when an approved change's implementation has been confirmed in the artifact library.
 	column 'Implementation Verified'
 		dataType: boolean
 		lineageTag: 0df6ae83-4751-5679-9cbc-d05b3d13571d
@@ -122,6 +136,7 @@ table 'Governance Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// Workflow state (second axis): Open, In Assessment, Implementing, Verified, Closed, or Rejected.
 	column Status
 		dataType: string
 		lineageTag: 89fc5fc5-569e-5fd4-9f96-8d0b2eab388b
@@ -130,6 +145,7 @@ table 'Governance Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// SharePoint List item id of the source intake row, giving the CR a stable identity for idempotent re-syncs.
 	column 'Intake ID'
 		dataType: string
 		lineageTag: dde102df-8961-5001-a7d3-a64018d6dc26

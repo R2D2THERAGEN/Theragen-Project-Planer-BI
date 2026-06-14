@@ -2,6 +2,7 @@
 table 'Budget Line'
 	lineageTag: ed93a9dc-e5fb-5d23-b822-7353fccf8a6d
 
+	/// (hidden) Surrogate key for the budget line; joins to bi.budget_line_item.
 	column 'Budget Line ID'
 		dataType: string
 		isHidden
@@ -11,6 +12,7 @@ table 'Budget Line'
 
 		annotation SummarizationSetBy = User
 
+	/// (hidden) Surrogate key of the level-1 WBS deliverable this budget line estimates.
 	column 'WBS ID'
 		dataType: string
 		isHidden
@@ -20,6 +22,7 @@ table 'Budget Line'
 
 		annotation SummarizationSetBy = User
 
+	/// (hidden) Surrogate key of the owning project; joins to the Project dimension.
 	column 'Project ID'
 		dataType: string
 		isHidden
@@ -29,6 +32,7 @@ table 'Budget Line'
 
 		annotation SummarizationSetBy = User
 
+	/// Human-readable project code this budget line belongs to.
 	column 'Project Code'
 		dataType: string
 		lineageTag: 8b33f817-f49f-524f-927e-2dc66a9bbc61
@@ -37,6 +41,7 @@ table 'Budget Line'
 
 		annotation SummarizationSetBy = User
 
+	/// Cost classification of this budget line: Labor, Materials, Services, or Other.
 	column 'Cost Category'
 		dataType: string
 		lineageTag: f66d5f9a-c6f3-54d3-bc8f-81dc675493c8
@@ -45,6 +50,7 @@ table 'Budget Line'
 
 		annotation SummarizationSetBy = User
 
+	/// Labor (staff effort) component of this budget line, in USD.
 	column 'Labor Amount'
 		dataType: double
 		formatString: \$#,##0;(\$#,##0);\$0
@@ -54,6 +60,7 @@ table 'Budget Line'
 
 		annotation SummarizationSetBy = User
 
+	/// Materials (supplies, consumables) component of this budget line, in USD.
 	column 'Materials Amount'
 		dataType: double
 		formatString: \$#,##0;(\$#,##0);\$0
@@ -63,6 +70,7 @@ table 'Budget Line'
 
 		annotation SummarizationSetBy = User
 
+	/// Vendor / contractor component of this budget line, in USD.
 	column 'Vendor Amount'
 		dataType: double
 		formatString: \$#,##0;(\$#,##0);\$0
@@ -72,6 +80,7 @@ table 'Budget Line'
 
 		annotation SummarizationSetBy = User
 
+	/// Other-cost component of this budget line not covered by labor, materials, or vendor, in USD.
 	column 'Other Amount'
 		dataType: double
 		formatString: \$#,##0;(\$#,##0);\$0
@@ -81,6 +90,7 @@ table 'Budget Line'
 
 		annotation SummarizationSetBy = User
 
+	/// Budget line total before contingency (sum of labor, materials, vendor, and other), in USD.
 	column Subtotal
 		dataType: double
 		formatString: \$#,##0;(\$#,##0);\$0
@@ -90,6 +100,7 @@ table 'Budget Line'
 
 		annotation SummarizationSetBy = User
 
+	/// Contingency reserve applied to the subtotal, as a percentage.
 	column 'Contingency Pct'
 		dataType: double
 		formatString: #,0.0
@@ -99,6 +110,7 @@ table 'Budget Line'
 
 		annotation SummarizationSetBy = User
 
+	/// Funded budget line including contingency (subtotal plus contingency), in USD.
 	column Total
 		dataType: double
 		formatString: \$#,##0;(\$#,##0);\$0
@@ -108,6 +120,7 @@ table 'Budget Line'
 
 		annotation SummarizationSetBy = User
 
+	/// Funding source bankrolling this budget line (e.g. grant, internal, capital).
 	column 'Funding Source'
 		dataType: string
 		lineageTag: fad53fda-784f-5338-bdfc-39d4d4bccfbc

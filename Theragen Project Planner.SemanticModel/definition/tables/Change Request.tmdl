@@ -2,6 +2,7 @@
 table 'Change Request'
 	lineageTag: 7b9a0e97-8386-59c4-86e7-6b81e0f4bc37
 
+	/// (hidden) Surrogate key of the change request; joins to its impact assessments.
 	column 'CR ID'
 		dataType: string
 		isHidden
@@ -11,6 +12,7 @@ table 'Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// (hidden) Surrogate key of the owning project; joins to the Project dimension.
 	column 'Project ID'
 		dataType: string
 		isHidden
@@ -20,6 +22,7 @@ table 'Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// Human-readable project code the change request belongs to (e.g. PRJ-001).
 	column 'Project Code'
 		dataType: string
 		lineageTag: 32d1032f-b2bb-5c15-abd2-56c7689087a9
@@ -28,6 +31,7 @@ table 'Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// Human-readable change-request code, minted per project (e.g. C-001).
 	column 'CR Code'
 		dataType: string
 		lineageTag: e7107e71-f4a8-5b78-9e23-8f2a9abc8700
@@ -36,6 +40,7 @@ table 'Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// Source SharePoint List item id for this change request (sync idempotency anchor).
 	column 'Intake ID'
 		dataType: string
 		lineageTag: 5f7b879f-9bd9-547b-88d1-62b477920db5
@@ -44,6 +49,7 @@ table 'Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// Date the change request was raised; start of the CR cycle time.
 	column 'Requested Date'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -55,6 +61,7 @@ table 'Change Request'
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	/// (hidden) Surrogate key of the requester; joins to the Person directory.
 	column 'Requested By ID'
 		dataType: string
 		isHidden
@@ -64,6 +71,7 @@ table 'Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// Display name of the person who raised the change request.
 	column 'Requested By'
 		dataType: string
 		lineageTag: cfce37e1-35bc-52cd-8316-81edd3d5d0bd
@@ -72,6 +80,7 @@ table 'Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// Change severity class: A - Minor, B - Substantive, C - Controlling, or Emergency / Safety.
 	column 'CR Class'
 		dataType: string
 		lineageTag: 3011681e-6a3c-5e04-83ba-0dea51506588
@@ -80,6 +89,7 @@ table 'Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// Nature of the change requested (scope, schedule, cost, quality, or a combination).
 	column 'Change Type'
 		dataType: string
 		lineageTag: c12f5534-29fa-5a5b-830b-bf615d6483d2
@@ -88,6 +98,7 @@ table 'Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// Free-text description of what the change request proposes to change.
 	column 'CR Description'
 		dataType: string
 		lineageTag: 3fb56c03-96f4-540c-8d54-221855dfa152
@@ -96,6 +107,7 @@ table 'Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// Business justification for why the change is being requested.
 	column Reason
 		dataType: string
 		lineageTag: 5cf1d5e3-aef1-5be7-a432-64a1785abf4a
@@ -104,6 +116,7 @@ table 'Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// Estimated net schedule impact of the change, in days (positive = delay).
 	column 'Schedule Impact Days'
 		dataType: int64
 		formatString: #,0
@@ -113,6 +126,7 @@ table 'Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// Estimated net cost impact of the change (positive = added cost).
 	column 'Cost Impact'
 		dataType: double
 		formatString: \$#,##0;(\$#,##0);\$0
@@ -122,6 +136,7 @@ table 'Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// Gate verdict on the change request: Pending, Approved, Deferred, or Rejected.
 	column Decision
 		dataType: string
 		lineageTag: f110871a-e180-585f-8471-0e0e9e6eca55
@@ -130,6 +145,7 @@ table 'Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// Date the gate decision was made; end of the CR cycle time.
 	column 'Decided Date'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -141,6 +157,7 @@ table 'Change Request'
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	/// Days from request to decision; basis for the Avg CR Cycle Days measure.
 	column 'Cycle Time Days'
 		dataType: int64
 		formatString: #,0
@@ -150,6 +167,7 @@ table 'Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// Workflow state: Open, In Assessment, Implementing, Verified, Closed, or Rejected.
 	column 'CR Status'
 		dataType: string
 		lineageTag: fcc0e2dd-acf9-595d-bc2c-8d42184732b9
@@ -158,6 +176,7 @@ table 'Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// Display name of the person who decided the change request.
 	column 'Decided By'
 		dataType: string
 		lineageTag: 1db98f60-078b-59cb-8f8f-5389ea9603de
@@ -166,6 +185,7 @@ table 'Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// Narrative of how the change affects project scope.
 	column 'Impact Scope'
 		dataType: string
 		lineageTag: c2387b7d-b0ce-5c04-8795-4f60c214b5fc
@@ -174,6 +194,7 @@ table 'Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// Narrative of how the change affects deliverable quality.
 	column 'Impact Quality'
 		dataType: string
 		lineageTag: d022d6a9-1136-5190-bc88-0c292d7e3304
@@ -182,6 +203,7 @@ table 'Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// Project artifacts (plans, baselines, documents) the change touches.
 	column 'Affected Artifacts'
 		dataType: string
 		lineageTag: d244ae9d-f5cf-5269-9d5c-c477aa8f3701
@@ -190,6 +212,7 @@ table 'Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// TRUE when an approved change's implementation has been confirmed in the artifact library.
 	column 'Implementation Verified'
 		dataType: boolean
 		lineageTag: 3e82fb44-b2e3-59eb-b55b-563b44036216
@@ -198,6 +221,7 @@ table 'Change Request'
 
 		annotation SummarizationSetBy = User
 
+	/// TRUE when the artifacts affected by the change have been updated to reflect it.
 	column 'Linked Artifacts Updated'
 		dataType: boolean
 		lineageTag: 48c91de8-d7c7-57c7-9569-af4cc38cf212

@@ -2,6 +2,7 @@
 table 'WBS Element'
 	lineageTag: 8c55977c-f927-51e5-8318-e4024a92cc19
 
+	/// (hidden) Surrogate key for the WBS node; activities and budget lines join to this.
 	column 'WBS ID'
 		dataType: string
 		isHidden
@@ -11,6 +12,7 @@ table 'WBS Element'
 
 		annotation SummarizationSetBy = User
 
+	/// (hidden) Foreign key to the owning project; joins to 'Project'[Project ID].
 	column 'Project ID'
 		dataType: string
 		isHidden
@@ -20,6 +22,7 @@ table 'WBS Element'
 
 		annotation SummarizationSetBy = User
 
+	/// Human-readable project code this WBS node belongs to (e.g. PRJ-001).
 	column 'Project Code'
 		dataType: string
 		lineageTag: 9c4b2e82-8fa2-5609-bb1b-b9c2f81005d5
@@ -28,6 +31,7 @@ table 'WBS Element'
 
 		annotation SummarizationSetBy = User
 
+	/// Human-readable WBS code minted append-only (e.g. 1 = workstream, 1.1 = work package).
 	column 'WBS Code'
 		dataType: string
 		lineageTag: 5bfb6a67-4aef-5360-b24e-4ccee1cce1b8
@@ -36,6 +40,7 @@ table 'WBS Element'
 
 		annotation SummarizationSetBy = User
 
+	/// (hidden) Self-referencing key to the parent workstream; blank for level-1 nodes.
 	column 'Parent WBS ID'
 		dataType: string
 		isHidden
@@ -45,6 +50,7 @@ table 'WBS Element'
 
 		annotation SummarizationSetBy = User
 
+	/// Depth in the WBS hierarchy: 1 = workstream, 2 = work package (EVM estimates attach here).
 	column 'WBS Level'
 		dataType: int64
 		formatString: #,0
@@ -54,6 +60,7 @@ table 'WBS Element'
 
 		annotation SummarizationSetBy = User
 
+	/// Descriptive name of the workstream or work package.
 	column 'WBS Name'
 		dataType: string
 		lineageTag: 91f9522f-42b9-5af2-a07f-0f135c063a12
@@ -62,6 +69,7 @@ table 'WBS Element'
 
 		annotation SummarizationSetBy = User
 
+	/// Theragen department accountable for this WBS node (one of the 8 departments).
 	column 'Owning Department'
 		dataType: string
 		lineageTag: f40747e6-71de-57a7-839a-c5f69d28f4d0
@@ -70,6 +78,7 @@ table 'WBS Element'
 
 		annotation SummarizationSetBy = User
 
+	/// Role title responsible for the WBS node (e.g. Project Manager, Lead Engineer).
 	column 'Owner Role'
 		dataType: string
 		lineageTag: a71c8eed-a000-586c-a27a-24851b93b1aa
@@ -78,6 +87,7 @@ table 'WBS Element'
 
 		annotation SummarizationSetBy = User
 
+	/// Planned effort for the node in person-hours.
 	column 'Estimated Effort Hrs'
 		dataType: double
 		formatString: #,0
@@ -87,6 +97,7 @@ table 'WBS Element'
 
 		annotation SummarizationSetBy = User
 
+	/// Estimated cost of the node; level-2 sums form the EVM Budget at Completion (BAC).
 	column 'Estimated Cost'
 		dataType: double
 		formatString: \$#,##0;(\$#,##0);\$0

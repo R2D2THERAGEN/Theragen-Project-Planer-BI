@@ -2,6 +2,7 @@
 table 'Phase Gate Log'
 	lineageTag: e5eef857-5424-514c-8e0a-a63bec74a235
 
+	/// (hidden) Surrogate primary key for the phase-gate event row.
 	column 'Phase Gate ID'
 		dataType: string
 		isHidden
@@ -12,6 +13,7 @@ table 'Phase Gate Log'
 
 		annotation SummarizationSetBy = User
 
+	/// (hidden) Surrogate key of the project this gate belongs to; joins to 'Project'.
 	column 'Project ID'
 		dataType: string
 		isHidden
@@ -21,6 +23,7 @@ table 'Phase Gate Log'
 
 		annotation SummarizationSetBy = User
 
+	/// Human-readable project code the gate belongs to.
 	column 'Project Code'
 		dataType: string
 		lineageTag: 90a8a20f-84e8-593d-921c-808a7ba60566
@@ -29,6 +32,7 @@ table 'Phase Gate Log'
 
 		annotation SummarizationSetBy = User
 
+	/// Lifecycle phase the project was leaving at the gate (forward-only; backward transitions are rejected).
 	column 'From Phase'
 		dataType: string
 		lineageTag: 17828154-f6fe-50cf-a619-7d7ec6522d66
@@ -37,6 +41,7 @@ table 'Phase Gate Log'
 
 		annotation SummarizationSetBy = User
 
+	/// Lifecycle phase the project advanced to (equals From Phase when the gate is Held).
 	column 'To Phase'
 		dataType: string
 		lineageTag: 9f641ddc-993e-5751-8425-ee16bbdf5981
@@ -45,6 +50,7 @@ table 'Phase Gate Log'
 
 		annotation SummarizationSetBy = User
 
+	/// Gate verdict: Approved, Approved with conditions, or Held (keeps the project in its current phase).
 	column 'Gate Decision'
 		dataType: string
 		lineageTag: a4ac57e2-c374-5acd-b8ec-40f7dd791daf
@@ -53,6 +59,7 @@ table 'Phase Gate Log'
 
 		annotation SummarizationSetBy = User
 
+	/// Date the gate decision was made.
 	column 'Decided Date'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -64,6 +71,7 @@ table 'Phase Gate Log'
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	/// Free-text rationale or conditions recorded for the gate decision.
 	column 'Gate Notes'
 		dataType: string
 		lineageTag: 93041748-a390-535c-b30e-abed0d87225d
@@ -72,6 +80,7 @@ table 'Phase Gate Log'
 
 		annotation SummarizationSetBy = User
 
+	/// Display name of the person who approved the phase transition.
 	column 'Approved By'
 		dataType: string
 		lineageTag: e7c4b5e4-6418-51b0-b328-cba0e9b99b80

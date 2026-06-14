@@ -2,6 +2,7 @@
 table 'Document Approval'
 	lineageTag: f8d7bfd0-0bd5-5a9e-8558-a8faf702c8a5
 
+	/// (hidden) Surrogate key for this attestation record.
 	column 'Approval ID'
 		dataType: string
 		isHidden
@@ -11,6 +12,7 @@ table 'Document Approval'
 
 		annotation SummarizationSetBy = User
 
+	/// (hidden) Surrogate key joining this attestation to the Document Version it signs off.
 	column 'Version ID'
 		dataType: string
 		isHidden
@@ -20,6 +22,7 @@ table 'Document Approval'
 
 		annotation SummarizationSetBy = User
 
+	/// Minted document identifier (THG-{DEPT}-{TYPE}-NNN) of the attested document.
 	column 'Doc ID'
 		dataType: string
 		lineageTag: 0af24d5a-2a2a-5d41-b5e5-613592c72d26
@@ -28,6 +31,7 @@ table 'Document Approval'
 
 		annotation SummarizationSetBy = User
 
+	/// Human-readable title of the attested document.
 	column 'Document Title'
 		dataType: string
 		lineageTag: 07d153d4-2b99-556c-8fd9-c710708931c7
@@ -36,6 +40,7 @@ table 'Document Approval'
 
 		annotation SummarizationSetBy = User
 
+	/// Version string of the document revision this attestation signs off.
 	column Version
 		dataType: string
 		lineageTag: 21ff72fd-7d69-5542-9b7b-0d5734957f3e
@@ -44,6 +49,7 @@ table 'Document Approval'
 
 		annotation SummarizationSetBy = User
 
+	/// Display name of the person who recorded this attestation (the sign-off, not a Part-11 signer).
 	column Approver
 		dataType: string
 		lineageTag: a0992118-aa17-5829-85da-349f1b6ba8bf
@@ -52,6 +58,7 @@ table 'Document Approval'
 
 		annotation SummarizationSetBy = User
 
+	/// What the sign-off asserts: Approval / Review / Authorship (a meaning, not a Part-11 signature).
 	column 'Signature Meaning'
 		dataType: string
 		lineageTag: b09b10a5-32e0-5a3f-a562-985cdf95f045
@@ -60,6 +67,7 @@ table 'Document Approval'
 
 		annotation SummarizationSetBy = User
 
+	/// Timestamp when the attestation was recorded by the server.
 	column 'Signed At'
 		dataType: dateTime
 		formatString: yyyy-mm-dd hh:nn:ss
@@ -69,6 +77,7 @@ table 'Document Approval'
 
 		annotation SummarizationSetBy = User
 
+	/// SHA-256 hash binding the signed facts (who, when, meaning) for tamper-evidence; not a Part-11 signature.
 	column 'Attestation Hash'
 		dataType: string
 		lineageTag: 2c42e40e-e8b6-5be7-914b-73e0dc43f632
@@ -77,6 +86,7 @@ table 'Document Approval'
 
 		annotation SummarizationSetBy = User
 
+	/// Always "Attestation (non-Part-11)" - an honest sign-off record, not a 21 CFR Part 11 signature.
 	column 'Attestation Kind'
 		dataType: string
 		lineageTag: d3b9b192-ce77-51c3-882d-4a28bb1768d4
@@ -85,6 +95,7 @@ table 'Document Approval'
 
 		annotation SummarizationSetBy = User
 
+	/// Free-text justification the attester gave for the sign-off.
 	column Reason
 		dataType: string
 		lineageTag: cdba8439-59fb-596c-81b0-f8addfc98d17

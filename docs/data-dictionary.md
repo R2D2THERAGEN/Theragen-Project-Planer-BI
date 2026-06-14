@@ -54,7 +54,7 @@ Measure home table. All portfolio analytics measures live here.
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| Value | string | yes |  |  |
+| Value | string | yes |  | Hidden placeholder column for the measure-host table; carries no data. |
 
 **Measures**
 
@@ -226,19 +226,19 @@ Fact - cost budget estimate lines (PMBOK P13), one per level-1 deliverable.
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| Budget Line ID | string | yes |  |  |
-| WBS ID | string | yes |  |  |
-| Project ID | string | yes |  |  |
-| Project Code | string |  |  |  |
-| Cost Category | string |  |  |  |
-| Labor Amount | double |  | \$#,##0;(\$#,##0);\$0 |  |
-| Materials Amount | double |  | \$#,##0;(\$#,##0);\$0 |  |
-| Vendor Amount | double |  | \$#,##0;(\$#,##0);\$0 |  |
-| Other Amount | double |  | \$#,##0;(\$#,##0);\$0 |  |
-| Subtotal | double |  | \$#,##0;(\$#,##0);\$0 |  |
-| Contingency Pct | double |  | #,0.0 |  |
-| Total | double |  | \$#,##0;(\$#,##0);\$0 |  |
-| Funding Source | string |  |  |  |
+| Budget Line ID | string | yes |  | (hidden) Surrogate key for the budget line; joins to bi.budget_line_item. |
+| WBS ID | string | yes |  | (hidden) Surrogate key of the level-1 WBS deliverable this budget line estimates. |
+| Project ID | string | yes |  | (hidden) Surrogate key of the owning project; joins to the Project dimension. |
+| Project Code | string |  |  | Human-readable project code this budget line belongs to. |
+| Cost Category | string |  |  | Cost classification of this budget line: Labor, Materials, Services, or Other. |
+| Labor Amount | double |  | \$#,##0;(\$#,##0);\$0 | Labor (staff effort) component of this budget line, in USD. |
+| Materials Amount | double |  | \$#,##0;(\$#,##0);\$0 | Materials (supplies, consumables) component of this budget line, in USD. |
+| Vendor Amount | double |  | \$#,##0;(\$#,##0);\$0 | Vendor / contractor component of this budget line, in USD. |
+| Other Amount | double |  | \$#,##0;(\$#,##0);\$0 | Other-cost component of this budget line not covered by labor, materials, or vendor, in USD. |
+| Subtotal | double |  | \$#,##0;(\$#,##0);\$0 | Budget line total before contingency (sum of labor, materials, vendor, and other), in USD. |
+| Contingency Pct | double |  | #,0.0 | Contingency reserve applied to the subtotal, as a percentage. |
+| Total | double |  | \$#,##0;(\$#,##0);\$0 | Funded budget line including contingency (subtotal plus contingency), in USD. |
+| Funding Source | string |  |  | Funding source bankrolling this budget line (e.g. grant, internal, capital). |
 
 <a id="change-impact-assessment"></a>
 ## Change Impact Assessment
@@ -251,17 +251,17 @@ Fact - per-department change-impact assessments (PMBOK P22). One row per departm
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| Impact ID | string | yes |  |  |
-| CR ID | string | yes |  |  |
-| CR Code | string |  |  |  |
-| Project Code | string |  |  |  |
-| Department | string |  |  |  |
-| Scope Impact | string |  |  |  |
-| Schedule Impact Days | int64 |  | #,0 |  |
-| Cost Impact | double |  | \$#,##0;(\$#,##0);\$0 |  |
-| Quality Impact | string |  |  |  |
-| Submitted By | string |  |  |  |
-| Submitted Date | dateTime |  | yyyy-mm-dd |  |
+| Impact ID | string | yes |  | (hidden) Surrogate key of this per-department impact assessment. |
+| CR ID | string | yes |  | (hidden) Surrogate key of the assessed change request; joins to Change Request. |
+| CR Code | string |  |  | Human-readable code of the change request being assessed (e.g. C-001). |
+| Project Code | string |  |  | Human-readable project code the assessed change request belongs to (e.g. PRJ-001). |
+| Department | string |  |  | Theragen department filing this impact statement on the change request. |
+| Scope Impact | string |  |  | This department's narrative of how the change affects its scope of work. |
+| Schedule Impact Days | int64 |  | #,0 | This department's estimated schedule impact of the change, in days (positive = delay). |
+| Cost Impact | double |  | \$#,##0;(\$#,##0);\$0 | This department's estimated cost impact of the change (positive = added cost). |
+| Quality Impact | string |  |  | This department's narrative of how the change affects deliverable quality. |
+| Submitted By | string |  |  | Display name of the person who submitted this department's assessment. |
+| Submitted Date | dateTime |  | yyyy-mm-dd | Date this department submitted its impact assessment. |
 
 <a id="change-request"></a>
 ## Change Request
@@ -274,30 +274,30 @@ Fact - project change requests (PMBOK P21) with impact and decision cycle.
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| CR ID | string | yes |  |  |
-| Project ID | string | yes |  |  |
-| Project Code | string |  |  |  |
-| CR Code | string |  |  |  |
-| Intake ID | string |  |  |  |
-| Requested Date | dateTime |  | yyyy-mm-dd |  |
-| Requested By ID | string | yes |  |  |
-| Requested By | string |  |  |  |
-| CR Class | string |  |  |  |
-| Change Type | string |  |  |  |
-| CR Description | string |  |  |  |
-| Reason | string |  |  |  |
-| Schedule Impact Days | int64 |  | #,0 |  |
-| Cost Impact | double |  | \$#,##0;(\$#,##0);\$0 |  |
-| Decision | string |  |  |  |
-| Decided Date | dateTime |  | yyyy-mm-dd |  |
-| Cycle Time Days | int64 |  | #,0 |  |
-| CR Status | string |  |  |  |
-| Decided By | string |  |  |  |
-| Impact Scope | string |  |  |  |
-| Impact Quality | string |  |  |  |
-| Affected Artifacts | string |  |  |  |
-| Implementation Verified | boolean |  |  |  |
-| Linked Artifacts Updated | boolean |  |  |  |
+| CR ID | string | yes |  | (hidden) Surrogate key of the change request; joins to its impact assessments. |
+| Project ID | string | yes |  | (hidden) Surrogate key of the owning project; joins to the Project dimension. |
+| Project Code | string |  |  | Human-readable project code the change request belongs to (e.g. PRJ-001). |
+| CR Code | string |  |  | Human-readable change-request code, minted per project (e.g. C-001). |
+| Intake ID | string |  |  | Source SharePoint List item id for this change request (sync idempotency anchor). |
+| Requested Date | dateTime |  | yyyy-mm-dd | Date the change request was raised; start of the CR cycle time. |
+| Requested By ID | string | yes |  | (hidden) Surrogate key of the requester; joins to the Person directory. |
+| Requested By | string |  |  | Display name of the person who raised the change request. |
+| CR Class | string |  |  | Change severity class: A - Minor, B - Substantive, C - Controlling, or Emergency / Safety. |
+| Change Type | string |  |  | Nature of the change requested (scope, schedule, cost, quality, or a combination). |
+| CR Description | string |  |  | Free-text description of what the change request proposes to change. |
+| Reason | string |  |  | Business justification for why the change is being requested. |
+| Schedule Impact Days | int64 |  | #,0 | Estimated net schedule impact of the change, in days (positive = delay). |
+| Cost Impact | double |  | \$#,##0;(\$#,##0);\$0 | Estimated net cost impact of the change (positive = added cost). |
+| Decision | string |  |  | Gate verdict on the change request: Pending, Approved, Deferred, or Rejected. |
+| Decided Date | dateTime |  | yyyy-mm-dd | Date the gate decision was made; end of the CR cycle time. |
+| Cycle Time Days | int64 |  | #,0 | Days from request to decision; basis for the Avg CR Cycle Days measure. |
+| CR Status | string |  |  | Workflow state: Open, In Assessment, Implementing, Verified, Closed, or Rejected. |
+| Decided By | string |  |  | Display name of the person who decided the change request. |
+| Impact Scope | string |  |  | Narrative of how the change affects project scope. |
+| Impact Quality | string |  |  | Narrative of how the change affects deliverable quality. |
+| Affected Artifacts | string |  |  | Project artifacts (plans, baselines, documents) the change touches. |
+| Implementation Verified | boolean |  |  | TRUE when an approved change's implementation has been confirmed in the artifact library. |
+| Linked Artifacts Updated | boolean |  |  | TRUE when the artifacts affected by the change have been updated to reflect it. |
 
 <a id="closure-item"></a>
 ## Closure Item
@@ -310,13 +310,13 @@ Fact - project closure checklist items (PMBOK P26).
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| Closure Item ID | string | yes |  |  |
-| Project ID | string | yes |  |  |
-| Project Code | string |  |  |  |
-| Closure Item | string |  |  |  |
-| Owner Role | string |  |  |  |
-| Done | boolean |  |  |  |
-| Evidence | string |  |  |  |
+| Closure Item ID | string | yes |  | (hidden) Surrogate key of the closure-checklist row; joins to the closure source. |
+| Project ID | string | yes |  | (hidden) Surrogate key of the owning project; joins to the Project dimension. |
+| Project Code | string |  |  | Human-readable project code the closure item belongs to. |
+| Closure Item | string |  |  | Text of the project-closeout checklist entry to be completed. |
+| Owner Role | string |  |  | Role accountable for completing the checklist item. |
+| Done | boolean |  |  | TRUE when the checklist item has been completed. |
+| Evidence | string |  |  | Reference or note evidencing that the item was completed. |
 
 <a id="controlled-document"></a>
 ## Controlled Document
@@ -329,23 +329,23 @@ Fact - controlled-document register (doc_mgmt spine). One row per controlled doc
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| Document ID | string | yes |  |  |
-| Doc ID | string |  |  |  |
-| Document Type | string |  |  |  |
-| Department | string |  |  |  |
-| Title | string |  |  |  |
-| Subtitle | string |  |  |  |
-| Lifecycle Phase | string |  |  |  |
-| Status | string |  |  |  |
-| Current Version | string |  |  |  |
-| Owner | string |  |  |  |
-| Approver | string |  |  |  |
-| Review Cycle | string |  |  |  |
-| Next Review Due | dateTime |  | yyyy-mm-dd |  |
-| Classification | string |  |  |  |
-| Storage System | string |  |  |  |
-| Storage Path | string |  |  |  |
-| Created Date | dateTime |  | yyyy-mm-dd |  |
+| Document ID | string | yes |  | (hidden) Surrogate key of the controlled document; joins RACI, version and approval facts back to this register. |
+| Doc ID | string |  |  | Human-readable document id, THG-{DEPT}-{TYPE}-NNN (e.g. THG-OPS-CHR-001); globally unique. |
+| Document Type | string |  |  | Document-type code embedded in the Doc ID: CHR/SOP/PLN/SCP/RPT/POL/WI/FRM. |
+| Department | string |  |  | Owning department, one of the 8 Theragen departments (Clinical/Regulatory/R&D/Operations/Finance/Commercial/IT/HR). |
+| Title | string |  |  | Official title of the controlled document. |
+| Subtitle | string |  |  | Optional secondary title or descriptive subline for the document. |
+| Lifecycle Phase | string |  |  | Lifecycle phase the document sits in (authoring/review/effective stage of its governed life). |
+| Status | string |  |  | Document lifecycle status: DRAFT / REVIEW / BASELINE / AMENDED / RETIRED. |
+| Current Version | string |  |  | Version string of the document's currently effective revision. |
+| Owner | string |  |  | Display name of the document owner accountable for keeping it current. |
+| Approver | string |  |  | Display name of the approver authorized to sign off the document. |
+| Review Cycle | string |  |  | Recurring review cadence for the document (how often it must be re-reviewed). |
+| Next Review Due | dateTime |  | yyyy-mm-dd | Date the document's next periodic review falls due per its review cycle. |
+| Classification | string |  |  | Information classification / sensitivity label governing how the document may be handled. |
+| Storage System | string |  |  | Repository system where the document file is stored (e.g. SharePoint). |
+| Storage Path | string |  |  | Location of the document file within its storage system. |
+| Created Date | dateTime |  | yyyy-mm-dd | Date the controlled document was first created in the register. |
 
 <a id="cost-actual"></a>
 ## Cost Actual
@@ -358,16 +358,16 @@ Fact - per-work-package, per-period actual cost (EVM AC). One row per logged cos
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| Cost Actual ID | string | yes |  |  |
-| WBS ID | string | yes |  |  |
-| Project Code | string |  |  |  |
-| WBS Code | string |  |  |  |
-| Work Package | string |  |  |  |
-| Period | dateTime |  | yyyy-mm-dd |  |
-| Amount | double |  | \$#,##0.00;(\$#,##0.00);\$0 |  |
-| Category | string |  |  |  |
-| Entered By | string |  |  |  |
-| Notes | string |  |  |  |
+| Cost Actual ID | string | yes |  | (hidden) Surrogate key for the cost actual; joins to bi.cost_actual. |
+| WBS ID | string | yes |  | (hidden) Surrogate key of the WBS work package this cost was charged against. |
+| Project Code | string |  |  | Human-readable project code this cost actual belongs to. |
+| WBS Code | string |  |  | Human-readable WBS code of the work package this cost was charged against. |
+| Work Package | string |  |  | Name of the level-2 WBS work package the actual cost was incurred on. |
+| Period | dateTime |  | yyyy-mm-dd | Accounting period (month) the actual cost was booked to. |
+| Amount | double |  | \$#,##0.00;(\$#,##0.00);\$0 | Money actually spent in this entry, in USD; summed gives EVM actual cost (AC). |
+| Category | string |  |  | Cost classification of the spend: Labor, Materials, Services, or Other. |
+| Entered By | string |  |  | Display name of the person who logged this cost actual. |
+| Notes | string |  |  | Free-text note explaining or itemizing the logged cost. |
 
 <a id="date"></a>
 ## Date
@@ -378,13 +378,13 @@ Marked date dimension covering 2025-2027.
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| Date | dateTime |  | yyyy-mm-dd |  |
-| Year = YEAR('Date'[Date]) | int64 |  | #,0 |  |
-| Quarter = "Q" & QUARTER('Date'[Date]) | string |  |  |  |
-| 'Month Number' = MONTH('Date'[Date]) | int64 | yes |  |  |
-| Month = FORMAT('Date'[Date], "MMM") | string |  |  |  |
-| 'Year Month' = FORMAT('Date'[Date], "YYYY-MM") | string |  |  |  |
-| 'Week Of' = 'Date'[Date] - WEEKDAY('Date'[Date], 2) + 1 | dateTime |  | yyyy-mm-dd |  |
+| Date | dateTime |  | yyyy-mm-dd | The calendar day; the key of the marked date dimension that every date relationship joins to. |
+| Year = YEAR('Date'[Date]) | int64 |  | #,0 | Calendar year of the date, for year-level grouping and filtering. |
+| Quarter = "Q" & QUARTER('Date'[Date]) | string |  |  | Calendar quarter label (Q1-Q4) of the date, for quarter-level grouping. |
+| 'Month Number' = MONTH('Date'[Date]) | int64 | yes |  | (hidden) Month number 1-12; the sort key that orders the Month name column chronologically. |
+| Month = FORMAT('Date'[Date], "MMM") | string |  |  | Three-letter month abbreviation (Jan-Dec), sorted by Month Number. |
+| 'Year Month' = FORMAT('Date'[Date], "YYYY-MM") | string |  |  | Year-month key in YYYY-MM form, for chronological month-over-month trending across years. |
+| 'Week Of' = 'Date'[Date] - WEEKDAY('Date'[Date], 2) + 1 | dateTime |  | yyyy-mm-dd | Monday-start date of the week the date falls in; for weekly bucketing of activity and milestones. |
 
 <a id="decision"></a>
 ## Decision
@@ -397,13 +397,13 @@ Fact - governance decisions (PMBOK P21). Formal decisions logged against a proje
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| Decision ID | string | yes |  |  |
-| Project ID | string | yes |  |  |
-| Project Code | string |  |  |  |
-| Decision | string |  |  |  |
-| Rationale | string |  |  |  |
-| Decided By | string |  |  |  |
-| Decided Date | dateTime |  | yyyy-mm-dd |  |
+| Decision ID | string | yes |  | (hidden) Surrogate key of the logged governance decision. |
+| Project ID | string | yes |  | (hidden) Surrogate key of the owning project; joins to the Project dimension. |
+| Project Code | string |  |  | Human-readable project code the decision was logged against (e.g. PRJ-001). |
+| Decision | string |  |  | Statement of the governance decision made (the resolution reached). |
+| Rationale | string |  |  | Reasoning recorded for why the decision was made. |
+| Decided By | string |  |  | Display name of the person who made the decision. |
+| Decided Date | dateTime |  | yyyy-mm-dd | Date the governance decision was made and logged. |
 
 <a id="department"></a>
 ## Department
@@ -416,9 +416,9 @@ Conformed department dimension (DM D01). Filters executing departments on facts.
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| Department ID | string | yes |  |  |
-| Department Code | string |  |  |  |
-| Department | string |  |  |  |
+| Department ID | string | yes |  | (hidden) Surrogate key uniquely identifying the department; the relationship anchor for department joins on facts. |
+| Department Code | string |  |  | Short department code used in minted Doc IDs (e.g. OPS, REG, IT); the human-readable department key. |
+| Department | string |  |  | Full department name; one of the 8 Theragen departments (e.g. Operations / PMO, Regulatory / Quality). |
 
 <a id="document-approval"></a>
 ## Document Approval
@@ -431,17 +431,17 @@ Fact - per-version sign-off ATTESTATION (non-Part-11; see esig_kind).
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| Approval ID | string | yes |  |  |
-| Version ID | string | yes |  |  |
-| Doc ID | string |  |  |  |
-| Document Title | string |  |  |  |
-| Version | string |  |  |  |
-| Approver | string |  |  |  |
-| Signature Meaning | string |  |  |  |
-| Signed At | dateTime |  | yyyy-mm-dd hh:nn:ss |  |
-| Attestation Hash | string |  |  |  |
-| Attestation Kind | string |  |  |  |
-| Reason | string |  |  |  |
+| Approval ID | string | yes |  | (hidden) Surrogate key for this attestation record. |
+| Version ID | string | yes |  | (hidden) Surrogate key joining this attestation to the Document Version it signs off. |
+| Doc ID | string |  |  | Minted document identifier (THG-{DEPT}-{TYPE}-NNN) of the attested document. |
+| Document Title | string |  |  | Human-readable title of the attested document. |
+| Version | string |  |  | Version string of the document revision this attestation signs off. |
+| Approver | string |  |  | Display name of the person who recorded this attestation (the sign-off, not a Part-11 signer). |
+| Signature Meaning | string |  |  | What the sign-off asserts: Approval / Review / Authorship (a meaning, not a Part-11 signature). |
+| Signed At | dateTime |  | yyyy-mm-dd hh:nn:ss | Timestamp when the attestation was recorded by the server. |
+| Attestation Hash | string |  |  | SHA-256 hash binding the signed facts (who, when, meaning) for tamper-evidence; not a Part-11 signature. |
+| Attestation Kind | string |  |  | Always "Attestation (non-Part-11)" - an honest sign-off record, not a 21 CFR Part 11 signature. |
+| Reason | string |  |  | Free-text justification the attester gave for the sign-off. |
 
 <a id="document-raci"></a>
 ## Document RACI
@@ -454,16 +454,16 @@ Fact - per-document, per-department R/A/C/I assignment (effective-dated).
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| RACI ID | string | yes |  |  |
-| Document ID | string | yes |  |  |
-| Doc ID | string |  |  |  |
-| Document Title | string |  |  |  |
-| Department | string |  |  |  |
-| Role | string |  |  |  |
-| Role Name | string |  |  |  |
-| Touchpoint | string |  |  |  |
-| Valid From | dateTime |  | yyyy-mm-dd |  |
-| Valid To | dateTime |  | yyyy-mm-dd |  |
+| RACI ID | string | yes |  | (hidden) Surrogate key of the RACI assignment row; uniquely identifies one document-department-role record. |
+| Document ID | string | yes |  | (hidden) Surrogate key joining each RACI assignment to its controlled document. |
+| Doc ID | string |  |  | Human-readable document id (THG-{DEPT}-{TYPE}-NNN) of the controlled document this assignment applies to. |
+| Document Title | string |  |  | Title of the controlled document this RACI assignment applies to. |
+| Department | string |  |  | Department holding this RACI role, one of the 8 Theragen departments (Clinical/Regulatory/R&D/Operations/Finance/Commercial/IT/HR). |
+| Role | string |  |  | RACI role code: R / A / C / I (Responsible / Accountable / Consulted / Informed). |
+| Role Name | string |  |  | Full role label spelled out from the RACI code (Responsible / Accountable / Consulted / Informed). |
+| Touchpoint | string |  |  | Lifecycle touchpoint at which the department's involvement applies (the review/approval stage it engages on). |
+| Valid From | dateTime |  | yyyy-mm-dd | Effective-dating start: date this RACI assignment took effect. |
+| Valid To | dateTime |  | yyyy-mm-dd | Effective-dating end: date this RACI assignment expired; blank means still in effect. |
 
 <a id="document-version"></a>
 ## Document Version
@@ -476,19 +476,19 @@ Fact - controlled-document version history.
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| Version ID | string | yes |  |  |
-| Document ID | string | yes |  |  |
-| Doc ID | string |  |  |  |
-| Document Title | string |  |  |  |
-| Version | string |  |  |  |
-| Status | string |  |  |  |
-| Change Summary | string |  |  |  |
-| Change Class | string |  |  |  |
-| Author | string |  |  |  |
-| Effective Date | dateTime |  | yyyy-mm-dd |  |
-| Storage Path | string |  |  |  |
-| Created Date | dateTime |  | yyyy-mm-dd |  |
-| Linked CR | string |  |  |  |
+| Version ID | string | yes |  | (hidden) Surrogate key for this document version; joins to Document Approval attestations. |
+| Document ID | string | yes |  | (hidden) Surrogate key of the parent controlled document this version revises. |
+| Doc ID | string |  |  | Minted document identifier (THG-{DEPT}-{TYPE}-NNN) of the parent controlled document. |
+| Document Title | string |  |  | Human-readable title of the parent controlled document. |
+| Version | string |  |  | Version string of this revision (e.g. 1.0, 2.0) within the document's version history. |
+| Status | string |  |  | Lifecycle state of this version: DRAFT / REVIEW / BASELINE / AMENDED / RETIRED. |
+| Change Summary | string |  |  | Narrative of what changed in this revision relative to the prior version. |
+| Change Class | string |  |  | Severity of the revision: A (Minor) / B (Substantive) / C (Controlling) / Emergency. |
+| Author | string |  |  | Display name of the person who authored this revision. |
+| Effective Date | dateTime |  | yyyy-mm-dd | Date this version takes effect as the governing revision. |
+| Storage Path | string |  |  | Location where this version's file is stored. |
+| Created Date | dateTime |  | yyyy-mm-dd | Date this version record was created. |
+| Linked CR | string |  |  | The governance CR (CHG-NNN) that drove this revision, if any. |
 
 <a id="governance-change-assessment"></a>
 ## Governance Change Assessment
@@ -501,15 +501,15 @@ Fact - per-department impact assessments on a governance change request. One row
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| Gov Impact ID | string | yes |  |  |
-| CR Gov ID | string | yes |  |  |
-| CR Code | string |  |  |  |
-| Doc ID | string |  |  |  |
-| Doc Title | string |  |  |  |
-| Department | string |  |  |  |
-| Impact Summary | string |  |  |  |
-| Compliance Impact | string |  |  |  |
-| Submitted Date | dateTime |  | yyyy-mm-dd |  |
+| Gov Impact ID | string | yes |  | (hidden) Surrogate key for this per-department assessment row. |
+| CR Gov ID | string | yes |  | (hidden) Surrogate key of the parent governance CR; joins to 'Governance Change Request'. |
+| CR Code | string |  |  | Human-readable code of the governance CR being assessed, CHG-NNN. |
+| Doc ID | string |  |  | Minted identifier of the controlled document the parent CR targets, THG-{DEPT}-{TYPE}-NNN. |
+| Doc Title | string |  |  | Title of the controlled document the parent CR targets. |
+| Department | string |  |  | Theragen department filing this impact statement (one row per assessing department). |
+| Impact Summary | string |  |  | The department's narrative of how the change affects it. |
+| Compliance Impact | string |  |  | The department's read on the change's regulatory/compliance implications. |
+| Submitted Date | dateTime |  | yyyy-mm-dd | Date the department submitted this assessment. |
 
 <a id="governance-change-request"></a>
 ## Governance Change Request
@@ -522,22 +522,22 @@ Fact - governance change requests (CHG-NNN) against controlled documents (SOP-00
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| CR Gov ID | string | yes |  |  |
-| Document ID | string | yes |  |  |
-| CR Code | string |  |  |  |
-| Doc ID | string |  |  |  |
-| Doc Title | string |  |  |  |
-| Requested Date | dateTime |  | yyyy-mm-dd |  |
-| Requested By | string |  |  |  |
-| CR Class | string |  |  |  |
-| Description | string |  |  |  |
-| Reason | string |  |  |  |
-| Decision | string |  |  |  |
-| Decided By | string |  |  |  |
-| Decided Date | dateTime |  | yyyy-mm-dd |  |
-| Implementation Verified | boolean |  |  |  |
-| Status | string |  |  |  |
-| Intake ID | string |  |  |  |
+| CR Gov ID | string | yes |  | (hidden) Surrogate key for the governance change request; joins assessments via change_request_gov.cr_gov_id. |
+| Document ID | string | yes |  | (hidden) Surrogate key of the controlled document this CR targets; joins to 'Controlled Document'. |
+| CR Code | string |  |  | Human-readable governance change-request code, CHG-NNN (e.g. CHG-001); globally unique, project-less. |
+| Doc ID | string |  |  | Minted identifier of the targeted controlled document, THG-{DEPT}-{TYPE}-NNN. |
+| Doc Title | string |  |  | Title of the controlled document the change request targets. |
+| Requested Date | dateTime |  | yyyy-mm-dd | Date the governance change request was raised. |
+| Requested By | string |  |  | Display name of the person who raised the change request. |
+| CR Class | string |  |  | Severity/control level of the change: A - Minor, B - Substantive, C - Controlling, or Emergency / Safety. |
+| Description | string |  |  | Narrative of the proposed change to the controlled document. |
+| Reason | string |  |  | Justification for why the change is needed. |
+| Decision | string |  |  | Gate verdict (first workflow axis): Pending, Approved, Deferred, or Rejected. |
+| Decided By | string |  |  | Display name of the person who recorded the decision. |
+| Decided Date | dateTime |  | yyyy-mm-dd | Date the decision was recorded. |
+| Implementation Verified | boolean |  |  | TRUE when an approved change's implementation has been confirmed in the artifact library. |
+| Status | string |  |  | Workflow state (second axis): Open, In Assessment, Implementing, Verified, Closed, or Rejected. |
+| Intake ID | string |  |  | SharePoint List item id of the source intake row, giving the CR a stable identity for idempotent re-syncs. |
 
 <a id="knowledge-area"></a>
 ## Knowledge Area
@@ -550,8 +550,8 @@ PMBOK knowledge areas (enum knowledge_area) used by status report health entries
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| Knowledge Area | string |  |  |  |
-| KA Sort | int64 | yes |  |  |
+| Knowledge Area | string |  |  | PMI knowledge area (e.g. Scope, Schedule, Cost, Quality, Risk) used to structure status-report health entries. |
+| KA Sort | int64 | yes |  | (hidden) Sort order that lays out knowledge areas in canonical PMI sequence rather than alphabetically. |
 
 <a id="lesson-learned"></a>
 ## Lesson Learned
@@ -564,15 +564,15 @@ Fact - lessons learned (PMBOK P25).
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| Lesson ID | string | yes |  |  |
-| Project ID | string | yes |  |  |
-| Project Code | string |  |  |  |
-| Lesson Category | string |  |  |  |
-| Lesson | string |  |  |  |
-| What Happened | string |  |  |  |
-| Recommendation | string |  |  |  |
-| Follow-up Owner | string |  |  |  |
-| Lesson Status | string |  |  |  |
+| Lesson ID | string | yes |  | (hidden) Surrogate key of the lessons-learned row; joins to the lesson source. |
+| Project ID | string | yes |  | (hidden) Surrogate key of the owning project; joins to the Project dimension. |
+| Project Code | string |  |  | Human-readable project code the lesson belongs to. |
+| Lesson Category | string |  |  | Theme classifying the lesson (e.g. schedule, cost, quality, process). |
+| Lesson | string |  |  | Short title of the retrospective insight captured. |
+| What Happened | string |  |  | Narrative of the situation or event that prompted the lesson. |
+| Recommendation | string |  |  | Recommended action or practice change to carry forward. |
+| Follow-up Owner | string |  |  | Role accountable for acting on the recommendation. |
+| Lesson Status | string |  |  | Adoption state of the lesson: Open (awaiting action) or Adopted (folded into practice). |
 
 <a id="milestone"></a>
 ## Milestone
@@ -585,15 +585,15 @@ Fact - milestones (PMBOK P11). Baseline vs forecast vs actual dates.
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| Milestone ID | string | yes |  |  |
-| Project ID | string | yes |  |  |
-| Project Code | string |  |  |  |
-| Milestone | string |  |  |  |
-| Baseline Date | dateTime |  | yyyy-mm-dd |  |
-| Forecast Date | dateTime |  | yyyy-mm-dd |  |
-| Actual Date | dateTime |  | yyyy-mm-dd |  |
-| Milestone Status | string |  |  |  |
-| Owner Role | string |  |  |  |
+| Milestone ID | string | yes |  | (hidden) Surrogate key for the milestone row. |
+| Project ID | string | yes |  | (hidden) Foreign key to the owning project; joins to 'Project'[Project ID]. |
+| Project Code | string |  |  | Human-readable project code this milestone belongs to (e.g. PRJ-001). |
+| Milestone | string |  |  | Name of the schedule checkpoint (the milestone's title). |
+| Baseline Date | dateTime |  | yyyy-mm-dd | Frozen baseline target date; the yardstick slip days are measured against. |
+| Forecast Date | dateTime |  | yyyy-mm-dd | Current expected landing date while the milestone is still open. |
+| Actual Date | dateTime |  | yyyy-mm-dd | Date the milestone was actually achieved; blank until reached. |
+| Milestone Status | string |  |  | Landing state of the milestone: Achieved / At risk / Slipped. |
+| Owner Role | string |  |  | Role title accountable for delivering the milestone (e.g. Project Manager). |
 | 'Slip Days' = DATEDIFF('Milestone'[Baseline Date], COALESCE('Milestone'[Actual Date], 'Milestone'[Forecast Date], 'Milestone'[Baseline Date]), DAY) | int64 |  |  | Days between baseline and actual (or forecast) date. Positive = slip. |
 
 <a id="person"></a>
@@ -607,12 +607,12 @@ Person directory (DM D02). Owners, requesters and assignees on facts.
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| Person ID | string | yes |  |  |
-| Person | string |  |  |  |
-| Email | string |  |  |  |
-| Person Department | string |  |  |  |
-| Role Title | string |  |  |  |
-| Employee Number | string |  |  |  |
+| Person ID | string | yes |  | (hidden) Surrogate key uniquely identifying the person; the relationship anchor for owner/requester/assignee joins on facts. |
+| Person | string |  |  | Display name of the person; the label shown for owners, requesters and assignees across facts. |
+| Email | string |  |  | Person's email address (work UPN); the identity used to match RLS report-access grants. |
+| Person Department | string |  |  | The Theragen department the person belongs to (one of the 8 departments). |
+| Role Title | string |  |  | The person's job title or role within the organization. |
+| Employee Number | string |  |  | HR employee identifier for the person; the directory's stable payroll key. |
 
 <a id="phase-gate-log"></a>
 ## Phase Gate Log
@@ -625,15 +625,15 @@ Fact - append-only record of lifecycle-phase handoffs (PMBOK). Captures who appr
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| Phase Gate ID | string | yes |  |  |
-| Project ID | string | yes |  |  |
-| Project Code | string |  |  |  |
-| From Phase | string |  |  |  |
-| To Phase | string |  |  |  |
-| Gate Decision | string |  |  |  |
-| Decided Date | dateTime |  | yyyy-mm-dd |  |
-| Gate Notes | string |  |  |  |
-| Approved By | string |  |  |  |
+| Phase Gate ID | string | yes |  | (hidden) Surrogate primary key for the phase-gate event row. |
+| Project ID | string | yes |  | (hidden) Surrogate key of the project this gate belongs to; joins to 'Project'. |
+| Project Code | string |  |  | Human-readable project code the gate belongs to. |
+| From Phase | string |  |  | Lifecycle phase the project was leaving at the gate (forward-only; backward transitions are rejected). |
+| To Phase | string |  |  | Lifecycle phase the project advanced to (equals From Phase when the gate is Held). |
+| Gate Decision | string |  |  | Gate verdict: Approved, Approved with conditions, or Held (keeps the project in its current phase). |
+| Decided Date | dateTime |  | yyyy-mm-dd | Date the gate decision was made. |
+| Gate Notes | string |  |  | Free-text rationale or conditions recorded for the gate decision. |
+| Approved By | string |  |  | Display name of the person who approved the phase transition. |
 
 <a id="project"></a>
 ## Project
@@ -646,24 +646,24 @@ Project dimension - one row per project (PMBOK P01 project, charter fields denor
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| Project ID | string | yes |  |  |
-| Project Code | string |  |  |  |
-| Intake ID | string |  |  |  |
-| Project Name | string |  |  |  |
-| Project Description | string |  |  |  |
-| Business Value | string |  |  |  |
-| Sponsor | string |  |  |  |
-| Project Manager | string |  |  |  |
-| Primary Department | string |  |  |  |
-| Approach | string |  |  |  |
-| Lifecycle Phase | string |  |  |  |
-| Project Status | string |  |  |  |
-| Planned Start | dateTime |  | yyyy-mm-dd |  |
-| Planned Finish | dateTime |  | yyyy-mm-dd |  |
-| Actual Start | dateTime |  | yyyy-mm-dd |  |
-| Actual Finish | dateTime |  | yyyy-mm-dd |  |
-| Charter Budget | double |  | \$#,##0;(\$#,##0);\$0 |  |
-| Strategic Objective | string |  |  |  |
+| Project ID | string | yes |  | (hidden) Surrogate key uniquely identifying the project; the relationship anchor every fact joins to. |
+| Project Code | string |  |  | Human-readable project code (e.g. THG-IT-005); the business key shown across reports. |
+| Intake ID | string |  |  | SharePoint intake-form item id the project was created from; ties the project back to its request of record. |
+| Project Name | string |  |  | Full project title as chartered; the primary label for the project in reports. |
+| Project Description | string |  |  | Narrative charter description of what the project delivers and its scope. |
+| Business Value | string |  |  | Charter business-case statement of the value or benefit the project is expected to deliver. |
+| Sponsor | string |  |  | Display name of the executive sponsor accountable for funding and championing the project. |
+| Project Manager | string |  |  | Display name of the project manager responsible for day-to-day delivery. |
+| Primary Department | string |  |  | The lead Theragen department that owns the project (one of the 8 departments). |
+| Approach | string |  |  | Delivery approach the project follows (e.g. Predictive / Agile / Hybrid). |
+| Lifecycle Phase | string |  |  | Current PMI process group: Initiating, Planning, Executing, Monitoring & Controlling, or Closing; advanced only via a phase gate. |
+| Project Status | string |  |  | Lifecycle state of the project (e.g. Proposed, Active, Completed); drives [Active Projects] and [Proposed Projects]. |
+| Planned Start | dateTime |  | yyyy-mm-dd | Charter-planned project start date. |
+| Planned Finish | dateTime |  | yyyy-mm-dd | Charter-planned project finish date; the target completion surfaced by [Target Date Completion]. |
+| Actual Start | dateTime |  | yyyy-mm-dd | Date the project actually started; blank until work begins. |
+| Actual Finish | dateTime |  | yyyy-mm-dd | Date the project actually completed; blank until closed. |
+| Charter Budget | double |  | \$#,##0;(\$#,##0);\$0 | Charter-approved total budget for the project; basis of [Portfolio Charter Budget] and baseline variance. |
+| Strategic Objective | string |  |  | Reference to the strategic objective or portfolio goal this project advances. |
 
 <a id="project-baseline"></a>
 ## Project Baseline
@@ -676,17 +676,17 @@ Fact - immutable schedule/scope/budget baselines (PMBOK). Each new baseline mint
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| Baseline ID | string | yes |  |  |
-| Project ID | string | yes |  |  |
-| Project Code | string |  |  |  |
-| Baseline Type | string |  |  |  |
-| Version | string |  |  |  |
-| Status | string |  |  |  |
-| Change Summary | string |  |  |  |
-| Baselined Date | dateTime |  | yyyy-mm-dd |  |
-| Baselined By | string |  |  |  |
-| Baseline Budget Total | double |  | \$#,##0;(\$#,##0);\$0 |  |
-| Baseline Activity Count | int64 |  | #,0 |  |
+| Baseline ID | string | yes |  | (hidden) Surrogate key for the baseline snapshot; joins to bi.project_baseline. |
+| Project ID | string | yes |  | (hidden) Surrogate key of the baselined project; joins to the Project dimension. |
+| Project Code | string |  |  | Human-readable project code this baseline was captured for. |
+| Baseline Type | string |  |  | Which plan this baseline froze: Schedule, Budget, or Scope. |
+| Version | string |  |  | Baseline version vM.0 (1.0, 2.0, ...); each re-baseline mints the next. |
+| Status | string |  |  | Baseline lifecycle state: BASELINED (active yardstick) or SUPERSEDED (replaced). |
+| Change Summary | string |  |  | Note on why this baseline was taken (the re-baselining rationale). |
+| Baselined Date | dateTime |  | yyyy-mm-dd | Date this baseline snapshot was frozen. |
+| Baselined By | string |  |  | Display name of the person who took this baseline. |
+| Baseline Budget Total | double |  | \$#,##0;(\$#,##0);\$0 | Frozen budget_total captured in this baseline's snapshot, in USD; the EVM cost yardstick. |
+| Baseline Activity Count | int64 |  | #,0 | Number of schedule activities frozen in this baseline's snapshot. |
 
 <a id="recent-accomplishment"></a>
 ## Recent Accomplishment
@@ -697,10 +697,10 @@ Leadership view - work completed in the last 35 days (done activities + achieved
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| Project ID | string | yes |  |  |
-| Accomplishment | string |  |  |  |
-| Completed Date | dateTime |  | yyyy-mm-dd |  |
-| Source | string |  |  |  |
+| Project ID | string | yes |  | (hidden) Surrogate key of the owning project; joins to the Project dimension. |
+| Accomplishment | string |  |  | Name of the completed activity or achieved milestone reported as an accomplishment. |
+| Completed Date | dateTime |  | yyyy-mm-dd | Date the activity finished or the milestone was achieved. |
+| Source | string |  |  | Origin of the accomplishment row: Activity or Milestone. |
 
 <a id="report-access"></a>
 ## Report Access
@@ -713,13 +713,13 @@ Security - data-driven RLS grants. Disconnected (no relationships): the "Scoped 
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| Access ID | string | yes |  |  |
-| User Email | string |  |  |  |
-| Scope Type | string |  |  |  |
-| Scope Value | string |  |  |  |
-| Active | boolean |  |  |  |
-| Granted By | string |  |  |  |
-| Granted Date | dateTime |  | yyyy-mm-dd |  |
+| Access ID | string | yes |  | (hidden) Surrogate key of the RLS grant row; joins to the access-grant source. |
+| User Email | string |  |  | Sign-in email of the grantee whose report access this grant authorizes (matched against USERPRINCIPALNAME). |
+| Scope Type | string |  |  | Breadth of the grant: Project, Department, or All. |
+| Scope Value | string |  |  | The specific project code or department the grant applies to (blank for an All-scope grant). |
+| Active | boolean |  |  | TRUE when the grant is currently in force; revoked grants are FALSE and grant no access. |
+| Granted By | string |  |  | Display name of the PMO administrator who authored the grant. |
+| Granted Date | dateTime |  | yyyy-mm-dd | Date the access grant was authored. |
 
 <a id="risk"></a>
 ## Risk
@@ -732,23 +732,23 @@ Fact - risk register (PMBOK P14). 5x5 likelihood x impact scoring.
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| Risk ID | string | yes |  |  |
-| Project ID | string | yes |  |  |
-| Project Code | string |  |  |  |
-| Risk Code | string |  |  |  |
-| Risk Category | string |  |  |  |
-| Risk Description | string |  |  |  |
-| Likelihood | int64 |  | #,0 |  |
-| Impact | int64 |  | #,0 |  |
-| Risk Score | int64 |  | #,0 |  |
-| Response Type | string |  |  |  |
-| Owner ID | string | yes |  |  |
-| Owner | string |  |  |  |
-| Department | string |  |  |  |
-| Due Date | dateTime |  | yyyy-mm-dd |  |
-| Risk Status | string |  |  |  |
-| Residual Score | int64 |  | #,0 |  |
-| Compliance Frame | string |  |  |  |
+| Risk ID | string | yes |  | (hidden) Surrogate key for the risk register row; joins risk responses back to their parent risk. |
+| Project ID | string | yes |  | (hidden) Surrogate key of the owning project; joins the risk to the Project dimension. |
+| Project Code | string |  |  | Human-readable project code the risk belongs to (e.g. PRJ-001). |
+| Risk Code | string |  |  | Human-readable risk code (e.g. R-001); the per-project identifier shown on the risk register. |
+| Risk Category | string |  |  | Classification of the risk by type (e.g. technical, schedule, regulatory, financial). |
+| Risk Description | string |  |  | Free-text statement of the uncertain event and its potential effect on the project. |
+| Likelihood | int64 |  | #,0 | Probability score (1-5) that the risk occurs; one axis of the 5x5 matrix. |
+| Impact | int64 |  | #,0 | Severity score (1-5) of the risk if it occurs; the other axis of the 5x5 matrix. |
+| Risk Score | int64 |  | #,0 | Likelihood x Impact on the 5x5 matrix (1-25); the headline severity score (High >=12, Critical >=20). |
+| Response Type | string |  |  | Planned response strategy for the risk: Mitigation, Transfer, Acceptance, or Avoidance. |
+| Owner ID | string | yes |  | (hidden) Surrogate key of the risk owner; joins to the Person directory. |
+| Owner | string |  |  | Display name of the person accountable for managing the risk. |
+| Department | string |  |  | Theragen department that owns or is most exposed to the risk. |
+| Due Date | dateTime |  | yyyy-mm-dd | Target date by which the planned mitigation should be completed. |
+| Risk Status | string |  |  | Lifecycle state of the risk: Open, Mitigating, Monitoring, Realized, or Closed. |
+| Residual Score | int64 |  | #,0 | Risk score expected to remain after planned mitigation; drives residual exposure. |
+| Compliance Frame | string |  |  | Regulatory or compliance framework the risk maps to (e.g. 21 CFR Part 11, ISO, GxP). |
 | Severity = SWITCH(TRUE(), 'Risk'[Risk Score] >= 20, "Critical", 'Risk'[Risk Score] >= 12, "High", 'Risk'[Risk Score] >= 6, "Medium", "Low") | string |  |  | Banding of Risk Score on the 5x5 matrix: >=20 Critical, >=12 High, >=6 Medium. |
 | 'RAID Type' = IF('Risk'[Risk Status] = "Realized", "Issue", "Risk") | string |  |  | RAID classification: a realized risk is reported as an Issue. |
 
@@ -763,15 +763,15 @@ Fact - risk response actions (PMBOK P15).
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| Response ID | string | yes |  |  |
-| Risk ID | string | yes |  |  |
-| Project Code | string |  |  |  |
-| Risk Code | string |  |  |  |
-| Action Type | string |  |  |  |
-| Action Description | string |  |  |  |
-| Action Owner | string |  |  |  |
-| Action Due Date | dateTime |  | yyyy-mm-dd |  |
-| Action Status | string |  |  |  |
+| Response ID | string | yes |  | (hidden) Surrogate key for the risk response action row. |
+| Risk ID | string | yes |  | (hidden) Surrogate key of the parent risk; joins the action back to the Risk register. |
+| Project Code | string |  |  | Human-readable project code the response action belongs to (e.g. PRJ-001). |
+| Risk Code | string |  |  | Human-readable code of the risk this action addresses (e.g. R-001). |
+| Action Type | string |  |  | Response strategy of the action: Mitigation, Transfer, Acceptance, or Avoidance. |
+| Action Description | string |  |  | Free-text statement of the response action to be taken against the risk. |
+| Action Owner | string |  |  | Display name of the person responsible for carrying out the response action. |
+| Action Due Date | dateTime |  | yyyy-mm-dd | Target date by which the response action should be completed; drives overdue-action flags. |
+| Action Status | string |  |  | Progress state of the response action: Open, In progress, Blocked, or Done. |
 
 <a id="schedule-activity"></a>
 ## Schedule Activity
@@ -784,22 +784,22 @@ Fact - schedule activities (PMBOK P10). One row per activity with planned/actual
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| Activity ID | string | yes |  |  |
-| WBS ID | string | yes |  |  |
-| Project ID | string | yes |  |  |
-| Project Code | string |  |  |  |
-| Activity Code | string |  |  |  |
-| Activity Name | string |  |  |  |
-| Planned Start | dateTime |  | yyyy-mm-dd |  |
-| Planned Finish | dateTime |  | yyyy-mm-dd |  |
-| Actual Start | dateTime |  | yyyy-mm-dd |  |
-| Actual Finish | dateTime |  | yyyy-mm-dd |  |
-| Duration Days | int64 |  | #,0 |  |
-| Owner ID | string | yes |  |  |
-| Owner | string |  |  |  |
-| Department | string |  |  |  |
-| Activity Status | string |  |  |  |
-| Pct Complete | double |  | 0\% |  |
+| Activity ID | string | yes |  | (hidden) Surrogate key for the activity; joins to fact and leadership-view tables. |
+| WBS ID | string | yes |  | (hidden) Foreign key to the parent work package; joins to 'WBS Element'[WBS ID]. |
+| Project ID | string | yes |  | (hidden) Foreign key to the owning project; joins to 'Project'[Project ID]. |
+| Project Code | string |  |  | Human-readable project code this activity belongs to (e.g. PRJ-001). |
+| Activity Code | string |  |  | Human-readable activity code minted under its work package (e.g. 1.1-A1). |
+| Activity Name | string |  |  | Descriptive title of the schedule activity as authored by the PM. |
+| Planned Start | dateTime |  | yyyy-mm-dd | Scheduled (planned) start date of the activity. |
+| Planned Finish | dateTime |  | yyyy-mm-dd | Scheduled (planned) finish date of the activity. |
+| Actual Start | dateTime |  | yyyy-mm-dd | Date the activity actually started; blank until work begins. |
+| Actual Finish | dateTime |  | yyyy-mm-dd | Date the activity actually finished; blank until completed. |
+| Duration Days | int64 |  | #,0 | Planned span in working days (Mon-Fri inclusive) between planned start and finish. |
+| Owner ID | string | yes |  | (hidden) Foreign key to the activity owner; joins to 'Person'[Person ID]. |
+| Owner | string |  |  | Display name of the person accountable for delivering the activity. |
+| Department | string |  |  | Theragen department executing the activity (one of the 8 departments). |
+| Activity Status | string |  |  | Workflow state of the activity: Not started / In progress / Done / At risk / Cancelled. |
+| Pct Complete | double |  | 0\% | Percent of the activity completed (0-100), as reported by the owner. |
 
 <a id="stakeholder"></a>
 ## Stakeholder
@@ -812,18 +812,18 @@ Fact - stakeholder register entries (PMBOK P03) with RACI engagement and interes
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| Stakeholder ID | string | yes |  |  |
-| Project ID | string | yes |  |  |
-| Project Code | string |  |  |  |
-| Stk Code | string |  |  |  |
-| Person ID | string | yes |  |  |
-| Stakeholder | string |  |  |  |
-| Stakeholder Role | string |  |  |  |
-| Department | string |  |  |  |
-| Engagement | string |  |  |  |
-| Interest | string |  |  |  |
-| Influence | string |  |  |  |
-| Comm Preference | string |  |  |  |
+| Stakeholder ID | string | yes |  | (hidden) Surrogate key for the stakeholder register entry. |
+| Project ID | string | yes |  | (hidden) Surrogate key joining the stakeholder to its project. |
+| Project Code | string |  |  | Human-readable project code the stakeholder belongs to. |
+| Stk Code | string |  |  | Minted stakeholder code identifying this register entry within the project. |
+| Person ID | string | yes |  | (hidden) Surrogate key joining the stakeholder to the Person directory. |
+| Stakeholder | string |  |  | Display name of the stakeholder (person or group with interest in the project). |
+| Stakeholder Role | string |  |  | The stakeholder's role or title relative to the project. |
+| Department | string |  |  | Theragen department the stakeholder is affiliated with. |
+| Engagement | string |  |  | RACI engagement role on the project: R, A, C, or I. |
+| Interest | string |  |  | Stakeholder's level of interest in the project: High, Medium, or Low. |
+| Influence | string |  |  | Stakeholder's level of influence over the project: High, Medium, or Low. |
+| Comm Preference | string |  |  | The stakeholder's preferred communication channel or cadence. |
 
 <a id="status-report"></a>
 ## Status Report
@@ -836,21 +836,21 @@ Fact - periodic status reports (PMBOK P23). Overall G/Y/R health and trend per p
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| Report ID | string | yes |  |  |
-| Project ID | string | yes |  |  |
-| Project Code | string |  |  |  |
-| Report Number | int64 |  | #,0 |  |
-| Period Start | dateTime |  | yyyy-mm-dd |  |
-| Period End | dateTime |  | yyyy-mm-dd |  |
-| Overall Status | string |  |  |  |
-| Trend | string |  |  |  |
-| Executive Summary | string |  |  |  |
-| Decisions Needed | string |  |  |  |
-| Submitted By | string |  |  |  |
-| Submitted Date | dateTime |  | yyyy-mm-dd |  |
-| Approved By | string |  |  |  |
-| Approved Date | dateTime |  | yyyy-mm-dd |  |
-| Is Signed Off | boolean |  |  |  |
+| Report ID | string | yes |  | (hidden) Surrogate key for the status report; child area rows join on this. |
+| Project ID | string | yes |  | (hidden) Surrogate key joining the report to its project. |
+| Project Code | string |  |  | Human-readable project code the report belongs to. |
+| Report Number | int64 |  | #,0 | Sequential number of this report in the project's reporting cadence. |
+| Period Start | dateTime |  | yyyy-mm-dd | First day of the reporting period this status covers. |
+| Period End | dateTime |  | yyyy-mm-dd | Last day of the reporting period; the report's effective as-of date. |
+| Overall Status | string |  |  | Overall project health for the period: Green, Yellow, or Red. |
+| Trend | string |  |  | Direction of project health since the prior report: improving, steady, or declining. |
+| Executive Summary | string |  |  | Narrative summary of progress, issues, and outlook for the period. |
+| Decisions Needed | string |  |  | Open decisions or escalations the report flags for leadership action. |
+| Submitted By | string |  |  | Display name of the person who submitted the status report. |
+| Submitted Date | dateTime |  | yyyy-mm-dd | Date the status report was submitted. |
+| Approved By | string |  |  | Display name of the approver who signed off the status report. |
+| Approved Date | dateTime |  | yyyy-mm-dd | Date the approver signed off the status report. |
+| Is Signed Off | boolean |  |  | TRUE when the report has received formal approver sign-off. |
 
 <a id="status-report-area"></a>
 ## Status Report Area
@@ -863,11 +863,11 @@ Fact - per-knowledge-area health entries within each status report (PMBOK P24).
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| Area ID | string | yes |  |  |
-| Report ID | string | yes |  |  |
-| Project Code | string |  |  |  |
-| Knowledge Area | string |  |  |  |
-| Area Status | string |  |  |  |
+| Area ID | string | yes |  | (hidden) Surrogate key for the per-knowledge-area health entry. |
+| Report ID | string | yes |  | (hidden) Surrogate key joining the area entry to its parent status report. |
+| Project Code | string |  |  | Human-readable project code the area entry belongs to. |
+| Knowledge Area | string |  |  | PMI knowledge area this health entry rates (Scope, Schedule, Cost, Quality, Risk, etc.). |
+| Area Status | string |  |  | Health of this knowledge area for the period: Green, Yellow, or Red. |
 
 <a id="team-member"></a>
 ## Team Member
@@ -880,16 +880,16 @@ Fact - project team assignments (PMBOK P31) with allocation percentage.
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| Team Member ID | string | yes |  |  |
-| Project ID | string | yes |  |  |
-| Project Code | string |  |  |  |
-| Person ID | string | yes |  |  |
-| Member | string |  |  |  |
-| Team Role | string |  |  |  |
-| Department | string |  |  |  |
-| Allocation Pct | double |  | 0\% |  |
-| Start Date | dateTime |  | yyyy-mm-dd |  |
-| End Date | dateTime |  | yyyy-mm-dd |  |
+| Team Member ID | string | yes |  | (hidden) Surrogate key for the team assignment row. |
+| Project ID | string | yes |  | (hidden) Surrogate key joining the assignment to its project. |
+| Project Code | string |  |  | Human-readable project code the team member is assigned to. |
+| Person ID | string | yes |  | (hidden) Surrogate key joining the assignment to the Person directory. |
+| Member | string |  |  | Display name of the person assigned to the project team. |
+| Team Role | string |  |  | The member's role on the project team. |
+| Department | string |  |  | Theragen department the team member belongs to. |
+| Allocation Pct | double |  | 0\% | Share of the member's time committed to the project; 100% = one FTE. |
+| Start Date | dateTime |  | yyyy-mm-dd | Date the member's assignment to the project began. |
+| End Date | dateTime |  | yyyy-mm-dd | Date the member's assignment ends; blank while still active. |
 
 <a id="upcoming-next-step"></a>
 ## Upcoming Next Step
@@ -900,11 +900,11 @@ Leadership view - open work targeted in the next 45 days (activities + milestone
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| Project ID | string | yes |  |  |
-| Next Step | string |  |  |  |
-| Target Date | dateTime |  | yyyy-mm-dd |  |
-| Owner | string |  |  |  |
-| Source | string |  |  |  |
+| Project ID | string | yes |  | (hidden) Surrogate key of the owning project; joins to the Project dimension. |
+| Next Step | string |  |  | Name of the open activity or upcoming milestone targeted next. |
+| Target Date | dateTime |  | yyyy-mm-dd | Planned finish (activity) or forecast/baseline date (milestone) the next step is due. |
+| Owner | string |  |  | Activity owner or milestone owner role responsible for the next step. |
+| Source | string |  |  | Origin of the next-step row: Activity or Milestone. |
 
 <a id="wbs-element"></a>
 ## WBS Element
@@ -917,17 +917,17 @@ Work breakdown structure dimension (PMBOK P08). Two-level hierarchy: deliverable
 
 | Column | Type | Hidden | Format | Description |
 |---|---|---|---|---|
-| WBS ID | string | yes |  |  |
-| Project ID | string | yes |  |  |
-| Project Code | string |  |  |  |
-| WBS Code | string |  |  |  |
-| Parent WBS ID | string | yes |  |  |
-| WBS Level | int64 |  | #,0 |  |
-| WBS Name | string |  |  |  |
-| Owning Department | string |  |  |  |
-| Owner Role | string |  |  |  |
-| Estimated Effort Hrs | double |  | #,0 |  |
-| Estimated Cost | double |  | \$#,##0;(\$#,##0);\$0 |  |
+| WBS ID | string | yes |  | (hidden) Surrogate key for the WBS node; activities and budget lines join to this. |
+| Project ID | string | yes |  | (hidden) Foreign key to the owning project; joins to 'Project'[Project ID]. |
+| Project Code | string |  |  | Human-readable project code this WBS node belongs to (e.g. PRJ-001). |
+| WBS Code | string |  |  | Human-readable WBS code minted append-only (e.g. 1 = workstream, 1.1 = work package). |
+| Parent WBS ID | string | yes |  | (hidden) Self-referencing key to the parent workstream; blank for level-1 nodes. |
+| WBS Level | int64 |  | #,0 | Depth in the WBS hierarchy: 1 = workstream, 2 = work package (EVM estimates attach here). |
+| WBS Name | string |  |  | Descriptive name of the workstream or work package. |
+| Owning Department | string |  |  | Theragen department accountable for this WBS node (one of the 8 departments). |
+| Owner Role | string |  |  | Role title responsible for the WBS node (e.g. Project Manager, Lead Engineer). |
+| Estimated Effort Hrs | double |  | #,0 | Planned effort for the node in person-hours. |
+| Estimated Cost | double |  | \$#,##0;(\$#,##0);\$0 | Estimated cost of the node; level-2 sums form the EVM Budget at Completion (BAC). |
 | Deliverable = IF('WBS Element'[WBS Level] = 1, 'WBS Element'[WBS Name], LOOKUPVALUE('WBS Element'[WBS Name], 'WBS Element'[WBS ID], 'WBS Element'[Parent WBS ID])) | string |  |  | Level-1 deliverable this node rolls up to. |
 | 'WBS Label' = 'WBS Element'[WBS Code] & "  " & 'WBS Element'[WBS Name] | string |  |  | Code + name for axis labels. |
 

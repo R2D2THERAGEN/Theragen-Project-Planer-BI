@@ -2,6 +2,7 @@
 table 'Change Impact Assessment'
 	lineageTag: 40109f87-3d67-5568-9ca6-b85fe40e2c0b
 
+	/// (hidden) Surrogate key of this per-department impact assessment.
 	column 'Impact ID'
 		dataType: string
 		isHidden
@@ -11,6 +12,7 @@ table 'Change Impact Assessment'
 
 		annotation SummarizationSetBy = User
 
+	/// (hidden) Surrogate key of the assessed change request; joins to Change Request.
 	column 'CR ID'
 		dataType: string
 		isHidden
@@ -20,6 +22,7 @@ table 'Change Impact Assessment'
 
 		annotation SummarizationSetBy = User
 
+	/// Human-readable code of the change request being assessed (e.g. C-001).
 	column 'CR Code'
 		dataType: string
 		lineageTag: c4e967f6-0081-5467-95f7-f600edc70031
@@ -28,6 +31,7 @@ table 'Change Impact Assessment'
 
 		annotation SummarizationSetBy = User
 
+	/// Human-readable project code the assessed change request belongs to (e.g. PRJ-001).
 	column 'Project Code'
 		dataType: string
 		lineageTag: 453cf658-ff0f-5130-8714-b4a0d770f560
@@ -36,6 +40,7 @@ table 'Change Impact Assessment'
 
 		annotation SummarizationSetBy = User
 
+	/// Theragen department filing this impact statement on the change request.
 	column Department
 		dataType: string
 		lineageTag: 36dd6d26-2825-5251-92ba-6ff2e27460ba
@@ -44,6 +49,7 @@ table 'Change Impact Assessment'
 
 		annotation SummarizationSetBy = User
 
+	/// This department's narrative of how the change affects its scope of work.
 	column 'Scope Impact'
 		dataType: string
 		lineageTag: 216b0e7f-95e8-5caa-a1cc-499455562e52
@@ -52,6 +58,7 @@ table 'Change Impact Assessment'
 
 		annotation SummarizationSetBy = User
 
+	/// This department's estimated schedule impact of the change, in days (positive = delay).
 	column 'Schedule Impact Days'
 		dataType: int64
 		formatString: #,0
@@ -61,6 +68,7 @@ table 'Change Impact Assessment'
 
 		annotation SummarizationSetBy = User
 
+	/// This department's estimated cost impact of the change (positive = added cost).
 	column 'Cost Impact'
 		dataType: double
 		formatString: \$#,##0;(\$#,##0);\$0
@@ -70,6 +78,7 @@ table 'Change Impact Assessment'
 
 		annotation SummarizationSetBy = User
 
+	/// This department's narrative of how the change affects deliverable quality.
 	column 'Quality Impact'
 		dataType: string
 		lineageTag: 2ae6e34b-8f8b-51d5-99ac-bc1740ba1ebe
@@ -78,6 +87,7 @@ table 'Change Impact Assessment'
 
 		annotation SummarizationSetBy = User
 
+	/// Display name of the person who submitted this department's assessment.
 	column 'Submitted By'
 		dataType: string
 		lineageTag: ebc3c34b-4952-5968-bd0c-8b583595fa9b
@@ -86,6 +96,7 @@ table 'Change Impact Assessment'
 
 		annotation SummarizationSetBy = User
 
+	/// Date this department submitted its impact assessment.
 	column 'Submitted Date'
 		dataType: dateTime
 		formatString: yyyy-mm-dd

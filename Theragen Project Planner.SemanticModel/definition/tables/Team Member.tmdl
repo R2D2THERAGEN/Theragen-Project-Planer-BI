@@ -2,6 +2,7 @@
 table 'Team Member'
 	lineageTag: 9695219d-802c-5451-a1fc-2f7cc039de59
 
+	/// (hidden) Surrogate key for the team assignment row.
 	column 'Team Member ID'
 		dataType: string
 		isHidden
@@ -11,6 +12,7 @@ table 'Team Member'
 
 		annotation SummarizationSetBy = User
 
+	/// (hidden) Surrogate key joining the assignment to its project.
 	column 'Project ID'
 		dataType: string
 		isHidden
@@ -20,6 +22,7 @@ table 'Team Member'
 
 		annotation SummarizationSetBy = User
 
+	/// Human-readable project code the team member is assigned to.
 	column 'Project Code'
 		dataType: string
 		lineageTag: 14c9527a-5363-5e23-9372-c3e5149ab6db
@@ -28,6 +31,7 @@ table 'Team Member'
 
 		annotation SummarizationSetBy = User
 
+	/// (hidden) Surrogate key joining the assignment to the Person directory.
 	column 'Person ID'
 		dataType: string
 		isHidden
@@ -37,6 +41,7 @@ table 'Team Member'
 
 		annotation SummarizationSetBy = User
 
+	/// Display name of the person assigned to the project team.
 	column Member
 		dataType: string
 		lineageTag: 817978f8-c945-53ff-adb7-ea4bf4bf96b9
@@ -45,6 +50,7 @@ table 'Team Member'
 
 		annotation SummarizationSetBy = User
 
+	/// The member's role on the project team.
 	column 'Team Role'
 		dataType: string
 		lineageTag: cfdde2e5-ebe6-53a0-a458-b66571a661e4
@@ -53,6 +59,7 @@ table 'Team Member'
 
 		annotation SummarizationSetBy = User
 
+	/// Theragen department the team member belongs to.
 	column Department
 		dataType: string
 		lineageTag: 623878a1-fcba-5f83-b0e1-f152d4491b94
@@ -61,6 +68,7 @@ table 'Team Member'
 
 		annotation SummarizationSetBy = User
 
+	/// Share of the member's time committed to the project; 100% = one FTE.
 	column 'Allocation Pct'
 		dataType: double
 		formatString: 0\%
@@ -70,6 +78,7 @@ table 'Team Member'
 
 		annotation SummarizationSetBy = User
 
+	/// Date the member's assignment to the project began.
 	column 'Start Date'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -81,6 +90,7 @@ table 'Team Member'
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	/// Date the member's assignment ends; blank while still active.
 	column 'End Date'
 		dataType: dateTime
 		formatString: yyyy-mm-dd

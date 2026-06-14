@@ -2,6 +2,7 @@
 table Decision
 	lineageTag: d6cb6de2-d75e-58f1-94a8-aa66d1b3ef97
 
+	/// (hidden) Surrogate key of the logged governance decision.
 	column 'Decision ID'
 		dataType: string
 		isHidden
@@ -11,6 +12,7 @@ table Decision
 
 		annotation SummarizationSetBy = User
 
+	/// (hidden) Surrogate key of the owning project; joins to the Project dimension.
 	column 'Project ID'
 		dataType: string
 		isHidden
@@ -20,6 +22,7 @@ table Decision
 
 		annotation SummarizationSetBy = User
 
+	/// Human-readable project code the decision was logged against (e.g. PRJ-001).
 	column 'Project Code'
 		dataType: string
 		lineageTag: 7e2b08fc-6f8c-5c5f-b2dd-e8eae232dfeb
@@ -28,6 +31,7 @@ table Decision
 
 		annotation SummarizationSetBy = User
 
+	/// Statement of the governance decision made (the resolution reached).
 	column Decision
 		dataType: string
 		lineageTag: ef71e5ff-28d4-5d89-9a9b-b53b344a2b05
@@ -36,6 +40,7 @@ table Decision
 
 		annotation SummarizationSetBy = User
 
+	/// Reasoning recorded for why the decision was made.
 	column Rationale
 		dataType: string
 		lineageTag: d1bc63d0-2ca2-5cd6-9cc4-cfce2cf2a92a
@@ -44,6 +49,7 @@ table Decision
 
 		annotation SummarizationSetBy = User
 
+	/// Display name of the person who made the decision.
 	column 'Decided By'
 		dataType: string
 		lineageTag: f208e4a7-038c-5a19-89d5-77137b6c678f
@@ -52,6 +58,7 @@ table Decision
 
 		annotation SummarizationSetBy = User
 
+	/// Date the governance decision was made and logged.
 	column 'Decided Date'
 		dataType: dateTime
 		formatString: yyyy-mm-dd

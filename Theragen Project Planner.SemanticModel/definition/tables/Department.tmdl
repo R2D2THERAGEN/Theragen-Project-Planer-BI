@@ -2,6 +2,7 @@
 table Department
 	lineageTag: 07ad3d81-350c-59b1-b3db-e6f812c5c7c7
 
+	/// (hidden) Surrogate key uniquely identifying the department; the relationship anchor for department joins on facts.
 	column 'Department ID'
 		dataType: string
 		isHidden
@@ -11,6 +12,7 @@ table Department
 
 		annotation SummarizationSetBy = User
 
+	/// Short department code used in minted Doc IDs (e.g. OPS, REG, IT); the human-readable department key.
 	column 'Department Code'
 		dataType: string
 		lineageTag: 343f1b7d-dd16-5cb3-8bc4-97278a992347
@@ -19,6 +21,7 @@ table Department
 
 		annotation SummarizationSetBy = User
 
+	/// Full department name; one of the 8 Theragen departments (e.g. Operations / PMO, Regulatory / Quality).
 	column Department
 		dataType: string
 		lineageTag: f2ae76ae-7413-5ddf-bd44-fe632f5cf71d

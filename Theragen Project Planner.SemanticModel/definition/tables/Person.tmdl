@@ -2,6 +2,7 @@
 table Person
 	lineageTag: b4c6cdec-1a41-5001-b43e-dd06efbc25e0
 
+	/// (hidden) Surrogate key uniquely identifying the person; the relationship anchor for owner/requester/assignee joins on facts.
 	column 'Person ID'
 		dataType: string
 		isHidden
@@ -11,6 +12,7 @@ table Person
 
 		annotation SummarizationSetBy = User
 
+	/// Display name of the person; the label shown for owners, requesters and assignees across facts.
 	column Person
 		dataType: string
 		lineageTag: 34350de5-beb8-5edf-86a3-673e1258680c
@@ -19,6 +21,7 @@ table Person
 
 		annotation SummarizationSetBy = User
 
+	/// Person's email address (work UPN); the identity used to match RLS report-access grants.
 	column Email
 		dataType: string
 		lineageTag: 26ed695f-8b9e-5b1a-ab10-22c8c36c8128
@@ -27,6 +30,7 @@ table Person
 
 		annotation SummarizationSetBy = User
 
+	/// The Theragen department the person belongs to (one of the 8 departments).
 	column 'Person Department'
 		dataType: string
 		lineageTag: 58bb88a2-1793-516b-b410-823c9ef29b76
@@ -35,6 +39,7 @@ table Person
 
 		annotation SummarizationSetBy = User
 
+	/// The person's job title or role within the organization.
 	column 'Role Title'
 		dataType: string
 		lineageTag: 11796fc0-b073-5de3-a0f8-dda5fee14e7e
@@ -43,6 +48,7 @@ table Person
 
 		annotation SummarizationSetBy = User
 
+	/// HR employee identifier for the person; the directory's stable payroll key.
 	column 'Employee Number'
 		dataType: string
 		lineageTag: 62ecdf90-9dcd-5d73-a8a2-1bfcac8cd2c0

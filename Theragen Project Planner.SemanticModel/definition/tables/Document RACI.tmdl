@@ -2,6 +2,7 @@
 table 'Document RACI'
 	lineageTag: 64488c3b-3902-5c87-a6b8-a91fae657384
 
+	/// (hidden) Surrogate key of the RACI assignment row; uniquely identifies one document-department-role record.
 	column 'RACI ID'
 		dataType: string
 		isHidden
@@ -11,6 +12,7 @@ table 'Document RACI'
 
 		annotation SummarizationSetBy = User
 
+	/// (hidden) Surrogate key joining each RACI assignment to its controlled document.
 	column 'Document ID'
 		dataType: string
 		isHidden
@@ -20,6 +22,7 @@ table 'Document RACI'
 
 		annotation SummarizationSetBy = User
 
+	/// Human-readable document id (THG-{DEPT}-{TYPE}-NNN) of the controlled document this assignment applies to.
 	column 'Doc ID'
 		dataType: string
 		lineageTag: a6d6a382-335c-50a7-b4e1-17638adac3ee
@@ -28,6 +31,7 @@ table 'Document RACI'
 
 		annotation SummarizationSetBy = User
 
+	/// Title of the controlled document this RACI assignment applies to.
 	column 'Document Title'
 		dataType: string
 		lineageTag: 352beff3-611f-5a05-9899-7205538d965b
@@ -36,6 +40,7 @@ table 'Document RACI'
 
 		annotation SummarizationSetBy = User
 
+	/// Department holding this RACI role, one of the 8 Theragen departments (Clinical/Regulatory/R&D/Operations/Finance/Commercial/IT/HR).
 	column Department
 		dataType: string
 		lineageTag: 98042f80-7b9f-54f9-b2fd-e21f82e3cdd0
@@ -44,6 +49,7 @@ table 'Document RACI'
 
 		annotation SummarizationSetBy = User
 
+	/// RACI role code: R / A / C / I (Responsible / Accountable / Consulted / Informed).
 	column Role
 		dataType: string
 		lineageTag: 0f88334b-4708-5bf0-b199-49ffee70c333
@@ -52,6 +58,7 @@ table 'Document RACI'
 
 		annotation SummarizationSetBy = User
 
+	/// Full role label spelled out from the RACI code (Responsible / Accountable / Consulted / Informed).
 	column 'Role Name'
 		dataType: string
 		lineageTag: cb897400-7801-5bfe-9f3e-44b972ab764e
@@ -60,6 +67,7 @@ table 'Document RACI'
 
 		annotation SummarizationSetBy = User
 
+	/// Lifecycle touchpoint at which the department's involvement applies (the review/approval stage it engages on).
 	column Touchpoint
 		dataType: string
 		lineageTag: ffdf872b-c227-5cec-9624-ed4df9f41fa4
@@ -68,6 +76,7 @@ table 'Document RACI'
 
 		annotation SummarizationSetBy = User
 
+	/// Effective-dating start: date this RACI assignment took effect.
 	column 'Valid From'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -79,6 +88,7 @@ table 'Document RACI'
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	/// Effective-dating end: date this RACI assignment expired; blank means still in effect.
 	column 'Valid To'
 		dataType: dateTime
 		formatString: yyyy-mm-dd

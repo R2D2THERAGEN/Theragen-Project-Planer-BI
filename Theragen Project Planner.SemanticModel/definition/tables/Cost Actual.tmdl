@@ -2,6 +2,7 @@
 table 'Cost Actual'
 	lineageTag: 3d20ccc0-137f-585d-8950-1422f0df3b60
 
+	/// (hidden) Surrogate key for the cost actual; joins to bi.cost_actual.
 	column 'Cost Actual ID'
 		dataType: string
 		isHidden
@@ -11,6 +12,7 @@ table 'Cost Actual'
 
 		annotation SummarizationSetBy = User
 
+	/// (hidden) Surrogate key of the WBS work package this cost was charged against.
 	column 'WBS ID'
 		dataType: string
 		isHidden
@@ -20,6 +22,7 @@ table 'Cost Actual'
 
 		annotation SummarizationSetBy = User
 
+	/// Human-readable project code this cost actual belongs to.
 	column 'Project Code'
 		dataType: string
 		lineageTag: 22b8cba8-7de3-50a7-9d79-af23532182d0
@@ -28,6 +31,7 @@ table 'Cost Actual'
 
 		annotation SummarizationSetBy = User
 
+	/// Human-readable WBS code of the work package this cost was charged against.
 	column 'WBS Code'
 		dataType: string
 		lineageTag: 4f633138-7517-5b03-b729-2f67283e90c1
@@ -36,6 +40,7 @@ table 'Cost Actual'
 
 		annotation SummarizationSetBy = User
 
+	/// Name of the level-2 WBS work package the actual cost was incurred on.
 	column 'Work Package'
 		dataType: string
 		lineageTag: 0455ca97-fcb0-5fa3-ba19-b4e743aa71e3
@@ -44,6 +49,7 @@ table 'Cost Actual'
 
 		annotation SummarizationSetBy = User
 
+	/// Accounting period (month) the actual cost was booked to.
 	column Period
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -55,6 +61,7 @@ table 'Cost Actual'
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	/// Money actually spent in this entry, in USD; summed gives EVM actual cost (AC).
 	column Amount
 		dataType: double
 		formatString: \$#,##0.00;(\$#,##0.00);\$0
@@ -64,6 +71,7 @@ table 'Cost Actual'
 
 		annotation SummarizationSetBy = User
 
+	/// Cost classification of the spend: Labor, Materials, Services, or Other.
 	column Category
 		dataType: string
 		lineageTag: 0e2b54ed-692d-5eed-869b-944bc4395bd1
@@ -72,6 +80,7 @@ table 'Cost Actual'
 
 		annotation SummarizationSetBy = User
 
+	/// Display name of the person who logged this cost actual.
 	column 'Entered By'
 		dataType: string
 		lineageTag: ced9265d-3ad6-5222-8fb2-97b18cbfa6f7
@@ -80,6 +89,7 @@ table 'Cost Actual'
 
 		annotation SummarizationSetBy = User
 
+	/// Free-text note explaining or itemizing the logged cost.
 	column Notes
 		dataType: string
 		lineageTag: 9f59f61a-160a-50f9-8e05-cf704145cfad

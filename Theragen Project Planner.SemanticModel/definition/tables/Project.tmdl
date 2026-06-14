@@ -2,6 +2,7 @@
 table Project
 	lineageTag: 43886340-21d5-5420-bcc8-b7ae039e2aec
 
+	/// (hidden) Surrogate key uniquely identifying the project; the relationship anchor every fact joins to.
 	column 'Project ID'
 		dataType: string
 		isHidden
@@ -11,6 +12,7 @@ table Project
 
 		annotation SummarizationSetBy = User
 
+	/// Human-readable project code (e.g. THG-IT-005); the business key shown across reports.
 	column 'Project Code'
 		dataType: string
 		lineageTag: ef558d42-572c-5322-809b-4cb647aadaac
@@ -19,6 +21,7 @@ table Project
 
 		annotation SummarizationSetBy = User
 
+	/// SharePoint intake-form item id the project was created from; ties the project back to its request of record.
 	column 'Intake ID'
 		dataType: string
 		lineageTag: 86075b8a-dc6d-503f-98c6-e1ac88bbf31f
@@ -27,6 +30,7 @@ table Project
 
 		annotation SummarizationSetBy = User
 
+	/// Full project title as chartered; the primary label for the project in reports.
 	column 'Project Name'
 		dataType: string
 		lineageTag: 84b03655-62d8-596b-a4d2-6c5421b7e187
@@ -35,6 +39,7 @@ table Project
 
 		annotation SummarizationSetBy = User
 
+	/// Narrative charter description of what the project delivers and its scope.
 	column 'Project Description'
 		dataType: string
 		lineageTag: 9ef7e9aa-2f58-51ee-b2f3-a508bd5bf684
@@ -43,6 +48,7 @@ table Project
 
 		annotation SummarizationSetBy = User
 
+	/// Charter business-case statement of the value or benefit the project is expected to deliver.
 	column 'Business Value'
 		dataType: string
 		lineageTag: 744badde-bc80-5ca9-8e2c-bec374390f8a
@@ -51,6 +57,7 @@ table Project
 
 		annotation SummarizationSetBy = User
 
+	/// Display name of the executive sponsor accountable for funding and championing the project.
 	column Sponsor
 		dataType: string
 		lineageTag: e5e0390c-719f-57ba-81af-0cd7d8d2df5e
@@ -59,6 +66,7 @@ table Project
 
 		annotation SummarizationSetBy = User
 
+	/// Display name of the project manager responsible for day-to-day delivery.
 	column 'Project Manager'
 		dataType: string
 		lineageTag: d308128e-cb7c-512a-9c21-3abfca9f4de3
@@ -67,6 +75,7 @@ table Project
 
 		annotation SummarizationSetBy = User
 
+	/// The lead Theragen department that owns the project (one of the 8 departments).
 	column 'Primary Department'
 		dataType: string
 		lineageTag: 6995b93d-b0b0-594a-a9f4-8ab94792e4ad
@@ -75,6 +84,7 @@ table Project
 
 		annotation SummarizationSetBy = User
 
+	/// Delivery approach the project follows (e.g. Predictive / Agile / Hybrid).
 	column Approach
 		dataType: string
 		lineageTag: f7c2692b-ae11-59a2-a491-17dd3d11afd6
@@ -83,6 +93,7 @@ table Project
 
 		annotation SummarizationSetBy = User
 
+	/// Current PMI process group: Initiating, Planning, Executing, Monitoring & Controlling, or Closing; advanced only via a phase gate.
 	column 'Lifecycle Phase'
 		dataType: string
 		lineageTag: b6c2ae74-5168-5ae2-8cd1-db21e8111c1c
@@ -91,6 +102,7 @@ table Project
 
 		annotation SummarizationSetBy = User
 
+	/// Lifecycle state of the project (e.g. Proposed, Active, Completed); drives [Active Projects] and [Proposed Projects].
 	column 'Project Status'
 		dataType: string
 		lineageTag: 61c2e390-e069-5712-9f8c-cce076b436f8
@@ -99,6 +111,7 @@ table Project
 
 		annotation SummarizationSetBy = User
 
+	/// Charter-planned project start date.
 	column 'Planned Start'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -110,6 +123,7 @@ table Project
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	/// Charter-planned project finish date; the target completion surfaced by [Target Date Completion].
 	column 'Planned Finish'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -121,6 +135,7 @@ table Project
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	/// Date the project actually started; blank until work begins.
 	column 'Actual Start'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -132,6 +147,7 @@ table Project
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	/// Date the project actually completed; blank until closed.
 	column 'Actual Finish'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -143,6 +159,7 @@ table Project
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	/// Charter-approved total budget for the project; basis of [Portfolio Charter Budget] and baseline variance.
 	column 'Charter Budget'
 		dataType: double
 		formatString: \$#,##0;(\$#,##0);\$0
@@ -152,6 +169,7 @@ table Project
 
 		annotation SummarizationSetBy = User
 
+	/// Reference to the strategic objective or portfolio goal this project advances.
 	column 'Strategic Objective'
 		dataType: string
 		lineageTag: 14dfe069-facd-5418-9624-9dec085782a3

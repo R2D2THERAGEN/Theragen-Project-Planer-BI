@@ -323,6 +323,13 @@ def main(argv):
     sha, date = git_model_stamp()
     header = provenance_header(sha, date, read_version(), _counts(model))
     md = render(model["tables"], model["relationships"], model["roles"], header)
+    if "--stdout" in argv:
+        try:
+            sys.stdout.reconfigure(encoding="utf-8")  # avoid cp1252 mojibake on Windows redirects
+        except Exception:
+            pass
+        sys.stdout.write(md + "\n")
+        return 0
     OUT_FILE.write_text(md + "\n", encoding="utf-8")
     print(f"wrote {OUT_FILE.relative_to(REPO_ROOT)} — {_counts(model)}")
     return 0

@@ -2,6 +2,7 @@
 table 'Document Version'
 	lineageTag: 1038f47d-20f2-5176-9392-e5cc23fe9bc1
 
+	/// (hidden) Surrogate key for this document version; joins to Document Approval attestations.
 	column 'Version ID'
 		dataType: string
 		isHidden
@@ -11,6 +12,7 @@ table 'Document Version'
 
 		annotation SummarizationSetBy = User
 
+	/// (hidden) Surrogate key of the parent controlled document this version revises.
 	column 'Document ID'
 		dataType: string
 		isHidden
@@ -20,6 +22,7 @@ table 'Document Version'
 
 		annotation SummarizationSetBy = User
 
+	/// Minted document identifier (THG-{DEPT}-{TYPE}-NNN) of the parent controlled document.
 	column 'Doc ID'
 		dataType: string
 		lineageTag: 1acf9158-a4ba-5f77-a7e9-4fb7a26fe6df
@@ -28,6 +31,7 @@ table 'Document Version'
 
 		annotation SummarizationSetBy = User
 
+	/// Human-readable title of the parent controlled document.
 	column 'Document Title'
 		dataType: string
 		lineageTag: f7e3cbf1-6657-5324-b3b1-142d9f766f61
@@ -36,6 +40,7 @@ table 'Document Version'
 
 		annotation SummarizationSetBy = User
 
+	/// Version string of this revision (e.g. 1.0, 2.0) within the document's version history.
 	column Version
 		dataType: string
 		lineageTag: 64c6d419-e70e-5722-9cc9-f729dbdb0c7d
@@ -44,6 +49,7 @@ table 'Document Version'
 
 		annotation SummarizationSetBy = User
 
+	/// Lifecycle state of this version: DRAFT / REVIEW / BASELINE / AMENDED / RETIRED.
 	column Status
 		dataType: string
 		lineageTag: 682b428e-6038-5ae9-8579-7273ae160587
@@ -52,6 +58,7 @@ table 'Document Version'
 
 		annotation SummarizationSetBy = User
 
+	/// Narrative of what changed in this revision relative to the prior version.
 	column 'Change Summary'
 		dataType: string
 		lineageTag: 03413bd5-f190-5759-8105-a603fea465e3
@@ -60,6 +67,7 @@ table 'Document Version'
 
 		annotation SummarizationSetBy = User
 
+	/// Severity of the revision: A (Minor) / B (Substantive) / C (Controlling) / Emergency.
 	column 'Change Class'
 		dataType: string
 		lineageTag: 664f1039-23be-58c0-8e75-ef1bc9926dd5
@@ -68,6 +76,7 @@ table 'Document Version'
 
 		annotation SummarizationSetBy = User
 
+	/// Display name of the person who authored this revision.
 	column Author
 		dataType: string
 		lineageTag: 17a71913-332a-5fba-bd6e-d0583e8a7f80
@@ -76,6 +85,7 @@ table 'Document Version'
 
 		annotation SummarizationSetBy = User
 
+	/// Date this version takes effect as the governing revision.
 	column 'Effective Date'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -87,6 +97,7 @@ table 'Document Version'
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	/// Location where this version's file is stored.
 	column 'Storage Path'
 		dataType: string
 		lineageTag: d8433531-262c-5817-9b63-d920266d53cd
@@ -95,6 +106,7 @@ table 'Document Version'
 
 		annotation SummarizationSetBy = User
 
+	/// Date this version record was created.
 	column 'Created Date'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -104,6 +116,7 @@ table 'Document Version'
 
 		annotation SummarizationSetBy = User
 
+	/// The governance CR (CHG-NNN) that drove this revision, if any.
 	column 'Linked CR'
 		dataType: string
 		lineageTag: 8ed33af9-84c6-5d91-bdca-8a3e137b8dbd

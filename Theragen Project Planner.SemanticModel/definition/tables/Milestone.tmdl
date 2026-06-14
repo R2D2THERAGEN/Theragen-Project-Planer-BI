@@ -2,6 +2,7 @@
 table Milestone
 	lineageTag: 1f186523-e114-5d40-871a-a58126c5bd94
 
+	/// (hidden) Surrogate key for the milestone row.
 	column 'Milestone ID'
 		dataType: string
 		isHidden
@@ -11,6 +12,7 @@ table Milestone
 
 		annotation SummarizationSetBy = User
 
+	/// (hidden) Foreign key to the owning project; joins to 'Project'[Project ID].
 	column 'Project ID'
 		dataType: string
 		isHidden
@@ -20,6 +22,7 @@ table Milestone
 
 		annotation SummarizationSetBy = User
 
+	/// Human-readable project code this milestone belongs to (e.g. PRJ-001).
 	column 'Project Code'
 		dataType: string
 		lineageTag: ec33523f-d3f5-552d-a21d-1410b11815b6
@@ -28,6 +31,7 @@ table Milestone
 
 		annotation SummarizationSetBy = User
 
+	/// Name of the schedule checkpoint (the milestone's title).
 	column Milestone
 		dataType: string
 		lineageTag: 52e77264-cf70-53f7-920e-9bf6f2fcf960
@@ -36,6 +40,7 @@ table Milestone
 
 		annotation SummarizationSetBy = User
 
+	/// Frozen baseline target date; the yardstick slip days are measured against.
 	column 'Baseline Date'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -47,6 +52,7 @@ table Milestone
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	/// Current expected landing date while the milestone is still open.
 	column 'Forecast Date'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -58,6 +64,7 @@ table Milestone
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	/// Date the milestone was actually achieved; blank until reached.
 	column 'Actual Date'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -69,6 +76,7 @@ table Milestone
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	/// Landing state of the milestone: Achieved / At risk / Slipped.
 	column 'Milestone Status'
 		dataType: string
 		lineageTag: ad41f878-1949-586e-8e37-9c6a87d5ebaa
@@ -77,6 +85,7 @@ table Milestone
 
 		annotation SummarizationSetBy = User
 
+	/// Role title accountable for delivering the milestone (e.g. Project Manager).
 	column 'Owner Role'
 		dataType: string
 		lineageTag: ac6db575-5c50-5fbe-a805-e37570fc3b28

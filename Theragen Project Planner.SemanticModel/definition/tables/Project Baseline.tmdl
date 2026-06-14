@@ -2,6 +2,7 @@
 table 'Project Baseline'
 	lineageTag: a49ba217-e687-5670-bee1-ee4fa53dc984
 
+	/// (hidden) Surrogate key for the baseline snapshot; joins to bi.project_baseline.
 	column 'Baseline ID'
 		dataType: string
 		isHidden
@@ -12,6 +13,7 @@ table 'Project Baseline'
 
 		annotation SummarizationSetBy = User
 
+	/// (hidden) Surrogate key of the baselined project; joins to the Project dimension.
 	column 'Project ID'
 		dataType: string
 		isHidden
@@ -21,6 +23,7 @@ table 'Project Baseline'
 
 		annotation SummarizationSetBy = User
 
+	/// Human-readable project code this baseline was captured for.
 	column 'Project Code'
 		dataType: string
 		lineageTag: 029aeaf9-71d8-530f-950f-08bb01d10cc2
@@ -29,6 +32,7 @@ table 'Project Baseline'
 
 		annotation SummarizationSetBy = User
 
+	/// Which plan this baseline froze: Schedule, Budget, or Scope.
 	column 'Baseline Type'
 		dataType: string
 		lineageTag: e8fa1712-a706-541d-b4ee-f365903f5cc1
@@ -37,6 +41,7 @@ table 'Project Baseline'
 
 		annotation SummarizationSetBy = User
 
+	/// Baseline version vM.0 (1.0, 2.0, ...); each re-baseline mints the next.
 	column Version
 		dataType: string
 		lineageTag: a556f141-3843-5101-8a27-73a4f9a5d541
@@ -45,6 +50,7 @@ table 'Project Baseline'
 
 		annotation SummarizationSetBy = User
 
+	/// Baseline lifecycle state: BASELINED (active yardstick) or SUPERSEDED (replaced).
 	column Status
 		dataType: string
 		lineageTag: a12ad325-a9b7-5932-bdd6-a18ae367ba4d
@@ -53,6 +59,7 @@ table 'Project Baseline'
 
 		annotation SummarizationSetBy = User
 
+	/// Note on why this baseline was taken (the re-baselining rationale).
 	column 'Change Summary'
 		dataType: string
 		lineageTag: 87d57ed3-9921-5954-92de-b9a5c5e13076
@@ -61,6 +68,7 @@ table 'Project Baseline'
 
 		annotation SummarizationSetBy = User
 
+	/// Date this baseline snapshot was frozen.
 	column 'Baselined Date'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -70,6 +78,7 @@ table 'Project Baseline'
 
 		annotation SummarizationSetBy = User
 
+	/// Display name of the person who took this baseline.
 	column 'Baselined By'
 		dataType: string
 		lineageTag: 7ef90217-1610-5698-bbc8-9003e841b238
@@ -78,6 +87,7 @@ table 'Project Baseline'
 
 		annotation SummarizationSetBy = User
 
+	/// Frozen budget_total captured in this baseline's snapshot, in USD; the EVM cost yardstick.
 	column 'Baseline Budget Total'
 		dataType: double
 		formatString: \$#,##0;(\$#,##0);\$0
@@ -87,6 +97,7 @@ table 'Project Baseline'
 
 		annotation SummarizationSetBy = User
 
+	/// Number of schedule activities frozen in this baseline's snapshot.
 	column 'Baseline Activity Count'
 		dataType: int64
 		formatString: #,0

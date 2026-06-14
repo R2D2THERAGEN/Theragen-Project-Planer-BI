@@ -849,6 +849,7 @@ table _Measures
 		displayFolder: Change
 		lineageTag: d3730271-c3cb-50b6-8d87-e5c635a2b272
 
+	/// Hidden placeholder column for the measure-host table; carries no data.
 	column Value
 		dataType: string
 		isHidden

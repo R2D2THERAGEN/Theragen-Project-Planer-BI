@@ -3,6 +3,7 @@ table Date
 	lineageTag: ff1ab2bc-407d-5980-a07c-cd759edf42cd
 	dataCategory: Time
 
+	/// The calendar day; the key of the marked date dimension that every date relationship joins to.
 	column Date
 		dataType: dateTime
 		isKey
@@ -13,6 +14,7 @@ table Date
 
 		annotation SummarizationSetBy = User
 
+	/// Calendar year of the date, for year-level grouping and filtering.
 	column Year = YEAR('Date'[Date])
 		dataType: int64
 		formatString: #,0
@@ -21,6 +23,7 @@ table Date
 
 		annotation SummarizationSetBy = User
 
+	/// Calendar quarter label (Q1-Q4) of the date, for quarter-level grouping.
 	column Quarter = "Q" & QUARTER('Date'[Date])
 		dataType: string
 		lineageTag: 4f6fa0be-7216-51dd-9265-1d37cbfbf9ac
@@ -28,6 +31,7 @@ table Date
 
 		annotation SummarizationSetBy = User
 
+	/// (hidden) Month number 1-12; the sort key that orders the Month name column chronologically.
 	column 'Month Number' = MONTH('Date'[Date])
 		dataType: int64
 		isHidden
@@ -36,6 +40,7 @@ table Date
 
 		annotation SummarizationSetBy = User
 
+	/// Three-letter month abbreviation (Jan-Dec), sorted by Month Number.
 	column Month = FORMAT('Date'[Date], "MMM")
 		dataType: string
 		lineageTag: 3021befd-1da3-538d-a01f-ac6ab5446883
@@ -44,6 +49,7 @@ table Date
 
 		annotation SummarizationSetBy = User
 
+	/// Year-month key in YYYY-MM form, for chronological month-over-month trending across years.
 	column 'Year Month' = FORMAT('Date'[Date], "YYYY-MM")
 		dataType: string
 		lineageTag: 6a8079a5-1fe9-574d-a026-5d19c8bc76b7
@@ -51,6 +57,7 @@ table Date
 
 		annotation SummarizationSetBy = User
 
+	/// Monday-start date of the week the date falls in; for weekly bucketing of activity and milestones.
 	column 'Week Of' = 'Date'[Date] - WEEKDAY('Date'[Date], 2) + 1
 		dataType: dateTime
 		formatString: yyyy-mm-dd

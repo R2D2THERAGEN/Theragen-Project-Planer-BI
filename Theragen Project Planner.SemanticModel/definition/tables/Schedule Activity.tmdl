@@ -2,6 +2,7 @@
 table 'Schedule Activity'
 	lineageTag: 5394fa66-9c73-5d8f-88a1-3b789a66b3d2
 
+	/// (hidden) Surrogate key for the activity; joins to fact and leadership-view tables.
 	column 'Activity ID'
 		dataType: string
 		isHidden
@@ -11,6 +12,7 @@ table 'Schedule Activity'
 
 		annotation SummarizationSetBy = User
 
+	/// (hidden) Foreign key to the parent work package; joins to 'WBS Element'[WBS ID].
 	column 'WBS ID'
 		dataType: string
 		isHidden
@@ -20,6 +22,7 @@ table 'Schedule Activity'
 
 		annotation SummarizationSetBy = User
 
+	/// (hidden) Foreign key to the owning project; joins to 'Project'[Project ID].
 	column 'Project ID'
 		dataType: string
 		isHidden
@@ -29,6 +32,7 @@ table 'Schedule Activity'
 
 		annotation SummarizationSetBy = User
 
+	/// Human-readable project code this activity belongs to (e.g. PRJ-001).
 	column 'Project Code'
 		dataType: string
 		lineageTag: 3adc63e1-7152-5e20-be71-ce0ce99d1c4d
@@ -37,6 +41,7 @@ table 'Schedule Activity'
 
 		annotation SummarizationSetBy = User
 
+	/// Human-readable activity code minted under its work package (e.g. 1.1-A1).
 	column 'Activity Code'
 		dataType: string
 		lineageTag: ba63c603-12b5-54fe-b526-389a069cfecd
@@ -45,6 +50,7 @@ table 'Schedule Activity'
 
 		annotation SummarizationSetBy = User
 
+	/// Descriptive title of the schedule activity as authored by the PM.
 	column 'Activity Name'
 		dataType: string
 		lineageTag: a4a7ea63-bd8b-5995-8ffb-51b0a806e92a
@@ -53,6 +59,7 @@ table 'Schedule Activity'
 
 		annotation SummarizationSetBy = User
 
+	/// Scheduled (planned) start date of the activity.
 	column 'Planned Start'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -64,6 +71,7 @@ table 'Schedule Activity'
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	/// Scheduled (planned) finish date of the activity.
 	column 'Planned Finish'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -75,6 +83,7 @@ table 'Schedule Activity'
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	/// Date the activity actually started; blank until work begins.
 	column 'Actual Start'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -86,6 +95,7 @@ table 'Schedule Activity'
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	/// Date the activity actually finished; blank until completed.
 	column 'Actual Finish'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
@@ -97,6 +107,7 @@ table 'Schedule Activity'
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	/// Planned span in working days (Mon-Fri inclusive) between planned start and finish.
 	column 'Duration Days'
 		dataType: int64
 		formatString: #,0
@@ -106,6 +117,7 @@ table 'Schedule Activity'
 
 		annotation SummarizationSetBy = User
 
+	/// (hidden) Foreign key to the activity owner; joins to 'Person'[Person ID].
 	column 'Owner ID'
 		dataType: string
 		isHidden
@@ -115,6 +127,7 @@ table 'Schedule Activity'
 
 		annotation SummarizationSetBy = User
 
+	/// Display name of the person accountable for delivering the activity.
 	column Owner
 		dataType: string
 		lineageTag: e5a447d2-3250-5807-93ef-238a8ed39bfe
@@ -123,6 +136,7 @@ table 'Schedule Activity'
 
 		annotation SummarizationSetBy = User
 
+	/// Theragen department executing the activity (one of the 8 departments).
 	column Department
 		dataType: string
 		lineageTag: 1ca4cedf-ab3e-5b1b-bfea-aeddc3186585
@@ -131,6 +145,7 @@ table 'Schedule Activity'
 
 		annotation SummarizationSetBy = User
 
+	/// Workflow state of the activity: Not started / In progress / Done / At risk / Cancelled.
 	column 'Activity Status'
 		dataType: string
 		lineageTag: 32935506-c675-5eaa-ab4d-d289e76df31c
@@ -139,6 +154,7 @@ table 'Schedule Activity'
 
 		annotation SummarizationSetBy = User
 
+	/// Percent of the activity completed (0-100), as reported by the owner.
 	column 'Pct Complete'
 		dataType: double
 		formatString: 0\%

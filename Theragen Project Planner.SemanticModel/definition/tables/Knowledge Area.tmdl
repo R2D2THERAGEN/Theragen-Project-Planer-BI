@@ -2,6 +2,7 @@
 table 'Knowledge Area'
 	lineageTag: 3e1491d6-a5e0-5681-a32b-f292fddfcd72
 
+	/// PMI knowledge area (e.g. Scope, Schedule, Cost, Quality, Risk) used to structure status-report health entries.
 	column 'Knowledge Area'
 		dataType: string
 		lineageTag: f27bd9cd-fc01-5b41-8aa1-adf9c35d9b8f
@@ -11,6 +12,7 @@ table 'Knowledge Area'
 
 		annotation SummarizationSetBy = User
 
+	/// (hidden) Sort order that lays out knowledge areas in canonical PMI sequence rather than alphabetically.
 	column 'KA Sort'
 		dataType: int64
 		isHidden

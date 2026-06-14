@@ -2,6 +2,7 @@
 table 'Governance Change Assessment'
 	lineageTag: 182b42b8-97e7-5ad7-8672-36a9deda634c
 
+	/// (hidden) Surrogate key for this per-department assessment row.
 	column 'Gov Impact ID'
 		dataType: string
 		isHidden
@@ -11,6 +12,7 @@ table 'Governance Change Assessment'
 
 		annotation SummarizationSetBy = User
 
+	/// (hidden) Surrogate key of the parent governance CR; joins to 'Governance Change Request'.
 	column 'CR Gov ID'
 		dataType: string
 		isHidden
@@ -20,6 +22,7 @@ table 'Governance Change Assessment'
 
 		annotation SummarizationSetBy = User
 
+	/// Human-readable code of the governance CR being assessed, CHG-NNN.
 	column 'CR Code'
 		dataType: string
 		lineageTag: b9f1d8bf-6133-554c-90be-d82aee13e71c
@@ -28,6 +31,7 @@ table 'Governance Change Assessment'
 
 		annotation SummarizationSetBy = User
 
+	/// Minted identifier of the controlled document the parent CR targets, THG-{DEPT}-{TYPE}-NNN.
 	column 'Doc ID'
 		dataType: string
 		lineageTag: 019e41a0-73b6-50f4-ada1-d05affa37de1
@@ -36,6 +40,7 @@ table 'Governance Change Assessment'
 
 		annotation SummarizationSetBy = User
 
+	/// Title of the controlled document the parent CR targets.
 	column 'Doc Title'
 		dataType: string
 		lineageTag: 5dcb54e1-799b-538b-8943-d8f65ba868fb
@@ -44,6 +49,7 @@ table 'Governance Change Assessment'
 
 		annotation SummarizationSetBy = User
 
+	/// Theragen department filing this impact statement (one row per assessing department).
 	column Department
 		dataType: string
 		lineageTag: 2c0cffbf-a05c-50ac-bc57-d679c5d82df3
@@ -52,6 +58,7 @@ table 'Governance Change Assessment'
 
 		annotation SummarizationSetBy = User
 
+	/// The department's narrative of how the change affects it.
 	column 'Impact Summary'
 		dataType: string
 		lineageTag: c096c43a-6a43-582c-ba0c-bd3131f104df
@@ -60,6 +67,7 @@ table 'Governance Change Assessment'
 
 		annotation SummarizationSetBy = User
 
+	/// The department's read on the change's regulatory/compliance implications.
 	column 'Compliance Impact'
 		dataType: string
 		lineageTag: ab95d6d5-520a-5888-bf31-43569df1c909
@@ -68,6 +76,7 @@ table 'Governance Change Assessment'
 
 		annotation SummarizationSetBy = User
 
+	/// Date the department submitted this assessment.
 	column 'Submitted Date'
 		dataType: dateTime
 		formatString: yyyy-mm-dd

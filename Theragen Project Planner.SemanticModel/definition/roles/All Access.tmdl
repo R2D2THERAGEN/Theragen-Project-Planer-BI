@@ -1,0 +1,4 @@
+/// PMO / admin all-access role: no table filters, sees the whole portfolio. The bootstrap safety net so admins are never locked out by default-deny (equivalent to an "All" grant).
+role 'All Access'
+	modelPermission: read
+	lineageTag: 4413c173-2e95-5ccc-8799-5dd3976b4584

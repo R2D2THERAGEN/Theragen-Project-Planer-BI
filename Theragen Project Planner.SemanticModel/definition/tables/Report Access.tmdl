@@ -1,0 +1,77 @@
+/// Security - data-driven RLS grants. Disconnected (no relationships): the "Scoped Viewer" role reads it via USERPRINCIPALNAME() to filter Project. Hidden so the access map never appears in the field list.
+table 'Report Access'
+	isHidden
+	lineageTag: 2ac357be-2d53-53a4-bd46-9698e4048668
+
+	column 'Access ID'
+		dataType: string
+		isHidden
+		lineageTag: 097d4936-f1c1-5d75-bb14-95727ae193ff
+		summarizeBy: none
+		sourceColumn: Access ID
+
+		annotation SummarizationSetBy = User
+
+	column 'User Email'
+		dataType: string
+		lineageTag: 29182ad0-c69e-5bb2-8ca0-430939904476
+		summarizeBy: none
+		sourceColumn: User Email
+
+		annotation SummarizationSetBy = User
+
+	column 'Scope Type'
+		dataType: string
+		lineageTag: 4135a6e6-8e11-5c3d-89ff-6c18985362d1
+		summarizeBy: none
+		sourceColumn: Scope Type
+
+		annotation SummarizationSetBy = User
+
+	column 'Scope Value'
+		dataType: string
+		lineageTag: 54f1934b-a760-57a8-b7f2-f5fb5927af96
+		summarizeBy: none
+		sourceColumn: Scope Value
+
+		annotation SummarizationSetBy = User
+
+	column Active
+		dataType: boolean
+		lineageTag: 6e7dc08e-ab8d-5092-afa4-fed763bb8b55
+		summarizeBy: none
+		sourceColumn: Active
+
+		annotation SummarizationSetBy = User
+
+	column 'Granted By'
+		dataType: string
+		lineageTag: bbb6d1a9-be44-5e9b-be79-357beeb47ea7
+		summarizeBy: none
+		sourceColumn: Granted By
+
+		annotation SummarizationSetBy = User
+
+	column 'Granted Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 7016416a-d23e-5a2f-819d-b2897b536c32
+		summarizeBy: none
+		sourceColumn: Granted Date
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition 'Report Access' = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "report_access"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"access_id", "user_email", "scope_type", "scope_value", "active", "granted_by_name", "granted_at"}),
+				    Renamed = Table.RenameColumns(Selected, {{"access_id", "Access ID"}, {"user_email", "User Email"}, {"scope_type", "Scope Type"}, {"scope_value", "Scope Value"}, {"active", "Active"}, {"granted_by_name", "Granted By"}, {"granted_at", "Granted Date"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table

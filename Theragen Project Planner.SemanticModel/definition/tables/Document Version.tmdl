@@ -1,0 +1,120 @@
+/// Fact - controlled-document version history.
+table 'Document Version'
+	lineageTag: 1038f47d-20f2-5176-9392-e5cc23fe9bc1
+
+	column 'Version ID'
+		dataType: string
+		isHidden
+		lineageTag: 4ba43ff2-3997-5664-9639-f88816ef2cdc
+		summarizeBy: none
+		sourceColumn: Version ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Document ID'
+		dataType: string
+		isHidden
+		lineageTag: 719ce181-7a34-5aa3-8da1-59389190e181
+		summarizeBy: none
+		sourceColumn: Document ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Doc ID'
+		dataType: string
+		lineageTag: 1acf9158-a4ba-5f77-a7e9-4fb7a26fe6df
+		summarizeBy: none
+		sourceColumn: Doc ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Document Title'
+		dataType: string
+		lineageTag: f7e3cbf1-6657-5324-b3b1-142d9f766f61
+		summarizeBy: none
+		sourceColumn: Document Title
+
+		annotation SummarizationSetBy = User
+
+	column Version
+		dataType: string
+		lineageTag: 64c6d419-e70e-5722-9cc9-f729dbdb0c7d
+		summarizeBy: none
+		sourceColumn: Version
+
+		annotation SummarizationSetBy = User
+
+	column Status
+		dataType: string
+		lineageTag: 682b428e-6038-5ae9-8579-7273ae160587
+		summarizeBy: none
+		sourceColumn: Status
+
+		annotation SummarizationSetBy = User
+
+	column 'Change Summary'
+		dataType: string
+		lineageTag: 03413bd5-f190-5759-8105-a603fea465e3
+		summarizeBy: none
+		sourceColumn: Change Summary
+
+		annotation SummarizationSetBy = User
+
+	column 'Change Class'
+		dataType: string
+		lineageTag: 664f1039-23be-58c0-8e75-ef1bc9926dd5
+		summarizeBy: none
+		sourceColumn: Change Class
+
+		annotation SummarizationSetBy = User
+
+	column Author
+		dataType: string
+		lineageTag: 17a71913-332a-5fba-bd6e-d0583e8a7f80
+		summarizeBy: none
+		sourceColumn: Author
+
+		annotation SummarizationSetBy = User
+
+	column 'Effective Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: c06ccac9-b21b-54c0-bdd8-65c55300fe3c
+		summarizeBy: none
+		sourceColumn: Effective Date
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Storage Path'
+		dataType: string
+		lineageTag: d8433531-262c-5817-9b63-d920266d53cd
+		summarizeBy: none
+		sourceColumn: Storage Path
+
+		annotation SummarizationSetBy = User
+
+	column 'Created Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 656ec6d4-bbbc-5af5-a2ce-33a38de4d01c
+		summarizeBy: none
+		sourceColumn: Created Date
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition 'Document Version' = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "document_version"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"version_id", "document_id", "doc_id", "doc_title", "version", "status", "change_summary", "change_class", "author_name", "effective_date", "storage_path", "created_at"}),
+				    Renamed = Table.RenameColumns(Selected, {{"version_id", "Version ID"}, {"document_id", "Document ID"}, {"doc_id", "Doc ID"}, {"doc_title", "Document Title"}, {"version", "Version"}, {"status", "Status"}, {"change_summary", "Change Summary"}, {"change_class", "Change Class"}, {"author_name", "Author"}, {"effective_date", "Effective Date"}, {"storage_path", "Storage Path"}, {"created_at", "Created Date"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table

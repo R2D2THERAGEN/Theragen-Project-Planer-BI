@@ -171,3 +171,11 @@ relationship 953a3317-f244-50a7-9841-4a8dd1c8a577
 	fromColumn: 'Document RACI'.'Document ID'
 	toColumn: 'Controlled Document'.'Document ID'
 
+relationship 32a008c2-a914-52af-9f62-49be57b8d8b5
+	fromColumn: 'Document Version'.'Document ID'
+	toColumn: 'Controlled Document'.'Document ID'
+
+relationship 5a9a79de-9934-5798-9eaa-0f2a0f0145b6
+	fromColumn: 'Document Approval'.'Version ID'
+	toColumn: 'Document Version'.'Version ID'
+

@@ -1,0 +1,107 @@
+/// Fact - per-version sign-off ATTESTATION (non-Part-11; see esig_kind).
+table 'Document Approval'
+	lineageTag: f8d7bfd0-0bd5-5a9e-8558-a8faf702c8a5
+
+	column 'Approval ID'
+		dataType: string
+		isHidden
+		lineageTag: 49fe8eb1-004f-561a-a7e9-018762b17482
+		summarizeBy: none
+		sourceColumn: Approval ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Version ID'
+		dataType: string
+		isHidden
+		lineageTag: f585cfb7-157f-56ce-bdce-b2644906bfc8
+		summarizeBy: none
+		sourceColumn: Version ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Doc ID'
+		dataType: string
+		lineageTag: 0af24d5a-2a2a-5d41-b5e5-613592c72d26
+		summarizeBy: none
+		sourceColumn: Doc ID
+
+		annotation SummarizationSetBy = User
+
+	column 'Document Title'
+		dataType: string
+		lineageTag: 07d153d4-2b99-556c-8fd9-c710708931c7
+		summarizeBy: none
+		sourceColumn: Document Title
+
+		annotation SummarizationSetBy = User
+
+	column Version
+		dataType: string
+		lineageTag: 21ff72fd-7d69-5542-9b7b-0d5734957f3e
+		summarizeBy: none
+		sourceColumn: Version
+
+		annotation SummarizationSetBy = User
+
+	column Approver
+		dataType: string
+		lineageTag: a0992118-aa17-5829-85da-349f1b6ba8bf
+		summarizeBy: none
+		sourceColumn: Approver
+
+		annotation SummarizationSetBy = User
+
+	column 'Signature Meaning'
+		dataType: string
+		lineageTag: b09b10a5-32e0-5a3f-a562-985cdf95f045
+		summarizeBy: none
+		sourceColumn: Signature Meaning
+
+		annotation SummarizationSetBy = User
+
+	column 'Signed At'
+		dataType: dateTime
+		formatString: yyyy-mm-dd hh:nn:ss
+		lineageTag: 7d340a8c-78d9-5e80-a255-93fdc162cdef
+		summarizeBy: none
+		sourceColumn: Signed At
+
+		annotation SummarizationSetBy = User
+
+	column 'Attestation Hash'
+		dataType: string
+		lineageTag: 2c42e40e-e8b6-5be7-914b-73e0dc43f632
+		summarizeBy: none
+		sourceColumn: Attestation Hash
+
+		annotation SummarizationSetBy = User
+
+	column 'Attestation Kind'
+		dataType: string
+		lineageTag: d3b9b192-ce77-51c3-882d-4a28bb1768d4
+		summarizeBy: none
+		sourceColumn: Attestation Kind
+
+		annotation SummarizationSetBy = User
+
+	column Reason
+		dataType: string
+		lineageTag: cdba8439-59fb-596c-81b0-f8addfc98d17
+		summarizeBy: none
+		sourceColumn: Reason
+
+		annotation SummarizationSetBy = User
+
+	partition 'Document Approval' = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "document_approval"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"approval_id", "version_id", "doc_id", "doc_title", "version", "approver_name", "signature_meaning", "signed_at", "esig_hash", "esig_kind", "reason"}),
+				    Renamed = Table.RenameColumns(Selected, {{"approval_id", "Approval ID"}, {"version_id", "Version ID"}, {"doc_id", "Doc ID"}, {"doc_title", "Document Title"}, {"version", "Version"}, {"approver_name", "Approver"}, {"signature_meaning", "Signature Meaning"}, {"signed_at", "Signed At"}, {"esig_hash", "Attestation Hash"}, {"esig_kind", "Attestation Kind"}, {"reason", "Reason"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table

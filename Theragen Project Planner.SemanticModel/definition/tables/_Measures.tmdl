@@ -792,6 +792,36 @@ table _Measures
 		displayFolder: Documents
 		lineageTag: 67050f18-35d3-5ce2-9244-b482e1a75183
 
+	/// Count of controlled-document versions.
+	measure 'Document Versions' = COUNTROWS('Document Version')
+		formatString: #,0
+		displayFolder: Documents
+		lineageTag: 07aa2dc9-463d-5419-b265-54dea4c0103c
+
+	/// Versions at BASELINE.
+	measure 'Baseline Versions' = CALCULATE([Document Versions], 'Document Version'[Status] = "BASELINE")
+		formatString: #,0
+		displayFolder: Documents
+		lineageTag: b6ec2811-37f6-5b1a-a4c6-73efba32ad18
+
+	/// Count of sign-off attestations (non-Part-11; see 'Document Approval'[Attestation Kind]).
+	measure 'Document Approvals' = COUNTROWS('Document Approval')
+		formatString: #,0
+		displayFolder: Documents
+		lineageTag: 87d4af8c-736f-54b0-9014-f054a8da1e1f
+
+	/// Distinct versions carrying at least one attestation.
+	measure 'Attested Versions' = DISTINCTCOUNT('Document Approval'[Version ID])
+		formatString: #,0
+		displayFolder: Documents
+		lineageTag: 98275026-48da-5aab-a70a-c364274499e1
+
+	/// Attestations whose meaning is Approval.
+	measure 'Approval Attestations' = CALCULATE([Document Approvals], 'Document Approval'[Signature Meaning] = "Approval")
+		formatString: #,0
+		displayFolder: Documents
+		lineageTag: 11c5f746-815a-56f2-b7f0-f48c9511e087
+
 	partition _Measures = m
 		mode: import
 		source =

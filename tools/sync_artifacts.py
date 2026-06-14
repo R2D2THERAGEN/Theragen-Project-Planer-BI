@@ -68,10 +68,16 @@ DOC_FIELDS = ("Title,DocTypeCode,Subtitle,PrimaryDepartment,Owner,OwnerLookupId,
 RACI_FIELDS = ("Title,ParentDocID,Department,Role,Touchpoint,ValidFrom,ValidTo,"
                "SyncStatus,SyncMessage")
 VERSION_FIELDS = ("Title,ParentDocID,Version,Status,ChangeSummary,ChangeClass,"
-                  "EffectiveDate,StoragePath,Author,AuthorLookupId,"
+                  "EffectiveDate,StoragePath,Author,AuthorLookupId,LinkedCRCode,"
                   "SyncStatus,SyncMessage")
 APPROVAL_FIELDS = ("Title,ParentDocID,ParentVersion,Approver,ApproverLookupId,"
                    "SignatureMeaning,Reason,SyncStatus,SyncMessage")
+GOVCR_FIELDS = ("Title,ParentDocID,RequestedDate,RequestedBy,RequestedByLookupId,"
+                "CRClass,Description,Reason,IntakeID,Decision,DecidedBy,"
+                "DecidedByLookupId,DecidedDate,ImplementationVerified,CRStatus,"
+                "CRCode,SyncStatus,SyncMessage")
+GOVASSESS_FIELDS = ("Title,ParentCRCode,Department,ImpactSummary,ComplianceImpact,"
+                    "SubmittedDate,SyncStatus,SyncMessage")
 
 
 def _date(v):
@@ -334,6 +340,8 @@ def normalize_version(item, people):
         "EffectiveDate": _date(f.get("EffectiveDate")),
         "StoragePath": f.get("StoragePath") or "",
         "AuthorEmail": people.email(f.get("AuthorLookupId")) or created_by,
+        # 2c-6 loop closure: optional governance-CR code the version implements.
+        "LinkedCRCode": (f.get("LinkedCRCode") or "").strip(),
         "SyncStatus": f.get("SyncStatus") or "Pending",
     }
 
@@ -352,6 +360,50 @@ def normalize_approval(item, people):
         "Reason": f.get("Reason") or None,
         # signed_at (and thus the esig_hash) bind to the moment of attestation.
         "CreatedAt": item.get("createdDateTime"),
+        "SyncStatus": f.get("SyncStatus") or "Pending",
+    }
+
+
+def normalize_govcr(item, people):
+    f = item.get("fields", {})
+    created_by = (((item.get("createdBy") or {}).get("user") or {})
+                  .get("email") or "").lower()
+    # RequestedDate defaults to createdDateTime date when blank (NOT NULL column).
+    created_date = (item.get("createdDateTime") or "")[:10] or None
+    return {
+        "item_id": item["id"],
+        "Title": f.get("Title") or "",
+        # ParentDocID is the target document (gov CRs are project-less).
+        "ParentDocID": (f.get("ParentDocID") or "").strip(),
+        "RequestedDate": _date(f.get("RequestedDate")) or created_date,
+        # Author-fallback covers the NOT NULL requested_by_person_id.
+        "RequestedByEmail": people.email(f.get("RequestedByLookupId")) or created_by,
+        "CRClass": f.get("CRClass") or "",
+        "Description": f.get("Description") or "",
+        "Reason": f.get("Reason") or "",
+        "IntakeID": f.get("IntakeID") or None,
+        "Decision": f.get("Decision") or "Pending",
+        "DecidedByEmail": people.email(f.get("DecidedByLookupId")),
+        "DecidedDate": _date(f.get("DecidedDate")),
+        "ImplementationVerified": coerce_bool(f.get("ImplementationVerified")),
+        "CRStatus": f.get("CRStatus") or "Open",
+        "CRCode": f.get("CRCode") or "",
+        "SyncStatus": f.get("SyncStatus") or "Pending",
+    }
+
+
+def normalize_govassessment(item, people):
+    f = item.get("fields", {})
+    # SubmittedDate defaults to createdDateTime date when blank (NOT NULL column).
+    created_date = (item.get("createdDateTime") or "")[:10] or None
+    return {
+        "item_id": item["id"],
+        "Title": f.get("Title") or "",
+        "ParentCRCode": (f.get("ParentCRCode") or "").strip(),
+        "Department": f.get("Department") or "",
+        "ImpactSummary": f.get("ImpactSummary") or "",
+        "ComplianceImpact": f.get("ComplianceImpact") or None,
+        "SubmittedDate": _date(f.get("SubmittedDate")) or created_date,
         "SyncStatus": f.get("SyncStatus") or "Pending",
     }
 
@@ -422,6 +474,31 @@ def project_leads(conn, project_id):
     row = conn.execute(
         "SELECT sponsor_person_id, project_manager_id FROM pmbok.project"
         " WHERE project_id=%s", (project_id,)).fetchone()
+    return (row[0], row[1]) if row else (None, None)
+
+
+def resolve_parent_govcr(conn, cr_code):
+    """Resolve a governance CR by its GLOBALLY-unique cr_code -> cr_gov_id or None.
+
+    Unlike pmbok.change_request (cr_code unique per project), change_request_gov
+    cr_code is UNIQUE across all rows (db/01_dm.sql), so no project/document
+    scopes the lookup. Used by the gov-assessment child and the version
+    LinkedCRCode loop closure. The registry orders change_request_gov before both
+    of those, and the sync runs autocommit, so a gov CR filed the same morning is
+    already committed when its child/link resolves here.
+    """
+    row = conn.execute(
+        "SELECT cr_gov_id FROM doc_mgmt.change_request_gov WHERE cr_code=%s",
+        (cr_code,)).fetchone()
+    return row[0] if row else None
+
+
+def doc_leads(conn, document_id):
+    """Return (owner_person_id, approver_person_id) for the gov-CR soft-authority
+    check - the document-scoped analog of project_leads."""
+    row = conn.execute(
+        "SELECT owner_person_id, approver_person_id FROM doc_mgmt.document"
+        " WHERE document_id=%s", (document_id,)).fetchone()
     return (row[0], row[1]) if row else (None, None)
 
 
@@ -500,6 +577,15 @@ APPROVAL_SELECT = ('SELECT external_ref, approval_id, version_id,'
                    ' approver_person_id, signature_meaning, signed_at, esig_hash,'
                    ' reason'
                    ' FROM doc_mgmt.document_approval WHERE external_ref IS NOT NULL')
+GOVCR_SELECT = ('SELECT external_ref, cr_gov_id, document_id, cr_code, intake_id,'
+                ' requested_at, requested_by_person_id, cr_class, description,'
+                ' reason, decision, decided_by_person_id, decided_at,'
+                ' implementation_verified, status'
+                ' FROM doc_mgmt.change_request_gov WHERE external_ref IS NOT NULL')
+GOVASSESS_SELECT = ('SELECT external_ref, gov_impact_id, cr_gov_id, department_id,'
+                    ' impact_summary, compliance_impact, submitted_at'
+                    ' FROM doc_mgmt.change_assessment_gov'
+                    ' WHERE external_ref IS NOT NULL')
 ACTIVITY_SELECT = ('SELECT a.external_ref, a.activity_id, a.wbs_element_id,'
                    ' w.project_id, a.activity_code, a.name, a.start_planned,'
                    ' a.finish_planned, a.start_actual, a.finish_actual,'
@@ -1886,6 +1972,185 @@ def process_phase_gate(conn, g, it, dry, current):
     return f"OK phase_gate item {item_id}: moved {from_phase} -> {to_phase}"
 
 
+def process_change_request_gov(conn, g, it, dry, current):
+    # Mirror of process_change_request (2b two-axis + audit), re-homed onto a
+    # DOCUMENT instead of a project: no project_id, no change_type, a GLOBAL
+    # CHG-NNN code, and a doc Owner/Approver soft-authority check.
+    errs = al.validate_govcr(it)
+    document_id = (resolve_parent_document(conn, it["ParentDocID"])
+                   if it["ParentDocID"] else None)
+    if it["ParentDocID"] and document_id is None:
+        errs.append(f"Unknown ParentDocID: {it['ParentDocID']}")
+    requester = (person_id_by_email(conn, it["RequestedByEmail"])
+                 if it["RequestedByEmail"] else None)
+    if it["RequestedByEmail"] and not requester:
+        errs.append(f"RequestedBy {it['RequestedByEmail']} not in person directory")
+    decider = (person_id_by_email(conn, it["DecidedByEmail"])
+               if it["DecidedByEmail"] else None)
+    if it["DecidedByEmail"] and not decider:
+        errs.append(f"DecidedBy {it['DecidedByEmail']} not in person directory")
+    if it.get("IntakeID") and not intake_exists(conn, it["IntakeID"]):
+        errs.append(f"Unknown IntakeID: {it['IntakeID']}")
+    if errs:
+        return _error(g, M365["govcr_list_id"], it, errs, dry, "govcr")
+    # Soft-authority note: the doc-scoped analog of the 2b sponsor/PM check.
+    warn = ""
+    if it["Decision"] != "Pending" and decider:
+        owner_id, approver_id = doc_leads(conn, document_id)
+        if decider not in (owner_id, approver_id):
+            warn = (f"DecidedBy {it['DecidedByEmail']} is not the document"
+                    " Owner or Approver - authority advisory only")
+    if current:
+        # Immutable-identity guard: the target document defines the gov CR.
+        if str(current["document_id"]) != str(document_id):
+            return _error(g, M365["govcr_list_id"], it,
+                          ["ParentDocID changed after sync - create a new"
+                           " governance change request instead"], dry, "govcr")
+        desired = al.build_govcr_row(it, current["document_id"], requester,
+                                     decider, current["cr_code"])
+        if al.row_changed(current, desired):
+            if dry:
+                return (f"DRY govcr item {it['item_id']}: would update"
+                        f" {current['cr_code']}")
+            with conn.transaction():
+                conn.execute(
+                    "UPDATE doc_mgmt.change_request_gov SET intake_id=%s,"
+                    " requested_at=%s, requested_by_person_id=%s, cr_class=%s,"
+                    " description=%s, reason=%s, decision=%s,"
+                    " decided_by_person_id=%s, decided_at=%s,"
+                    " implementation_verified=%s, status=%s"
+                    " WHERE external_ref=%s",
+                    (desired["intake_id"], desired["requested_at"],
+                     desired["requested_by_person_id"], desired["cr_class"],
+                     desired["description"], desired["reason"],
+                     desired["decision"], desired["decided_by_person_id"],
+                     desired["decided_at"], desired["implementation_verified"],
+                     desired["status"], it["item_id"]))
+                if str(current.get("decision") or "") != str(desired["decision"]):
+                    before_d, after_d = al._trail_states(
+                        current, desired, ["decision"])
+                    audit_lib.write_trail(
+                        conn, decider or requester, "GOVCR_DECISION",
+                        "change_request_gov", current["cr_gov_id"],
+                        before_d, after_d, None)
+                if str(current.get("status") or "") != str(desired["status"]):
+                    before_s, after_s = al._trail_states(
+                        current, desired, ["status"])
+                    audit_lib.write_trail(
+                        conn, decider or requester, "GOVCR_STATUS",
+                        "change_request_gov", current["cr_gov_id"],
+                        before_s, after_s, None)
+            writeback(g, M365["govcr_list_id"], it["item_id"],
+                      {"SyncStatus": "Synced", "SyncMessage": warn,
+                       "CRCode": current["cr_code"]})
+            return (f"OK govcr item {it['item_id']}:"
+                    f" updated {current['cr_code']}")
+        if (it["SyncStatus"] != "Synced"
+                or it.get("CRCode") != current["cr_code"]):
+            if not dry:
+                writeback(g, M365["govcr_list_id"], it["item_id"],
+                          {"SyncStatus": "Synced", "SyncMessage": warn,
+                           "CRCode": current["cr_code"]})
+            return f"OK govcr item {it['item_id']}: healed write-back"
+        return f"OK govcr item {it['item_id']}: no change"
+    # New item - mint a GLOBAL CHG code (cr_code is UNIQUE across all gov CRs).
+    existing_codes = [r[0] for r in conn.execute(
+        "SELECT cr_code FROM doc_mgmt.change_request_gov").fetchall()]
+    cr_code = al.next_govcr_code(existing_codes)
+    suffix = f" - {warn}" if warn else ""
+    if dry:
+        return (f"DRY govcr item {it['item_id']}: would create"
+                f" {cr_code} ({it['ParentDocID']}){suffix}")
+    cr_gov_id = str(uuid.uuid5(NS, f"thg/artifact/govcr/{it['item_id']}"))
+    row = al.build_govcr_row(it, document_id, requester, decider, cr_code)
+    with conn.transaction():
+        conn.execute(
+            "INSERT INTO doc_mgmt.change_request_gov"
+            " (cr_gov_id, cr_code, document_id, intake_id, requested_at,"
+            " requested_by_person_id, cr_class, description, reason, decision,"
+            " decided_by_person_id, decided_at, implementation_verified, status,"
+            " external_ref)"
+            " VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+            (cr_gov_id, row["cr_code"], row["document_id"], row["intake_id"],
+             row["requested_at"], row["requested_by_person_id"], row["cr_class"],
+             row["description"], row["reason"], row["decision"],
+             row["decided_by_person_id"], row["decided_at"],
+             row["implementation_verified"], row["status"], it["item_id"]))
+        audit_lib.write_trail(
+            conn, decider or requester, "GOVCR_CREATE", "change_request_gov",
+            cr_gov_id, None,
+            {"decision": row["decision"], "status": row["status"]}, None)
+    writeback(g, M365["govcr_list_id"], it["item_id"],
+              {"SyncStatus": "Synced", "SyncMessage": warn, "CRCode": cr_code})
+    return (f"OK new govcr {cr_code}"
+            f" ({it['ParentDocID']}, item {it['item_id']})")
+
+
+def process_change_assessment_gov(conn, g, it, dry, current):
+    # Mirror of process_impact_assessment (2c-2 child-by-code, no audit):
+    # child -> gov CR by GLOBAL cr_code, department-scoped, re-parent guard.
+    errs = al.validate_govassessment(it)
+    dept = (department_by_name(conn, it["Department"])
+            if it["Department"] else None)
+    if it["Department"] and not dept:
+        errs.append(f"Unknown Department: {it['Department']}")
+    cr_gov_id = None
+    if it.get("ParentCRCode") and not errs:
+        cr_gov_id = resolve_parent_govcr(conn, it["ParentCRCode"])
+        if cr_gov_id is None:
+            errs.append(f"Unknown ParentCRCode: {it['ParentCRCode']}")
+    if errs:
+        return _error(g, M365["govassessment_list_id"], it, errs, dry, "govassess")
+    item_id = it["item_id"]
+    list_id = M365["govassessment_list_id"]
+    desired = al.build_govassessment_row(it, cr_gov_id, dept[0],
+                                         it["SubmittedDate"])
+
+    if current:
+        # Re-parent guard: the parent gov CR is fixed for a given row.
+        if str(current["cr_gov_id"]) != str(cr_gov_id):
+            return _error(g, list_id, it,
+                          ["ParentCRCode changed after sync - create a new"
+                           " governance assessment instead"], dry, "govassess")
+        if al.row_changed(current, desired):
+            if dry:
+                return f"DRY govassess item {item_id}: would update"
+            with conn.transaction():
+                conn.execute(
+                    "UPDATE doc_mgmt.change_assessment_gov SET department_id=%s,"
+                    " impact_summary=%s, compliance_impact=%s, submitted_at=%s"
+                    " WHERE external_ref=%s",
+                    (desired["department_id"], desired["impact_summary"],
+                     desired["compliance_impact"], desired["submitted_at"],
+                     item_id))
+            writeback(g, list_id, item_id,
+                      {"SyncStatus": "Synced", "SyncMessage": ""})
+            return f"OK govassess item {item_id}: updated"
+        if it["SyncStatus"] != "Synced":
+            if not dry:
+                writeback(g, list_id, item_id,
+                          {"SyncStatus": "Synced", "SyncMessage": ""})
+            return f"OK govassess item {item_id}: healed write-back"
+        return f"OK govassess item {item_id}: no change"
+    # New item
+    if dry:
+        return (f"DRY govassess item {item_id}: would create for CR"
+                f" {it['ParentCRCode']} ({it['Department']})")
+    gov_impact_id = str(uuid.uuid5(NS, f"thg/artifact/govimpact/{item_id}"))
+    with conn.transaction():
+        conn.execute(
+            "INSERT INTO doc_mgmt.change_assessment_gov"
+            " (gov_impact_id, cr_gov_id, department_id, impact_summary,"
+            " compliance_impact, submitted_at, external_ref)"
+            " VALUES (%s,%s,%s,%s,%s,%s,%s)",
+            (gov_impact_id, desired["cr_gov_id"], desired["department_id"],
+             desired["impact_summary"], desired["compliance_impact"],
+             desired["submitted_at"], item_id))
+    writeback(g, list_id, item_id, {"SyncStatus": "Synced", "SyncMessage": ""})
+    return (f"OK new govassess for CR {it['ParentCRCode']}"
+            f" ({it['Department']}, item {item_id})")
+
+
 ARTIFACTS = [
     {"kind": "risk", "list_key": "risk_list_id", "fields": RISK_FIELDS,
      "normalize": normalize_risk, "process": process_risk,
@@ -1917,6 +2182,12 @@ ARTIFACTS = [
     {"kind": "document", "list_key": "document_list_id",
      "fields": DOC_FIELDS, "normalize": normalize_document,
      "process": process_document, "select": DOC_SELECT},
+    {"kind": "govcr", "list_key": "govcr_list_id", "fields": GOVCR_FIELDS,
+     "normalize": normalize_govcr, "process": process_change_request_gov,
+     "select": GOVCR_SELECT},
+    {"kind": "govassessment", "list_key": "govassessment_list_id",
+     "fields": GOVASSESS_FIELDS, "normalize": normalize_govassessment,
+     "process": process_change_assessment_gov, "select": GOVASSESS_SELECT},
     {"kind": "raci", "list_key": "raci_list_id",
      "fields": RACI_FIELDS, "normalize": normalize_raci,
      "process": process_raci_assignment, "select": RACI_SELECT},

@@ -145,6 +145,23 @@ LISTS = {
         {"name": "SubmittedBy", "personOrGroup": {"allowMultipleSelection": False}},
         date_only("SubmittedDate"),
     ] + BOOKKEEPING),
+    "document_list_id": ("Controlled Documents", [
+        choice("DocTypeCode", al.DOC_TYPE_CODES),
+        text("Title"),
+        text("Subtitle"),
+        choice("PrimaryDepartment", al.DEPARTMENTS),
+        {"name": "Owner", "personOrGroup": {"allowMultipleSelection": False}},
+        {"name": "Approver", "personOrGroup": {"allowMultipleSelection": False}},
+        choice("LifecyclePhase", al.DOC_LIFECYCLE_PHASES),
+        choice("Status", al.DOC_STATUSES, default="DRAFT"),
+        choice("ReviewCycle", al.REVIEW_CYCLES),
+        choice("Classification", al.DOC_CLASSIFICATIONS),
+        choice("StorageSystem", al.STORAGE_SYSTEMS),
+        text("StoragePath"),
+        date_only("NextReviewDue"),
+        text("IntakeID"),
+        text("DocID"),
+    ] + BOOKKEEPING),
 }
 
 

@@ -21,3 +21,19 @@ def test_every_model_object_has_a_description():
         f"{len(missing)} model object(s) lack a /// description (run "
         "`python tools/build_data_dictionary.py --audit`): " + ", ".join(missing[:20])
     )
+
+
+def test_roles_have_no_lineage_tag():
+    """TMDL roles do not support a lineageTag property - Power BI Desktop rejects
+    the model with 'lineageTag is not a supported property in the current context'.
+    Regression guard for the load failure fixed 2026-06-14."""
+    roles_dir = ROOT / "Theragen Project Planner.SemanticModel" / "definition" / "roles"
+    offenders = []
+    for f in sorted(roles_dir.glob("*.tmdl")):
+        for i, line in enumerate(f.read_text(encoding="utf-8").splitlines(), 1):
+            if line.strip().startswith("lineageTag"):
+                offenders.append(f"{f.name}:{i}")
+    assert not offenders, (
+        "TMDL roles must not contain lineageTag (unsupported in the role context; "
+        "Desktop won't load the model): " + ", ".join(offenders)
+    )

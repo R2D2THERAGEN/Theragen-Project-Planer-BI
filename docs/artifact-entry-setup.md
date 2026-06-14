@@ -1,4 +1,4 @@
-# Artifact Entry Setup — Risks, Milestones, Status Reports, Project Activities, Change Requests, Decisions, Baselines, Phase Gates, Change Impact Assessments
+# Artifact Entry Setup — Risks, Milestones, Status Reports, Project Activities, Change Requests, Decisions, Baselines, Phase Gates, Change Impact Assessments, Controlled Documents
 
 This is the PM-facing reference for filling in the four execution-artifact SharePoint
 Lists that feed the **Project Status Report** Power BI page. The daily 5:40 AM sync
@@ -25,6 +25,7 @@ access (creating and editing items) requires at minimum Edit permission on the s
 | **Project Baselines** | One row per frozen Schedule / Budget / Scope baseline per project — see §N |
 | **Project Phase Gates** | One row per lifecycle-phase handoff per project — see §O |
 | **Change Impact Assessments** | One row per department's impact statement on a change request — see §P |
+| **Controlled Documents** | One row per controlled document (org-wide; minted DocID) — see §Q |
 
 All these Lists live on the root SharePoint site (same site as Project Intake).
 
@@ -992,6 +993,70 @@ The sync populates these automatically — **do not edit them**:
 
 ---
 
+## Q. Controlled Documents
+
+The PMO registers a **controlled document** by creating a row in the **Controlled Documents** List —
+one row per document. Documents are **org-wide** (not tied to a project): each carries a minted
+**DocID** of the form `THG-{DEPT}-{TYPE}-NNN` (e.g. `THG-OPS-CHR-001`), where `{DEPT}` is the owning
+department's code and `{TYPE}` is the document-type code.
+
+### Required columns
+
+| Column | Type | Notes |
+|--------|------|-------|
+| **DocTypeCode** | Choice | The document type — one of the eight codes below; sets the `{TYPE}` segment of the DocID |
+| **Title** | Text | Document title (the SharePoint item title) |
+| **PrimaryDepartment** | Choice | The owning department (one of the eight); sets the `{DEPT}` segment of the DocID |
+| **Owner** | Person | M365 people picker — the document owner; **falls back to the item author** if blank |
+
+### Optional columns (smart defaults)
+
+| Column | Type | Notes |
+|--------|------|-------|
+| **Subtitle** | Text | One-line subtitle |
+| **Approver** | Person | Designated approver (may be blank) |
+| **LifecyclePhase** | Choice | One of the nine document lifecycle phases; **defaults from the document type** when blank |
+| **Status** | Choice | `DRAFT` / `REVIEW` / `BASELINE` / `AMENDED` / `RETIRED`; defaults to `DRAFT` |
+| **ReviewCycle** | Choice | One of the six review cycles; **defaults from the document type** when blank |
+| **Classification** | Choice | Public / Confidential – Internal / Confidential – Restricted / PHI – HIPAA (defaults to Confidential – Internal) |
+| **StorageSystem** | Choice | PMO SharePoint / eQMS / eTMF / HIPAA-controlled store / ERP / HRIS / Other |
+| **StoragePath** | Text | File path or URL; **defaults to `{StorageSystem}/{DocID}`** when blank |
+| **NextReviewDue** | Date | Next periodic review date (drives the "Documents Due for Review" measure) |
+| **IntakeID** | Text | Originating intake id, if any |
+
+### Choice values
+
+**DocTypeCode** (8): `CHR` Charter · `SOP` Standard Operating Procedure · `PLN` Plan · `SCP` Scope ·
+`RPT` Report · `POL` Policy · `WI` Work Instruction · `FRM` Form.
+**LifecyclePhase** (9): Initiating · Planning · Executing · Monitoring · Closing · Cross-Lifecycle ·
+Intake · Governance · Reference.
+**ReviewCycle** (6): Annual · Semi-Annual · Quarterly · Monthly · On Major Revision · On Phase Gate.
+
+### The DocID and the immutable-identity rule
+
+The sync mints the DocID per **(department, type)** family — the first OPS charter is
+`THG-OPS-CHR-001`, the next `THG-OPS-CHR-002`, and so on; each family numbers independently. Because
+**DocTypeCode and PrimaryDepartment define the DocID**, they are fixed once a document has synced:
+editing either after sync is rejected with `DocTypeCode/PrimaryDepartment changed after sync - create
+a new document instead`. Everything else (title, status, owner, dates, storage, …) edits in place.
+
+### Status + audit
+
+`Status` moves freely between the five values (no enforced ordering in v1). Every document writes an
+append-only `doc_mgmt.audit_trail_entry` row: `DOCUMENT_CREATE` on first sync and `DOCUMENT_STATUS`
+whenever the status changes. The document version (`current_version`, starts at `0.1`) is managed by
+the version sync, not by this List.
+
+### Read-only write-back columns
+
+| Column | Meaning |
+|--------|---------|
+| **DocID** | The minted `THG-{DEPT}-{TYPE}-NNN` identifier — set by the sync; do not edit |
+| **SyncStatus** | `Pending` → `Synced` (success) or `Error` (see §H) |
+| **SyncMessage** | Human-readable error detail; blank on success |
+
+---
+
 ## Appendix — sync behaviour reference
 
 | Scenario | sync_artifacts.py behaviour |
@@ -1021,4 +1086,8 @@ The sync populates these automatically — **do not edit them**:
 | Impact assessment, unknown ParentCRCode | Writes `Error: Unknown ParentCRCode <code> for project <code>` |
 | Impact assessment, fields changed (same CR) | Updates DB row; heals write-back; writes `Synced` |
 | Impact assessment, re-parented after sync | Writes `Error: Reparenting not allowed; create a new impact assessment` |
+| New document, valid | Mints `THG-{DEPT}-{TYPE}-NNN` per (dept,type); inserts row; writes `DOCUMENT_CREATE` audit; writes `Synced` + DocID back |
+| Document, unknown DocTypeCode / PrimaryDepartment | Writes `Error: Unknown DocTypeCode/PrimaryDepartment` |
+| Document, status (or other field) changed | Updates DB row; writes `DOCUMENT_STATUS` audit on a status change; heals write-back |
+| Document, DocTypeCode/PrimaryDepartment changed after sync | Writes `Error: ...changed after sync - create a new document instead` |
 | `--dry-run` flag | Prints intent only; no DB writes; no List writes |

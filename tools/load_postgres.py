@@ -18,6 +18,8 @@ from datetime import date, timedelta
 
 import psycopg
 
+import seed_doc_lookups  # shared document_type + compliance_frame catalogs
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CFG = json.load(open(os.path.join(ROOT, "db", ".pg.local.json")))
 DATA = os.path.join(ROOT, "SampleData")
@@ -106,6 +108,15 @@ def main():
         cur, "doc_mgmt.person",
         ["person_id", "employee_number", "email", "display_name", "department_id",
          "role_id", "employment_type", "active", "start_date"], people)
+
+    # Controlled-document lookups (shared with tools/seed_doc_lookups.py so the
+    # one-time idempotent seeder and a from-scratch rebuild produce the same rows).
+    counts["doc_mgmt.document_type"] = insert(
+        cur, "doc_mgmt.document_type", seed_doc_lookups.DOC_TYPE_COLS,
+        seed_doc_lookups.doc_type_rows())
+    counts["doc_mgmt.compliance_frame"] = insert(
+        cur, "doc_mgmt.compliance_frame", seed_doc_lookups.FRAME_COLS,
+        seed_doc_lookups.frame_rows())
 
     projects = list(rows("project"))
     intakes = []

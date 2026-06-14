@@ -67,6 +67,11 @@ DOC_FIELDS = ("Title,DocTypeCode,Subtitle,PrimaryDepartment,Owner,OwnerLookupId,
               "DocID,SyncStatus,SyncMessage")
 RACI_FIELDS = ("Title,ParentDocID,Department,Role,Touchpoint,ValidFrom,ValidTo,"
                "SyncStatus,SyncMessage")
+VERSION_FIELDS = ("Title,ParentDocID,Version,Status,ChangeSummary,ChangeClass,"
+                  "EffectiveDate,StoragePath,Author,AuthorLookupId,"
+                  "SyncStatus,SyncMessage")
+APPROVAL_FIELDS = ("Title,ParentDocID,ParentVersion,Approver,ApproverLookupId,"
+                   "SignatureMeaning,Reason,SyncStatus,SyncMessage")
 
 
 def _date(v):
@@ -314,6 +319,43 @@ def normalize_raci(item, people):
     }
 
 
+def normalize_version(item, people):
+    f = item.get("fields", {})
+    created_by = (((item.get("createdBy") or {}).get("user") or {})
+                  .get("email") or "").lower()
+    return {
+        "item_id": item["id"],
+        "Title": f.get("Title") or "",
+        "ParentDocID": (f.get("ParentDocID") or "").strip(),
+        "Version": (f.get("Version") or "").strip(),
+        "Status": f.get("Status") or "DRAFT",
+        "ChangeSummary": f.get("ChangeSummary") or "",
+        "ChangeClass": f.get("ChangeClass") or "",
+        "EffectiveDate": _date(f.get("EffectiveDate")),
+        "StoragePath": f.get("StoragePath") or "",
+        "AuthorEmail": people.email(f.get("AuthorLookupId")) or created_by,
+        "SyncStatus": f.get("SyncStatus") or "Pending",
+    }
+
+
+def normalize_approval(item, people):
+    f = item.get("fields", {})
+    created_by = (((item.get("createdBy") or {}).get("user") or {})
+                  .get("email") or "").lower()
+    return {
+        "item_id": item["id"],
+        "Title": f.get("Title") or "",
+        "ParentDocID": (f.get("ParentDocID") or "").strip(),
+        "ParentVersion": (f.get("ParentVersion") or "").strip(),
+        "ApproverEmail": people.email(f.get("ApproverLookupId")) or created_by,
+        "SignatureMeaning": f.get("SignatureMeaning") or "Approval",
+        "Reason": f.get("Reason") or None,
+        # signed_at (and thus the esig_hash) bind to the moment of attestation.
+        "CreatedAt": item.get("createdDateTime"),
+        "SyncStatus": f.get("SyncStatus") or "Pending",
+    }
+
+
 def writeback(g, list_id, item_id, fields):
     g.patch(f"/sites/{M365['site_id']}/lists/{list_id}/items/{item_id}/fields",
             fields)
@@ -363,6 +405,15 @@ def resolve_parent_document(conn, doc_id):
     row = conn.execute(
         "SELECT document_id FROM doc_mgmt.document WHERE doc_id=%s",
         (doc_id,)).fetchone()
+    return row[0] if row else None
+
+
+def resolve_parent_version(conn, document_id, version):
+    """Resolve a (document_id, version) pair -> version_id or None."""
+    row = conn.execute(
+        "SELECT version_id FROM doc_mgmt.document_version"
+        " WHERE document_id=%s AND version=%s",
+        (document_id, version)).fetchone()
     return row[0] if row else None
 
 
@@ -441,6 +492,14 @@ DOC_SELECT = ('SELECT external_ref, document_id, doc_id, document_type_id,'
 RACI_SELECT = ('SELECT external_ref, raci_id, document_id, department_id, role,'
                ' touchpoint, valid_from, valid_to'
                ' FROM doc_mgmt.raci_assignment WHERE external_ref IS NOT NULL')
+VERSION_SELECT = ('SELECT external_ref, version_id, document_id, version, status,'
+                  ' change_summary, change_class, linked_cr_id, author_person_id,'
+                  ' effective_date, storage_path'
+                  ' FROM doc_mgmt.document_version WHERE external_ref IS NOT NULL')
+APPROVAL_SELECT = ('SELECT external_ref, approval_id, version_id,'
+                   ' approver_person_id, signature_meaning, signed_at, esig_hash,'
+                   ' reason'
+                   ' FROM doc_mgmt.document_approval WHERE external_ref IS NOT NULL')
 ACTIVITY_SELECT = ('SELECT a.external_ref, a.activity_id, a.wbs_element_id,'
                    ' w.project_id, a.activity_code, a.name, a.start_planned,'
                    ' a.finish_planned, a.start_actual, a.finish_actual,'
@@ -1362,6 +1421,46 @@ def process_raci_assignment(conn, g, it, dry, current):
             f" {it['ParentDocID']} (item {item_id})")
 
 
+def process_document_version(conn, g, it, dry, current):
+    # T4: validate + resolve (document, author); no writes yet (T5 write path).
+    errs = al.validate_version(it)
+    document_id = (resolve_parent_document(conn, it["ParentDocID"])
+                   if it["ParentDocID"] else None)
+    if it["ParentDocID"] and document_id is None:
+        errs.append(f"Unknown ParentDocID: {it['ParentDocID']}")
+    author = (person_id_by_email(conn, it["AuthorEmail"])
+              if it["AuthorEmail"] else None)
+    if it["AuthorEmail"] and not author:
+        errs.append(f"Author {it['AuthorEmail']} not in person directory")
+    if errs:
+        return _error(g, M365["version_list_id"], it, errs, dry, "version")
+    return (f"DRY version item {it['item_id']}: {it['ParentDocID']} v{it['Version']}"
+            f" ({it['Status']}); no writes (stub)")
+
+
+def process_document_approval(conn, g, it, dry, current):
+    # T4: validate + resolve (document, version, approver); no writes yet (T6).
+    errs = al.validate_approval(it)
+    document_id = (resolve_parent_document(conn, it["ParentDocID"])
+                   if it["ParentDocID"] else None)
+    if it["ParentDocID"] and document_id is None:
+        errs.append(f"Unknown ParentDocID: {it['ParentDocID']}")
+    version_id = None
+    if document_id and it["ParentVersion"] and not errs:
+        version_id = resolve_parent_version(conn, document_id, it["ParentVersion"])
+        if version_id is None:
+            errs.append(f"Unknown ParentVersion {it['ParentVersion']} for"
+                        f" {it['ParentDocID']}")
+    approver = (person_id_by_email(conn, it["ApproverEmail"])
+                if it["ApproverEmail"] else None)
+    if it["ApproverEmail"] and not approver:
+        errs.append(f"Approver {it['ApproverEmail']} not in person directory")
+    if errs:
+        return _error(g, M365["approval_list_id"], it, errs, dry, "approval")
+    return (f"DRY approval item {it['item_id']}: {it['SignatureMeaning']} on"
+            f" {it['ParentDocID']} v{it['ParentVersion']}; no writes (stub)")
+
+
 def _rows_as_dicts(conn, sql, params=()):
     """Execute sql, return list of dicts keyed by column name.
 
@@ -1726,6 +1825,12 @@ ARTIFACTS = [
     {"kind": "raci", "list_key": "raci_list_id",
      "fields": RACI_FIELDS, "normalize": normalize_raci,
      "process": process_raci_assignment, "select": RACI_SELECT},
+    {"kind": "version", "list_key": "version_list_id",
+     "fields": VERSION_FIELDS, "normalize": normalize_version,
+     "process": process_document_version, "select": VERSION_SELECT},
+    {"kind": "approval", "list_key": "approval_list_id",
+     "fields": APPROVAL_FIELDS, "normalize": normalize_approval,
+     "process": process_document_approval, "select": APPROVAL_SELECT},
 ]
 
 

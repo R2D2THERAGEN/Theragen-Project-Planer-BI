@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "832821d25d825746b8a0",
   "position": {
-    "x": 186,
-    "y": 88,
+    "x": 186.03300552905921,
+    "y": 88.275862068965509,
     "z": 1000,
-    "width": 380,
-    "height": 190
+    "height": 139.38294010889291,
+    "width": 379.79149959903771
   },
   "visual": {
     "visualType": "multiRowCard",
@@ -31,7 +31,6 @@
         }
       }
     },
-    "drillFilterOtherVisuals": true,
     "visualContainerObjects": {
       "title": [
         {
@@ -52,7 +51,39 @@
             }
           }
         }
+      ],
+      "padding": [
+        {
+          "properties": {
+            "top": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            }
+          }
+        }
       ]
-    }
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "226361b3ba8046c63c0d",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "_Measures"
+              }
+            },
+            "Property": "Project Description (Selected)"
+          }
+        },
+        "type": "Advanced"
+      }
+    ]
   }
 }

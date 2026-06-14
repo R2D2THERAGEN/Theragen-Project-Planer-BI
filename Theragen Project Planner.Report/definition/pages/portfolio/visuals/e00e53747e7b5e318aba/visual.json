@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "e00e53747e7b5e318aba",
   "position": {
     "x": 8,
     "y": 116,
     "z": 1000,
-    "width": 700,
-    "height": 280
+    "height": 280,
+    "width": 700
   },
   "visual": {
     "visualType": "tableEx",
@@ -25,7 +25,8 @@
                   "Property": "Project Code"
                 }
               },
-              "queryRef": "Project.Project Code"
+              "queryRef": "Project.Project Code",
+              "nativeQueryRef": "Project Code"
             },
             {
               "field": {
@@ -38,7 +39,8 @@
                   "Property": "Project Name"
                 }
               },
-              "queryRef": "Project.Project Name"
+              "queryRef": "Project.Project Name",
+              "nativeQueryRef": "Project Name"
             },
             {
               "field": {
@@ -51,7 +53,8 @@
                   "Property": "Project Manager"
                 }
               },
-              "queryRef": "Project.Project Manager"
+              "queryRef": "Project.Project Manager",
+              "nativeQueryRef": "Project Manager"
             },
             {
               "field": {
@@ -64,7 +67,8 @@
                   "Property": "Lifecycle Phase"
                 }
               },
-              "queryRef": "Project.Lifecycle Phase"
+              "queryRef": "Project.Lifecycle Phase",
+              "nativeQueryRef": "Lifecycle Phase"
             },
             {
               "field": {
@@ -77,7 +81,8 @@
                   "Property": "Latest Overall Status"
                 }
               },
-              "queryRef": "_Measures.Latest Overall Status"
+              "queryRef": "_Measures.Latest Overall Status",
+              "nativeQueryRef": "Latest Overall Status"
             },
             {
               "field": {
@@ -90,7 +95,8 @@
                   "Property": "SPI"
                 }
               },
-              "queryRef": "_Measures.SPI"
+              "queryRef": "_Measures.SPI",
+              "nativeQueryRef": "SPI"
             },
             {
               "field": {
@@ -103,7 +109,8 @@
                   "Property": "Budget Total"
                 }
               },
-              "queryRef": "_Measures.Budget Total"
+              "queryRef": "_Measures.Budget Total",
+              "nativeQueryRef": "Budget Total"
             },
             {
               "field": {
@@ -116,13 +123,133 @@
                   "Property": "Open Risks"
                 }
               },
-              "queryRef": "_Measures.Open Risks"
+              "queryRef": "_Measures.Open Risks",
+              "nativeQueryRef": "Open Risks"
             }
           ]
         }
       }
     },
-    "drillFilterOtherVisuals": true,
+    "objects": {
+      "values": [
+        {
+          "properties": {
+            "backColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Conditional": {
+                      "Cases": [
+                        {
+                          "Condition": {
+                            "Contains": {
+                              "Left": {
+                                "Measure": {
+                                  "Expression": {
+                                    "SourceRef": {
+                                      "Entity": "_Measures"
+                                    }
+                                  },
+                                  "Property": "Latest Overall Status"
+                                }
+                              },
+                              "Right": {
+                                "Literal": {
+                                  "Value": "'Green'"
+                                }
+                              }
+                            },
+                            "Annotations": {
+                              "PowerBI.SQExprEvaluationKind": 1,
+                              "PowerBI.SQExprTextOperatorOption": 6
+                            }
+                          },
+                          "Value": {
+                            "Literal": {
+                              "Value": "'#70AD47'"
+                            }
+                          }
+                        },
+                        {
+                          "Condition": {
+                            "Contains": {
+                              "Left": {
+                                "Measure": {
+                                  "Expression": {
+                                    "SourceRef": {
+                                      "Entity": "_Measures"
+                                    }
+                                  },
+                                  "Property": "Latest Overall Status"
+                                }
+                              },
+                              "Right": {
+                                "Literal": {
+                                  "Value": "'Yellow'"
+                                }
+                              }
+                            },
+                            "Annotations": {
+                              "PowerBI.SQExprEvaluationKind": 1,
+                              "PowerBI.SQExprTextOperatorOption": 6
+                            }
+                          },
+                          "Value": {
+                            "Literal": {
+                              "Value": "'#C19C00'"
+                            }
+                          }
+                        },
+                        {
+                          "Condition": {
+                            "Contains": {
+                              "Left": {
+                                "Measure": {
+                                  "Expression": {
+                                    "SourceRef": {
+                                      "Entity": "_Measures"
+                                    }
+                                  },
+                                  "Property": "Latest Overall Status"
+                                }
+                              },
+                              "Right": {
+                                "Literal": {
+                                  "Value": "'Red'"
+                                }
+                              }
+                            },
+                            "Annotations": {
+                              "PowerBI.SQExprEvaluationKind": 1,
+                              "PowerBI.SQExprTextOperatorOption": 6
+                            }
+                          },
+                          "Value": {
+                            "Literal": {
+                              "Value": "'#C0392B'"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
+            "metadata": "_Measures.Latest Overall Status"
+          }
+        }
+      ]
+    },
     "visualContainerObjects": {
       "title": [
         {
@@ -144,6 +271,7 @@
           }
         }
       ]
-    }
+    },
+    "drillFilterOtherVisuals": true
   }
 }

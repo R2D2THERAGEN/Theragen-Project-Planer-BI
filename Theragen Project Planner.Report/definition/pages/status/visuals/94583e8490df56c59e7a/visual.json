@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
   "name": "94583e8490df56c59e7a",
   "position": {
-    "x": 8.0798004987531176,
-    "y": 286.38403990024938,
+    "x": 8.0629921259842519,
+    "y": 238.86614173228347,
     "z": 1000,
-    "height": 159.80049875311721,
-    "width": 945.33665835411466
+    "height": 160.251968503937,
+    "width": 945.38582677165357
   },
   "visual": {
     "visualType": "tableEx",
@@ -150,5 +150,107 @@
       ]
     },
     "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "5c2e5137220293cb035d",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Risk"
+              }
+            },
+            "Property": "RAID Type"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "4bb50b0834ee89ad69a1",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Risk"
+              }
+            },
+            "Property": "Risk Description"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "c847cc188323463b3969",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Risk"
+              }
+            },
+            "Property": "Owner"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "c6a454bf4016650db9a8",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Risk"
+              }
+            },
+            "Property": "Due Date"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "50953d3b061333a70caa",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Risk"
+              }
+            },
+            "Property": "Risk Score"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "280b7cb54bed3c8d9c47",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Risk"
+              }
+            },
+            "Property": "Severity"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "6a6e5240b3a162d04b1e",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Risk"
+              }
+            },
+            "Property": "Risk Status"
+          }
+        },
+        "type": "Categorical"
+      }
+    ]
   }
 }

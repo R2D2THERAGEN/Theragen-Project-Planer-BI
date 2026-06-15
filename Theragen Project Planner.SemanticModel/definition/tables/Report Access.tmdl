@@ -68,8 +68,6 @@ table 'Report Access'
 
 		annotation SummarizationSetBy = User
 
-		annotation UnderlyingDateTimeDataType = Date
-
 	partition 'Report Access' = m
 		mode: import
 		source =
@@ -82,3 +80,4 @@ table 'Report Access'
 				    Renamed
 
 	annotation PBI_ResultType = Table
+

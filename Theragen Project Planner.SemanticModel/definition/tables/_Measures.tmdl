@@ -849,16 +849,6 @@ table _Measures
 		displayFolder: Change
 		lineageTag: d3730271-c3cb-50b6-8d87-e5c635a2b272
 
-	/// Hidden placeholder column for the measure-host table; carries no data.
-	column Value
-		dataType: string
-		isHidden
-		lineageTag: 5b25cfc3-5d37-5fa2-961a-05daa1eb43ca
-		summarizeBy: none
-		sourceColumn: Value
-
-		annotation SummarizationSetBy = User
-
 	/// Per-risk response actions (Mitigation / Transfer / Acceptance / Avoidance).
 	measure 'Risk Actions' = COUNTROWS('Risk Response')
 		formatString: #,0
@@ -912,6 +902,16 @@ table _Measures
 		formatString: 0.00
 		displayFolder: EVM
 		lineageTag: 09861b0e-c2b5-58a4-ba01-a8105a0c06b6
+
+	/// Hidden placeholder column for the measure-host table; carries no data.
+	column Value
+		dataType: string
+		isHidden
+		lineageTag: 5b25cfc3-5d37-5fa2-961a-05daa1eb43ca
+		summarizeBy: none
+		sourceColumn: Value
+
+		annotation SummarizationSetBy = User
 
 	partition _Measures = m
 		mode: import

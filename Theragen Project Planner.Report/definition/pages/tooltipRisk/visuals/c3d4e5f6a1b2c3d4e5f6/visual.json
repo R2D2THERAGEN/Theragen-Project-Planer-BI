@@ -14,11 +14,71 @@
       "queryState": {
         "Values": {
           "projections": [
-            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Open Risks" } }, "queryRef": "_Measures.Open Risks" },
-            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "High Risks" } }, "queryRef": "_Measures.High Risks" },
-            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Total Risk Exposure" } }, "queryRef": "_Measures.Total Risk Exposure" },
-            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Open Risk Actions" } }, "queryRef": "_Measures.Open Risk Actions" },
-            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Overdue Risk Actions" } }, "queryRef": "_Measures.Overdue Risk Actions" }
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Open Risks"
+                }
+              },
+              "queryRef": "_Measures.Open Risks"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "High Risks"
+                }
+              },
+              "queryRef": "_Measures.High Risks"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Total Risk Exposure"
+                }
+              },
+              "queryRef": "_Measures.Total Risk Exposure"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Open Risk Actions"
+                }
+              },
+              "queryRef": "_Measures.Open Risk Actions"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Overdue Risk Actions"
+                }
+              },
+              "queryRef": "_Measures.Overdue Risk Actions"
+            }
           ]
         }
       }

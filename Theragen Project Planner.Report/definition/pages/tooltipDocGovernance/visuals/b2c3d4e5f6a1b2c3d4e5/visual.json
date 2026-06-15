@@ -14,11 +14,71 @@
       "queryState": {
         "Values": {
           "projections": [
-            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Controlled Documents" } }, "queryRef": "_Measures.Controlled Documents" },
-            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Baseline Documents" } }, "queryRef": "_Measures.Baseline Documents" },
-            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Documents Due for Review" } }, "queryRef": "_Measures.Documents Due for Review" },
-            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Document Approvals" } }, "queryRef": "_Measures.Document Approvals" },
-            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Open Governance CRs" } }, "queryRef": "_Measures.Open Governance CRs" }
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Controlled Documents"
+                }
+              },
+              "queryRef": "_Measures.Controlled Documents"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Baseline Documents"
+                }
+              },
+              "queryRef": "_Measures.Baseline Documents"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Documents Due for Review"
+                }
+              },
+              "queryRef": "_Measures.Documents Due for Review"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Document Approvals"
+                }
+              },
+              "queryRef": "_Measures.Document Approvals"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Open Governance CRs"
+                }
+              },
+              "queryRef": "_Measures.Open Governance CRs"
+            }
           ]
         }
       }

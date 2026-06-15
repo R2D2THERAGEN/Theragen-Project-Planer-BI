@@ -14,12 +14,84 @@
       "queryState": {
         "Values": {
           "projections": [
-            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "CPI" } }, "queryRef": "_Measures.CPI" },
-            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "SPI" } }, "queryRef": "_Measures.SPI" },
-            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Pct Complete (Duration Weighted)" } }, "queryRef": "_Measures.Pct Complete (Duration Weighted)" },
-            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Open CRs" } }, "queryRef": "_Measures.Open CRs" },
-            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Signed-off Reports" } }, "queryRef": "_Measures.Signed-off Reports" },
-            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Current Phase" } }, "queryRef": "_Measures.Current Phase" }
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "CPI"
+                }
+              },
+              "queryRef": "_Measures.CPI"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "SPI"
+                }
+              },
+              "queryRef": "_Measures.SPI"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Pct Complete (Duration Weighted)"
+                }
+              },
+              "queryRef": "_Measures.Pct Complete (Duration Weighted)"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Open CRs"
+                }
+              },
+              "queryRef": "_Measures.Open CRs"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Signed-off Reports"
+                }
+              },
+              "queryRef": "_Measures.Signed-off Reports"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Current Phase"
+                }
+              },
+              "queryRef": "_Measures.Current Phase"
+            }
           ]
         }
       }

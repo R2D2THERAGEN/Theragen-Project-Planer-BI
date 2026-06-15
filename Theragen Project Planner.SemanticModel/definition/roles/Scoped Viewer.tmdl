@@ -3,3 +3,6 @@ role 'Scoped Viewer'
 	modelPermission: read
 
 	tablePermission Project = VAR Upn = LOWER(TRIM(USERPRINCIPALNAME())) VAR ExtPos = SEARCH("#ext#", Upn, 1, 0) VAR Pfx = IF(ExtPos > 0, LEFT(Upn, ExtPos - 1), Upn) RETURN COUNTROWS(FILTER('Report Access', 'Report Access'[Active] = TRUE() && (LOWER('Report Access'[User Email]) = Upn || (ExtPos > 0 && SUBSTITUTE(LOWER('Report Access'[User Email]), "@", "_") = Pfx)) && ('Report Access'[Scope Type] = "All" || ('Report Access'[Scope Type] = "Project" && 'Report Access'[Scope Value] = 'Project'[Project Code]) || ('Report Access'[Scope Type] = "Department" && 'Report Access'[Scope Value] = 'Project'[Primary Department])))) > 0
+
+	annotation PBI_Id = cf1c333a13ea45c28397f61681718dad
+

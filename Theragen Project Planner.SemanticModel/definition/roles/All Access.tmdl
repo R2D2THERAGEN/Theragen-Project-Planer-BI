@@ -1,3 +1,6 @@
 /// PMO / admin all-access role: no table filters, sees the whole portfolio. The bootstrap safety net so admins are never locked out by default-deny (equivalent to an "All" grant).
 role 'All Access'
 	modelPermission: read
+
+	annotation PBI_Id = 2eb39bc996074e1a967d555bece6c288
+

@@ -1,13 +1,14 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/1.0.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
   "name": "tooltipProjectKpi",
   "displayName": "Project KPI (Tooltip)",
   "displayOption": "FitToPage",
   "height": 240,
   "width": 320,
-  "visibility": "HiddenInViewMode",
   "pageBinding": {
     "name": "0a1b2c3d-4e5f-6071-8293-a4b5c6d7e8f0",
-    "type": "Tooltip"
-  }
+    "type": "Tooltip",
+    "parameters": []
+  },
+  "visibility": "HiddenInViewMode"
 }

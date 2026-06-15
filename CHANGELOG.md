@@ -14,6 +14,14 @@ curated release notes; that one is the register's queryable change log.
 
 ---
 
+## 2.8 — 2026-06-15 · `model` `code` `docs`
+**Closeout: report-page tooltips live + change-control automation + §11 posture.**
+- **Tooltip pages activated.** Added the page-level `type: "Tooltip"` marker (the real *"allow use as tooltip"* flag, missing from the v2.6 pages) to the Project KPI / Risk / Document-governance tooltip pages; `visualTooltip` bindings pin the portfolio **project table → Project KPI** card and the **risk register → Risk** card. Model now sets `maxParallelismPerRefresh: 1` so refresh stays under the Azure PG (50-conn Burstable) limit — fixes the cold-open `53300` connection-exhaustion cascade.
+- **Change-control automation.** Register-sourced `docs/platform-change-log.md` generator (`tools/build_changelog.py`); warn-only pre-commit change-control reminder (`tools/check_change_control.py` + `.githooks/pre-commit`).
+- **21 CFR Part 11 — Path 1** documented control statement (SOP §7 + determination doc): sign-offs here are non-§11 governance attestations; the validated QMS owns any predicate-rule signature.
+- **Round-2 doc lifecycle.** The platform's own SOP / glossary / data dictionary / README carried as controlled `document_version`s with non-§11 attestations.
+- _Approver:_ PMO / BI owner · _commits:_ `468f3f9`, `113ef6d`, `1bff30b`, tooltip-activation →
+
 ## 2.7 — 2026-06-14 · `model` `migration` `code` `lists`
 **Change-control Round 2 — dogfood.**
 - **Platform Change register:** `pmbok.platform_change` (`db/23`) + "Platform Changes" List + `process_platform_change` (audited) + the disconnected `Platform Change` model table + Platform measures — platform changes become authored, approved, audited rows.

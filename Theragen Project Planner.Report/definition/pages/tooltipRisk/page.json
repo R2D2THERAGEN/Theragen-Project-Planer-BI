@@ -3,6 +3,7 @@
   "name": "tooltipRisk",
   "displayName": "Risk (Tooltip)",
   "displayOption": "FitToPage",
+  "type": "Tooltip",
   "height": 240,
   "width": 320,
   "pageBinding": {

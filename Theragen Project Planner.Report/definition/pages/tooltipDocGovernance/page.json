@@ -3,6 +3,7 @@
   "name": "tooltipDocGovernance",
   "displayName": "Document Governance (Tooltip)",
   "displayOption": "FitToPage",
+  "type": "Tooltip",
   "height": 240,
   "width": 320,
   "pageBinding": {

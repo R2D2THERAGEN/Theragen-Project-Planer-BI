@@ -3,6 +3,7 @@
   "name": "tooltipProjectKpi",
   "displayName": "Project KPI (Tooltip)",
   "displayOption": "FitToPage",
+  "type": "Tooltip",
   "height": 240,
   "width": 320,
   "pageBinding": {

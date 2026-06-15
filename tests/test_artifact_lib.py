@@ -2346,3 +2346,61 @@ def test_build_platform_change_row_blanks():
     row = al.build_platform_change_row(_pc(Version="", GitSHA="", ChangedDate=""), None, None)
     assert row["version"] is None and row["git_sha"] is None and row["changed_at"] is None
     assert row["status"] == "Proposed"
+
+
+# --- Org Directory (sub-stage D) --------------------------------------------
+def test_is_enabled_member_excludes_guests_and_disabled():
+    assert al.is_enabled_member({"accountEnabled": True, "userType": "Member"})
+    assert al.is_enabled_member({"accountEnabled": True})  # userType defaults to Member
+    assert not al.is_enabled_member({"accountEnabled": True, "userType": "Guest"})
+    assert not al.is_enabled_member({"accountEnabled": False, "userType": "Member"})
+    assert not al.is_enabled_member({})
+
+
+def test_normalize_email_and_upn():
+    assert al.normalize_email("  A.User@Theragen.COM ") == "a.user@theragen.com"
+    assert al.normalize_email(None) == ""
+    assert al.normalize_upn(" Foo@Bar.com ") == "foo@bar.com"
+
+
+def test_directory_department_defaults_to_unassigned():
+    assert al.directory_department({"Department": "IT / Data / Security"}) == "IT / Data / Security"
+    assert al.directory_department({"Department": "   "}) == al.UNASSIGNED_DEPARTMENT
+    assert al.directory_department({}) == "Unassigned"
+
+
+def test_validate_staff_directory_rules():
+    assert al.validate_staff_directory(
+        {"UserEmail": "a@theragen.com", "Department": "Finance / Procurement"}) == []
+    assert al.validate_staff_directory({"UserEmail": "a@theragen.com"}) == []  # blank dept ok
+    assert "Missing: UserEmail" in al.validate_staff_directory({"Department": "Finance / Procurement"})
+    assert any("email-shaped" in e
+               for e in al.validate_staff_directory({"UserEmail": "notanemail"}))
+    assert any("Department not recognized" in e
+               for e in al.validate_staff_directory({"UserEmail": "a@theragen.com", "Department": "Sales"}))
+
+
+def test_build_person_directory_row_from_entra():
+    u = {"id": "obj-123", "displayName": " Jane Doe ", "mail": "Jane.Doe@Theragen.com",
+         "userPrincipalName": "Jane.Doe@theragen.com", "jobTitle": " Engineer ",
+         "accountEnabled": True, "userType": "Member"}
+    row = al.build_person_directory_row(u, "dept-uuid", "2026-06-15")
+    assert row["email"] == "jane.doe@theragen.com"
+    assert row["display_name"] == "Jane Doe"
+    assert row["upn"] == "jane.doe@theragen.com"
+    assert row["entra_object_id"] == "obj-123"
+    assert row["job_title"] == "Engineer"
+    assert row["active"] is True
+    assert row["source"] == "entra"
+    assert row["department_id"] == "dept-uuid"
+    assert row["employment_type"] == "Employee"
+    assert row["start_date"] == "2026-06-15"
+
+
+def test_build_person_directory_row_falls_back_to_upn_and_blank_title():
+    u = {"id": "x", "displayName": "No Mail", "mail": None,
+         "userPrincipalName": "No.Mail@theragen.com", "jobTitle": "", "accountEnabled": False}
+    row = al.build_person_directory_row(u, "d", "2026-06-15")
+    assert row["email"] == "no.mail@theragen.com"
+    assert row["active"] is False
+    assert row["job_title"] is None

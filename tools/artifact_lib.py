@@ -1074,3 +1074,75 @@ def build_platform_change_row(it, requested_by_id, approved_by_id):
         "git_sha": (it.get("GitSHA") or None),
         "changed_at": (it.get("ChangedDate") or None),
     }
+
+
+# ---------------------------------------------------------------------------
+# Org Directory (sub-stage D) -> doc_mgmt.person (Entra roster enrichment).
+# The roster comes from Entra (enabled members); the department comes from the
+# PMO-curated "Staff Directory" List. These are pure helpers; the sync
+# (sync_directory) does the Graph pull, the upsert, and resolves the chosen
+# department name -> department_id.
+# ---------------------------------------------------------------------------
+
+UNASSIGNED_DEPARTMENT = "Unassigned"
+STAFF_DIRECTORY_DEPARTMENTS = DEPARTMENTS + [UNASSIGNED_DEPARTMENT]
+
+
+def is_enabled_member(u):
+    """True for an Entra user that counts as Theragen staff: an enabled member
+    (excludes B2B guests and disabled accounts). `u` is a Graph /users object."""
+    return bool(u.get("accountEnabled")) and (u.get("userType") or "Member") == "Member"
+
+
+def normalize_email(s):
+    """Lower-case + trim an email/UPN so person matching and RLS UPN comparison
+    stay consistent (the Scoped Viewer role compares LOWER(USERPRINCIPALNAME()))."""
+    return (s or "").strip().lower()
+
+
+# A UPN is email-shaped; normalize it identically.
+normalize_upn = normalize_email
+
+
+def directory_department(it):
+    """The Staff Directory row's chosen department name, or "Unassigned" when
+    blank. The sync maps the returned name -> department_id (sentinel for
+    Unassigned)."""
+    name = (it.get("Department") or "").strip()
+    return name if name else UNASSIGNED_DEPARTMENT
+
+
+def validate_staff_directory(it):
+    """Return a list of error strings; empty means valid. UserEmail must be
+    present + email-shaped; Department, when set, must be one of the 8 (or
+    "Unassigned"). A blank Department is allowed (defaults to Unassigned)."""
+    errs = []
+    email = normalize_email(it.get("UserEmail"))
+    if not email:
+        errs.append("Missing: UserEmail")
+    elif "@" not in email or email.startswith("@") or email.endswith("@"):
+        errs.append(f"UserEmail is not email-shaped: {it.get('UserEmail')}")
+    dept = (it.get("Department") or "").strip()
+    if dept and dept not in STAFF_DIRECTORY_DEPARTMENTS:
+        errs.append(f"Department not recognized: {dept}")
+    return errs
+
+
+def build_person_directory_row(u, department_id, start_date):
+    """Build the doc_mgmt.person upsert column dict from an Entra user `u`
+    (Graph /users shape). `department_id` (sentinel or curated) and `start_date`
+    are resolved by the caller so this stays pure. employment_type defaults to
+    'Employee'; source marks the row Entra-sourced; email falls back to the UPN."""
+    email = normalize_email(u.get("mail") or u.get("userPrincipalName"))
+    return {
+        "email": email,
+        "display_name": (u.get("displayName") or "").strip(),
+        "upn": normalize_upn(u.get("userPrincipalName")),
+        "entra_object_id": (u.get("id") or None),
+        "job_title": ((u.get("jobTitle") or "").strip() or None),
+        "active": bool(u.get("accountEnabled")),
+        "source": "entra",
+        "department_id": department_id,
+        "employment_type": "Employee",
+        "start_date": start_date,
+    }

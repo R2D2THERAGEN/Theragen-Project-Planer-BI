@@ -1174,6 +1174,10 @@ rejected (`Unknown LinkedCRCode: <code>`).
 > ceremony (re-authentication, signer-held key, content binding, captured signer IP) is **deferred**.
 > Do not represent these as §11 signatures.
 
+**§11 control statement (Path 1, 2026-06-15):** where any record legally requires a 21 CFR Part 11
+signature, that signature is executed in the validated **QMS**; this system holds the management
+attestation only. Full statement: [change-control-process.md §7](change-control-process.md).
+
 A row attests that a person signed off a specific document **version**; it is a child of a version
 (linked by `ParentDocID` + `ParentVersion`).
 

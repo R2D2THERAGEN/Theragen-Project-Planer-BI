@@ -115,11 +115,19 @@ Confirmed from Windows Task Scheduler (2026-06-14):
 
 ---
 
-## 7. Round 2 — dogfood the change control (planned, not yet built)
+## 7. Electronic signatures (21 CFR Part 11) — documented control statement
 
-Promote this honor-system register into the platform itself, reusing the proven List→sync→`bi`→audit machinery:
-- A **"Platform Change" List → `pmbok.platform_change`** register (category, summary, version, status, requested/approved-by, git SHA) — every platform change becomes an **authored, approved, audited** row.
-- **Register the glossary / data dictionary / this SOP as controlled documents** in `doc_mgmt.document` + `document_version` + `document_approval`, so the documentation is versioned + attested **through the very system it documents**.
-- Optional automated enforcement: a `governance_health`-style check for changes lacking a version/approval/doc-update, and/or a pre-commit hook.
+**Approvals and attestations recorded in this system are governance attestations, *not* 21 CFR Part 11 electronic signatures.** Every sign-off surface — document approvals (`document_approval`), status-report sign-offs, CR / governance-CR decisions, phase-gate approvals, baseline attestations — is a management/governance record. Document approvals are server-computed attestations (a SHA-256 over the signed facts; no signer IP), labelled **"Attestation (non-§11)"** in the model, the `bi.document_approval` view, and §T of the artifact-entry guide.
 
-Gated on Round-1 landing + a go-ahead (per the locked "both, phased" + "documented + existing gates" decisions).
+Where a record legally requires a **21 CFR Part 11** signature (a GxP / QSR predicate-rule record), that signature is executed in the **validated QMS**; this system holds the corresponding management attestation. **No Part 11 signature is created, stored, or implied here.**
+
+**Status (2026-06-15): Path 1 selected** — see [`2026-06-14-part11-determination-request.md`](superpowers/specs/2026-06-14-part11-determination-request.md). The PMO is evaluating a potential QMS integration; if it proceeds, the QMS remains the system of record for §11 signatures and this statement stands. Quality/Regulatory confirms the per-record applicability; if any record is ever determined to require §11 *here*, Path 2 (validated provider) in `…-part11-esign-design.md` is built and this statement revised.
+
+---
+
+## 8. Round 2 — dogfood the change control (BUILT 2026-06-15, v2.7)
+
+The honor-system register was promoted into the platform itself, reusing the proven List→sync→`bi`→audit machinery:
+- **"Platform Changes" List → `pmbok.platform_change`** (`db/23`) — every platform change is an authored, audited row, surfaced in BI (the `Platform Change` table + Platform measures) and as the generated [`docs/platform-change-log.md`](platform-change-log.md).
+- The change-control SOP / glossary / data dictionary / README are **registered as `doc_mgmt` controlled documents** (new `REF` type → `THG-OPS-SOP-001`, `THG-OPS-REF-001`, `THG-IT-REF-001/002`) with v2.7 versions + non-§11 attestations.
+- Automated enforcement: the **warn-only change-control reminder** (principle 7).

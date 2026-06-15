@@ -1,7 +1,13 @@
 # 21 CFR Part 11 — Applicability Determination Request
 
-**Status:** OPEN — pending Quality/Regulatory determination.
-**Current PMO direction (2026-06-14):** considering integrating this system with the QMS; the §11 approach is **not finalized**. No §11 build proceeds until this determination is signed off.
+**Status (2026-06-15): PATH 1 SELECTED.** The documented control statement is now in
+[`docs/change-control-process.md` §7](../../change-control-process.md) — PMO approvals/attestations here are
+non-§11 governance records; the validated **QMS** is the system of record for any signature a predicate rule
+requires. **§11 is not implemented in this system.** Quality/Regulatory confirms the per-record applicability;
+this is revisited if the potential **QMS integration** is finalized, or if any record is ever determined to
+require §11 *here* (→ Path 2). No §11 build proceeds otherwise.
+**Current PMO direction (2026-06-15):** evaluating a QMS integration; if it proceeds, the QMS remains the §11
+system of record and the control statement stands.
 
 ## Purpose
 

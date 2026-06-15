@@ -903,6 +903,24 @@ table _Measures
 		displayFolder: EVM
 		lineageTag: 09861b0e-c2b5-58a4-ba01-a8105a0c06b6
 
+	/// Count of platform changes logged in the change register (Round 2 dogfood).
+	measure 'Platform Changes' = COUNTROWS('Platform Change')
+		formatString: #,0
+		displayFolder: Platform
+		lineageTag: b829c526-2ac0-5f90-a4a2-054887d082d9
+
+	/// Platform changes still awaiting approval (Status = Proposed).
+	measure 'Changes Pending Approval' = CALCULATE([Platform Changes], 'Platform Change'[Status] = "Proposed")
+		formatString: #,0
+		displayFolder: Platform
+		lineageTag: e215cd75-acee-5d0b-bd5f-0988162f4b29
+
+	/// Platform changes deployed (Status = Deployed).
+	measure 'Changes Deployed' = CALCULATE([Platform Changes], 'Platform Change'[Status] = "Deployed")
+		formatString: #,0
+		displayFolder: Platform
+		lineageTag: c0c2849d-02b7-5659-8062-159047a11b9b
+
 	/// Hidden placeholder column for the measure-host table; carries no data.
 	column Value
 		dataType: string

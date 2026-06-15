@@ -3,13 +3,13 @@
 _Generated from the semantic-model TMDL by `tools/build_data_dictionary.py` — **do not edit by hand**; regenerate after model changes (see [change-control process](change-control-process.md)). Business definitions live in the [glossary](glossary.md)._
 
 > Generated from model `c4302ed` (2026-06-14) · platform **v2.6**  
-> 33 tables · 339 columns · 154 measures · 47 relationships · 2 roles
+> 34 tables · 348 columns · 157 measures · 47 relationships · 2 roles
 
 ## Model index
 
 | Table | Source | Cols | Measures | Description |
 |---|---|---|---|---|
-| [_Measures](#_measures) | — | 1 | 154 | Measure home table. All portfolio analytics measures live here. |
+| [_Measures](#_measures) | — | 1 | 157 | Measure home table. All portfolio analytics measures live here. |
 | [Budget Line](#budget-line) | `bi.budget_line_item` | 13 | 0 | Fact - cost budget estimate lines (PMBOK P13), one per level-1 deliverable. |
 | [Change Impact Assessment](#change-impact-assessment) | `bi.change_impact_assessment` | 11 | 0 | Fact - per-department change-impact assessments (PMBOK P22). One row per department's impact statement on a change request. |
 | [Change Request](#change-request) | `bi.change_request` | 24 | 0 | Fact - project change requests (PMBOK P21) with impact and decision cycle. |
@@ -29,6 +29,7 @@ _Generated from the semantic-model TMDL by `tools/build_data_dictionary.py` — 
 | [Milestone](#milestone) | `bi.milestone` | 10 | 0 | Fact - milestones (PMBOK P11). Baseline vs forecast vs actual dates. |
 | [Person](#person) | `bi.person` | 6 | 0 | Person directory (DM D02). Owners, requesters and assignees on facts. |
 | [Phase Gate Log](#phase-gate-log) | `bi.phase_gate_log` | 9 | 0 | Fact - append-only record of lifecycle-phase handoffs (PMBOK). Captures who approved each phase transition, when, and the gate decision. |
+| [Platform Change](#platform-change) | `bi.platform_change` | 9 | 0 | Fact - platform change register (Round 2 dogfood). One row per logged change to the BI platform itself, in a change-control-process.md category. |
 | [Project](#project) | `bi.project` | 18 | 0 | Project dimension - one row per project (PMBOK P01 project, charter fields denormalized). |
 | [Project Baseline](#project-baseline) | `bi.project_baseline` | 11 | 0 | Fact - immutable schedule/scope/budget baselines (PMBOK). Each new baseline mints the next version; prior BASELINED rows go SUPERSEDED. |
 | [Recent Accomplishment](#recent-accomplishment) | — | 4 | 0 | Leadership view - work completed in the last 35 days (done activities + achieved milestones). |
@@ -150,6 +151,9 @@ Measure home table. All portfolio analytics measures live here.
 | Milestones Achieved | #,0 | Milestones | Milestones achieved. | `CALCULATE([Milestones], 'Milestone'[Milestone Status] = "Achieved")` |
 | Milestones At Risk | #,0 | Milestones | Milestones at risk. | `CALCULATE([Milestones], 'Milestone'[Milestone Status] = "At risk")` |
 | Milestones Slipped | #,0 | Milestones | Milestones slipped. | `CALCULATE([Milestones], 'Milestone'[Milestone Status] = "Slipped")` |
+| Changes Deployed | #,0 | Platform | Platform changes deployed (Status = Deployed). | `CALCULATE([Platform Changes], 'Platform Change'[Status] = "Deployed")` |
+| Changes Pending Approval | #,0 | Platform | Platform changes still awaiting approval (Status = Proposed). | `CALCULATE([Platform Changes], 'Platform Change'[Status] = "Proposed")` |
+| Platform Changes | #,0 | Platform | Count of platform changes logged in the change register (Round 2 dogfood). | `COUNTROWS('Platform Change')` |
 | Active Projects | #,0 | Portfolio | Projects with status Active. | `CALCULATE([Projects], 'Project'[Project Status] = "Active")` |
 | Portfolio Charter Budget | \$#,##0;(\$#,##0);\$0 | Portfolio | Sum of charter-approved budget totals (project.budget_total). | `SUM('Project'[Charter Budget])` |
 | Projects | #,0 | Portfolio | Count of projects in context. | `COUNTROWS('Project')` |
@@ -634,6 +638,27 @@ Fact - append-only record of lifecycle-phase handoffs (PMBOK). Captures who appr
 | Decided Date | dateTime |  | yyyy-mm-dd | Date the gate decision was made. |
 | Gate Notes | string |  |  | Free-text rationale or conditions recorded for the gate decision. |
 | Approved By | string |  |  | Display name of the person who approved the phase transition. |
+
+<a id="platform-change"></a>
+## Platform Change
+
+Fact - platform change register (Round 2 dogfood). One row per logged change to the BI platform itself, in a change-control-process.md category.
+
+**Source:** `bi.platform_change`
+
+**Columns**
+
+| Column | Type | Hidden | Format | Description |
+|---|---|---|---|---|
+| Change ID | string | yes |  | (hidden) Surrogate key of the logged platform change. |
+| Category | string |  |  | Change-control category: Lists & schema / Sync + automation code / Semantic model / DB migration / Security & RLS / Documentation. |
+| Summary | string |  |  | One-line description of what the change did. |
+| Version | string |  |  | Platform version this change targets (e.g. 2.7). |
+| Status | string |  |  | Workflow state of the change: Proposed / Approved / Deployed. |
+| Requested By | string |  |  | Display name of the person who requested / authored the change. |
+| Approved By | string |  |  | Display name of the person who approved the change. |
+| Git SHA | string |  |  | The git commit hash that implements the change. |
+| Changed Date | dateTime |  | yyyy-mm-dd | Date the change was logged. |
 
 <a id="project"></a>
 ## Project

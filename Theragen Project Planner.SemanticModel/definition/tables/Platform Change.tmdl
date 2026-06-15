@@ -1,0 +1,101 @@
+/// Fact - platform change register (Round 2 dogfood). One row per logged change to the BI platform itself, in a change-control-process.md category.
+table 'Platform Change'
+	lineageTag: db81283f-f9ff-5fc5-9a1b-926b1ed947a5
+
+	/// (hidden) Surrogate key of the logged platform change.
+	column 'Change ID'
+		dataType: string
+		isHidden
+		lineageTag: 15236464-ab39-5538-8e5b-c90cde48c106
+		summarizeBy: none
+		sourceColumn: Change ID
+
+		annotation SummarizationSetBy = User
+
+	/// Change-control category: Lists & schema / Sync + automation code / Semantic model / DB migration / Security & RLS / Documentation.
+	column Category
+		dataType: string
+		lineageTag: 112a6743-b7a0-58c6-8559-f8b20e9147f8
+		summarizeBy: none
+		sourceColumn: Category
+
+		annotation SummarizationSetBy = User
+
+	/// One-line description of what the change did.
+	column Summary
+		dataType: string
+		lineageTag: 810a4c2f-99bf-58ac-b935-6f441a1b5924
+		summarizeBy: none
+		sourceColumn: Summary
+
+		annotation SummarizationSetBy = User
+
+	/// Platform version this change targets (e.g. 2.7).
+	column Version
+		dataType: string
+		lineageTag: cef12329-ea3c-53ae-b9ab-da3795204930
+		summarizeBy: none
+		sourceColumn: Version
+
+		annotation SummarizationSetBy = User
+
+	/// Workflow state of the change: Proposed / Approved / Deployed.
+	column Status
+		dataType: string
+		lineageTag: 10abd4e6-b757-557f-a286-4930f28ac2e6
+		summarizeBy: none
+		sourceColumn: Status
+
+		annotation SummarizationSetBy = User
+
+	/// Display name of the person who requested / authored the change.
+	column 'Requested By'
+		dataType: string
+		lineageTag: 175d9c4e-b92a-5956-9d6b-7d3b89d83c4a
+		summarizeBy: none
+		sourceColumn: Requested By
+
+		annotation SummarizationSetBy = User
+
+	/// Display name of the person who approved the change.
+	column 'Approved By'
+		dataType: string
+		lineageTag: 54b9f93b-52fe-5f12-b3ba-fe39b01a471b
+		summarizeBy: none
+		sourceColumn: Approved By
+
+		annotation SummarizationSetBy = User
+
+	/// The git commit hash that implements the change.
+	column 'Git SHA'
+		dataType: string
+		lineageTag: 805d5a91-ecc9-58f0-b2e1-38bbaf96f2a8
+		summarizeBy: none
+		sourceColumn: Git SHA
+
+		annotation SummarizationSetBy = User
+
+	/// Date the change was logged.
+	column 'Changed Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 17882adb-8882-51e4-a909-23a1ed8681d2
+		summarizeBy: none
+		sourceColumn: Changed Date
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition 'Platform Change' = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "platform_change"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"change_id", "category", "summary", "version", "status", "requested_by_name", "approved_by_name", "git_sha", "changed_at"}),
+				    Renamed = Table.RenameColumns(Selected, {{"change_id", "Change ID"}, {"category", "Category"}, {"summary", "Summary"}, {"version", "Version"}, {"status", "Status"}, {"requested_by_name", "Requested By"}, {"approved_by_name", "Approved By"}, {"git_sha", "Git SHA"}, {"changed_at", "Changed Date"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table

@@ -8,6 +8,10 @@ Versioning is `MAJOR.MINOR`, aligned to delivery phases (see the SOP's version s
 Change categories: `lists` · `code` · `model` · `migration` · `security` · `docs`.
 Each entry: the version, date, category tags, a summary, the approver role, and a representative commit.
 
+A **data-sourced companion** — generated from the `pmbok.platform_change` register by
+`tools/build_changelog.py` — is at [docs/platform-change-log.md](docs/platform-change-log.md). This file is the
+curated release notes; that one is the register's queryable change log.
+
 ---
 
 ## 2.7 — 2026-06-14 · `model` `migration` `code` `lists`

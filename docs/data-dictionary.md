@@ -2,7 +2,7 @@
 
 _Generated from the semantic-model TMDL by `tools/build_data_dictionary.py` — **do not edit by hand**; regenerate after model changes (see [change-control process](change-control-process.md)). Business definitions live in the [glossary](glossary.md)._
 
-> Generated from model `c4302ed` (2026-06-14) · platform **v2.6**  
+> Generated from model `a96eeeb` (2026-06-14) · platform **v2.7**  
 > 34 tables · 348 columns · 157 measures · 47 relationships · 2 roles
 
 ## Model index

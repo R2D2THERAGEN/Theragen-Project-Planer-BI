@@ -10,6 +10,12 @@ Each entry: the version, date, category tags, a summary, the approver role, and 
 
 ---
 
+## 2.7 — 2026-06-14 · `model` `migration` `code` `lists`
+**Change-control Round 2 — dogfood.**
+- **Platform Change register:** `pmbok.platform_change` (`db/23`) + "Platform Changes" List + `process_platform_change` (audited) + the disconnected `Platform Change` model table + Platform measures — platform changes become authored, approved, audited rows.
+- **Docs as controlled documents:** the change-control SOP, glossary, data dictionary, and README registered in `doc_mgmt.document` (new `REF` type) as `THG-OPS-SOP-001` / `THG-OPS-REF-001` / `THG-IT-REF-001` / `THG-IT-REF-002` — the controlled-document machinery applied to the platform's own docs.
+- _Approver:_ PMO · _commits:_ `233776c` →
+
 ## 2.6 — 2026-06-14 · `docs` `model`
 **Model documentation & change control.**
 - Business glossary (`docs/glossary.md`); generated data dictionary (`docs/data-dictionary.md` + `tools/build_data_dictionary.py`); this change-control SOP, `CHANGELOG.md`, and `VERSION`.

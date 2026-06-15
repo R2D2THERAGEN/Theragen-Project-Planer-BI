@@ -20,6 +20,7 @@ curated release notes; that one is the register's queryable change log.
 - **Change-control automation.** Register-sourced `docs/platform-change-log.md` generator (`tools/build_changelog.py`); warn-only pre-commit change-control reminder (`tools/check_change_control.py` + `.githooks/pre-commit`).
 - **21 CFR Part 11 — Path 1** documented control statement (SOP §7 + determination doc): sign-offs here are non-§11 governance attestations; the validated QMS owns any predicate-rule signature.
 - **Round-2 doc lifecycle.** The platform's own SOP / glossary / data dictionary / README carried as controlled `document_version`s with non-§11 attestations.
+- **Admin / operations map.** New `tools/build_admin_map.py` → `docs/admin-map.md`: every authoring List → sync → DB table → bi view → model table → measures → audit, with live Graph-resolved SharePoint links, scheduled jobs, and RLS roles. A `--audit` coverage gate fails if a List in `db/.m365.local.json` is left unmapped (drift-proof).
 - _Approver:_ PMO / BI owner · _commits:_ `468f3f9`, `113ef6d`, `1bff30b`, tooltip-activation →
 
 ## 2.7 — 2026-06-14 · `model` `migration` `code` `lists`

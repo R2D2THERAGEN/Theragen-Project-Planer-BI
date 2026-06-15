@@ -2306,3 +2306,43 @@ class TestBuildAccessRow:
 
     def test_granted_by(self):
         assert self._row()["granted_by_person_id"] == 5
+
+
+def _pc(**kw):
+    base = {"Category": "Semantic model", "Summary": "Added tooltip pages"}
+    base.update(kw)
+    return base
+
+
+def test_validate_platform_change_ok():
+    assert al.validate_platform_change(_pc()) == []
+    assert al.validate_platform_change(_pc(Status="Proposed")) == []
+    assert al.validate_platform_change(_pc(Status="Approved", ApprovedByLookupId="5")) == []
+
+
+def test_validate_platform_change_errors():
+    assert any("Category" in e for e in al.validate_platform_change(_pc(Category="")))
+    assert any("not recognized" in e for e in al.validate_platform_change(_pc(Category="Bogus")))
+    assert any("Summary" in e for e in al.validate_platform_change(_pc(Summary="")))
+    assert any("Status not recognized" in e for e in al.validate_platform_change(_pc(Status="Bogus")))
+    assert any("ApprovedBy is required" in e for e in al.validate_platform_change(_pc(Status="Approved")))
+
+
+def test_build_platform_change_row():
+    it = _pc(Category="DB migration", Summary="db/23", Version="2.7", Status="Approved",
+             GitSHA="abc1234", ChangedDate="2026-06-14")
+    row = al.build_platform_change_row(it, "req", "app")
+    assert row["category"] == "DB migration"
+    assert row["summary"] == "db/23"
+    assert row["version"] == "2.7"
+    assert row["status"] == "Approved"
+    assert row["requested_by_person_id"] == "req"
+    assert row["approved_by_person_id"] == "app"
+    assert row["git_sha"] == "abc1234"
+    assert row["changed_at"] == "2026-06-14"
+
+
+def test_build_platform_change_row_blanks():
+    row = al.build_platform_change_row(_pc(Version="", GitSHA="", ChangedDate=""), None, None)
+    assert row["version"] is None and row["git_sha"] is None and row["changed_at"] is None
+    assert row["status"] == "Proposed"

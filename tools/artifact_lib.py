@@ -1027,3 +1027,50 @@ def build_access_row(it, granted_by_id):
         "granted_by_person_id": granted_by_id,
         "active": it.get("Active", True),
     }
+
+
+# ---------------------------------------------------------------------------
+# Platform Change register (Round 2 dogfood) -> pmbok.platform_change.
+# Project-less; one row per logged change to the system itself, in one of the
+# six change-control-process.md categories. RequestedBy/ApprovedBy persons are
+# resolved in the sync; here we check field coherence.
+# ---------------------------------------------------------------------------
+
+PLATFORM_CHANGE_CATEGORIES = [
+    "Lists & schema", "Sync + automation code", "Semantic model",
+    "DB migration", "Security & RLS", "Documentation",
+]
+PLATFORM_CHANGE_STATUSES = ["Proposed", "Approved", "Deployed"]
+
+
+def validate_platform_change(it):
+    """Return a list of error strings; empty list means valid."""
+    errs = []
+    cat = it.get("Category") or ""
+    if _blank(cat):
+        errs.append("Missing: Category")
+    elif cat not in PLATFORM_CHANGE_CATEGORIES:
+        errs.append(f"Category not recognized: {cat}")
+    if _blank(it.get("Summary")):
+        errs.append("Missing: Summary")
+    st = it.get("Status") or "Proposed"
+    if not _blank(it.get("Status")) and st not in PLATFORM_CHANGE_STATUSES:
+        errs.append(f"Status not recognized: {st}")
+    if st in ("Approved", "Deployed") and _blank(it.get("ApprovedBy")) and _blank(it.get("ApprovedByLookupId")):
+        errs.append(f"ApprovedBy is required when Status is {st}")
+    return errs
+
+
+def build_platform_change_row(it, requested_by_id, approved_by_id):
+    """Build the platform_change DB column dict (mutable columns only; the sync
+    mints change_id + external_ref and defaults changed_at)."""
+    return {
+        "category": it["Category"],
+        "summary": it["Summary"],
+        "version": (it.get("Version") or None),
+        "status": (it.get("Status") or "Proposed"),
+        "requested_by_person_id": requested_by_id,
+        "approved_by_person_id": approved_by_id,
+        "git_sha": (it.get("GitSHA") or None),
+        "changed_at": (it.get("ChangedDate") or None),
+    }

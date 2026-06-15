@@ -138,6 +138,16 @@ actuals feed (ERP extract) in Phase 2 to complete the EVM family.
   `TabularEditor.exe "Theragen Project Planner.SemanticModel/definition" -A`
 - Every PBIR JSON validates against Microsoft's published Fabric schemas:
   `python tools/validate_pbir.py`
+- Every model object carries a `///` description (the field tooltip + data-dictionary
+  source); the coverage gate is `python tools/build_data_dictionary.py --audit`
+  (also enforced by `tests/test_model_documented.py`).
+
+## Documentation & change control
+
+- **Business glossary** — plain-language definitions of every term (PMBOK, EVM, governance, and Theragen conventions), each pointing at the model object or measure that realizes it: [docs/glossary.md](docs/glossary.md).
+- **Data dictionary** — every table, column, measure, and relationship, **generated from the model TMDL** (do not hand-edit; regenerate after any model change with `python tools/build_data_dictionary.py`): [docs/data-dictionary.md](docs/data-dictionary.md). Every model object carries a `///` description, so each field self-documents as a hover tooltip in Power BI. Current model: **33 tables · 339 columns · 154 measures · 47 relationships · 2 RLS roles** (the dictionary's provenance header stamps the model's git commit + the platform version).
+- **Change-control process (SOP)** — the single rule for *how the platform is allowed to change*: a six-category taxonomy (Lists/schema · sync+automation code · semantic model · DB migration · security/RLS · docs) × five controls each (versioning · review/approval · test gate · deploy/automation · recorded), plus the change lifecycle, approval matrix, automation inventory, and version scheme: [docs/change-control-process.md](docs/change-control-process.md).
+- **Changelog** — the platform change register; the current platform version is in [VERSION](VERSION) and must match the top entry of [CHANGELOG.md](CHANGELOG.md) (`tests/test_changelog_version.py` enforces it).
 
 ## Regenerating from scratch
 

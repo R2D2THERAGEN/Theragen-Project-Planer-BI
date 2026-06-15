@@ -6,6 +6,11 @@ Lists that feed the **Project Status Report** Power BI page. The daily 5:40 AM s
 Lists, validates every item, writes records into PostgreSQL, and writes results back to
 each List row.
 
+For business definitions of the terms used here, see the [glossary](glossary.md); for the
+generated per-table/column/measure catalogue, see the [data dictionary](data-dictionary.md).
+How the platform itself is allowed to change is governed by the
+[change-control process](change-control-process.md).
+
 **Auth:** open each List as **richard.allen@theragen.com** — the account whose cached
 Graph token the sync runs under. Read access is available to other accounts; write
 access (creating and editing items) requires at minimum Edit permission on the site.

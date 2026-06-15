@@ -1,0 +1,4 @@
+#!/bin/sh
+# Change-control reminder (warn only) — see docs/change-control-process.md (CL-3).
+# Enable once per clone:  git config core.hooksPath .githooks
+python tools/check_change_control.py || true

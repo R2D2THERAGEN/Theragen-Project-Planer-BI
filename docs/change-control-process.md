@@ -25,6 +25,7 @@ document: changes to it follow the **Documentation** row below.
 4. **Default-deny security.** RLS shows a user nothing until an explicit grant exists; access grants are airlocked and audited.
 5. **Dry-run byte-identical.** A change to one sync artifact must not alter the dry-run output of any other artifact (the two morning syncs are live).
 6. **Green at every commit.** `pytest` passes, `tools/validate_pbir.py` is clean, and `build_data_dictionary --audit` exits zero on every commit.
+7. **Change-control reminder.** A **warn-only** pre-commit hook (`tools/check_change_control.py`, wired via `.githooks/pre-commit`) reminds you to add a `CHANGELOG.md` entry when a commit touches the semantic model / a migration / a List / the sync code. It never blocks. Enable once per clone: `git config core.hooksPath .githooks`.
 
 ---
 

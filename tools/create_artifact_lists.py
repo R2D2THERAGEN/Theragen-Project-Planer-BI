@@ -143,6 +143,13 @@ LISTS = {
         choice("Active", ["Yes", "No"], default="Yes"),
         {"name": "GrantedBy", "personOrGroup": {"allowMultipleSelection": False}},
     ] + BOOKKEEPING),
+    "staff_directory_list_id": ("Staff Directory", [
+        text("UPN"),          # the person's UPN/email; matches doc_mgmt.person on read-back
+        text("DisplayName"),  # from Entra (informational)
+        choice("Department", al.STAFF_DIRECTORY_DEPARTMENTS),  # the PMO sets this -> person.department_id
+        choice("Active", ["Yes", "No"], default="Yes"),  # from Entra (informational)
+        text("JobTitle"),     # from Entra (informational)
+    ] + BOOKKEEPING),
     "platform_change_list_id": ("Platform Changes", [
         choice("Category", al.PLATFORM_CHANGE_CATEGORIES),
         text("Summary", multiline=True),

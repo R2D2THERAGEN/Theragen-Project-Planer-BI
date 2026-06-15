@@ -43,6 +43,8 @@ DOCUMENT_TYPES = [
      "default_review_cycle": "Annual", "requires_approval": True},
     {"code": "FRM", "name": "Form", "lifecycle_phase": "Reference",
      "default_review_cycle": "On Major Revision", "requires_approval": False},
+    {"code": "REF", "name": "Reference Document", "lifecycle_phase": "Reference",
+     "default_review_cycle": "Annual", "requires_approval": False},
 ]
 
 COMPLIANCE_FRAMES = [

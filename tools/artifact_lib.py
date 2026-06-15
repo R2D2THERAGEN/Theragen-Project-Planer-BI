@@ -570,7 +570,7 @@ def build_phase_gate_row(it, project_id, from_phase, to_phase, approver_id):
 # Controlled Document (2c-3) - org-wide controlled-document register
 # ---------------------------------------------------------------------------
 
-DOC_TYPE_CODES = ["CHR", "SOP", "PLN", "SCP", "RPT", "POL", "WI", "FRM"]
+DOC_TYPE_CODES = ["CHR", "SOP", "PLN", "SCP", "RPT", "POL", "WI", "FRM", "REF"]
 DOC_STATUSES = ["DRAFT", "REVIEW", "BASELINE", "AMENDED", "RETIRED"]
 DOC_LIFECYCLE_PHASES = ["Initiating", "Planning", "Executing", "Monitoring",
                         "Closing", "Cross-Lifecycle", "Intake", "Governance",

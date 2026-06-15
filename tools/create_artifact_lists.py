@@ -143,6 +143,16 @@ LISTS = {
         choice("Active", ["Yes", "No"], default="Yes"),
         {"name": "GrantedBy", "personOrGroup": {"allowMultipleSelection": False}},
     ] + BOOKKEEPING),
+    "platform_change_list_id": ("Platform Changes", [
+        choice("Category", al.PLATFORM_CHANGE_CATEGORIES),
+        text("Summary", multiline=True),
+        text("Version"),  # platform version, e.g. 2.7
+        choice("Status", al.PLATFORM_CHANGE_STATUSES, default="Proposed"),
+        text("GitSHA"),
+        date_only("ChangedDate"),
+        {"name": "RequestedBy", "personOrGroup": {"allowMultipleSelection": False}},
+        {"name": "ApprovedBy", "personOrGroup": {"allowMultipleSelection": False}},
+    ] + BOOKKEEPING),
     "baseline_list_id": ("Project Baselines", [
         text("ProjectCode"),
         choice("BaselineType", al.BASELINE_TYPES),

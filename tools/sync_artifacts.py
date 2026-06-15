@@ -84,6 +84,8 @@ COST_FIELDS = ("Title,ProjectCode,WBSCode,Period,Amount,Category,Notes,"
                "EnteredBy,EnteredByLookupId,SyncStatus,SyncMessage")
 ACCESS_FIELDS = ("Title,UserEmail,ScopeType,ScopeValue,Active,GrantedBy,"
                  "GrantedByLookupId,SyncStatus,SyncMessage")
+PLATCHANGE_FIELDS = ("Title,Category,Summary,Version,Status,GitSHA,ChangedDate,"
+                     "RequestedByLookupId,ApprovedByLookupId,SyncStatus,SyncMessage")
 
 
 def _date(v):
@@ -470,6 +472,28 @@ def normalize_access(item, people):
     }
 
 
+def normalize_platform_change(item, people):
+    f = item.get("fields", {})
+    created_by = (((item.get("createdBy") or {}).get("user") or {})
+                  .get("email") or "").lower()
+    created_date = (item.get("createdDateTime") or "")[:10]
+    lookup = f.get("ApprovedByLookupId")
+    return {
+        "item_id": item["id"],
+        "Category": f.get("Category") or "",
+        "Summary": (f.get("Summary") or "").strip(),
+        "Version": (f.get("Version") or "").strip(),
+        "Status": f.get("Status") or "Proposed",
+        "GitSHA": (f.get("GitSHA") or "").strip(),
+        "ChangedDate": _date(f.get("ChangedDate")) or created_date or None,
+        "RequestedByEmail": people.email(f.get("RequestedByLookupId")) or created_by,
+        "ApprovedByEmail": people.email(lookup),
+        "ApprovedBy": lookup,
+        "ApprovedByLookupId": lookup,
+        "SyncStatus": f.get("SyncStatus") or "Pending",
+    }
+
+
 def writeback(g, list_id, item_id, fields):
     g.patch(f"/sites/{M365['site_id']}/lists/{list_id}/items/{item_id}/fields",
             fields)
@@ -657,6 +681,10 @@ COST_SELECT = ('SELECT external_ref, cost_actual_id, wbs_element_id, period,'
 ACCESS_SELECT = ('SELECT external_ref, access_id, user_email, scope_type,'
                  ' scope_value, active, granted_by_person_id'
                  ' FROM pmbok.report_access WHERE external_ref IS NOT NULL')
+PLATCHANGE_SELECT = ('SELECT external_ref, change_id, category, summary, version,'
+                     ' status, requested_by_person_id, approved_by_person_id,'
+                     ' git_sha, changed_at'
+                     ' FROM pmbok.platform_change WHERE external_ref IS NOT NULL')
 ACTIVITY_SELECT = ('SELECT a.external_ref, a.activity_id, a.wbs_element_id,'
                    ' w.project_id, a.activity_code, a.name, a.start_planned,'
                    ' a.finish_planned, a.start_actual, a.finish_actual,'
@@ -1649,6 +1677,77 @@ def process_report_access(conn, g, it, dry, current):
             f" {it['ScopeValue']} (item {item_id})".rstrip())
 
 
+def process_platform_change(conn, g, it, dry, current):
+    # Round 2 dogfood: an authored platform-change log row (mirror process_decision
+    # / report_access - project-less) with a PLATFORM_CHANGE_* audit trail.
+    errs = al.validate_platform_change(it)
+    requested_by = (person_id_by_email(conn, it["RequestedByEmail"])
+                    if it["RequestedByEmail"] else None)
+    approved_by = (person_id_by_email(conn, it["ApprovedByEmail"])
+                   if it["ApprovedByEmail"] else None)
+    if not errs and it.get("Status") in ("Approved", "Deployed") and not approved_by:
+        errs.append("ApprovedBy did not resolve to a known person")
+    if errs:
+        return _error(g, M365["platform_change_list_id"], it, errs, dry, "platform_change")
+    item_id = it["item_id"]
+    list_id = M365["platform_change_list_id"]
+    desired = al.build_platform_change_row(it, requested_by, approved_by)
+
+    if current:
+        if al.row_changed(current, desired):
+            if dry:
+                return f"DRY platform_change item {item_id}: would update"
+            was, now = str(current.get("status") or ""), str(desired["status"] or "")
+            action = ("PLATFORM_CHANGE_APPROVE" if now == "Approved" and was != "Approved"
+                      else "PLATFORM_CHANGE_DEPLOY" if now == "Deployed" and was != "Deployed"
+                      else None)
+            with conn.transaction():
+                conn.execute(
+                    "UPDATE pmbok.platform_change SET category=%s, summary=%s,"
+                    " version=%s, status=%s, requested_by_person_id=%s,"
+                    " approved_by_person_id=%s, git_sha=%s, changed_at=%s"
+                    " WHERE external_ref=%s",
+                    (desired["category"], desired["summary"], desired["version"],
+                     desired["status"], desired["requested_by_person_id"],
+                     desired["approved_by_person_id"], desired["git_sha"],
+                     desired["changed_at"], item_id))
+                if action:
+                    before, after = al._trail_states(current, desired, ["status"])
+                    audit_lib.write_trail(conn, approved_by or requested_by, action,
+                                          "platform_change", current["change_id"],
+                                          before, after, None)
+            writeback(g, list_id, item_id,
+                      {"SyncStatus": "Synced", "SyncMessage": ""})
+            return f"OK platform_change item {item_id}: updated"
+        if it["SyncStatus"] != "Synced":
+            if not dry:
+                writeback(g, list_id, item_id,
+                          {"SyncStatus": "Synced", "SyncMessage": ""})
+            return f"OK platform_change item {item_id}: healed write-back"
+        return f"OK platform_change item {item_id}: no change"
+    # New item
+    if dry:
+        return (f"DRY platform_change item {item_id}: would log"
+                f" [{it.get('Category')}] {(it.get('Summary') or '')[:40]}")
+    change_id = str(uuid.uuid5(NS, f"thg/artifact/platformchange/{item_id}"))
+    with conn.transaction():
+        conn.execute(
+            "INSERT INTO pmbok.platform_change (change_id, category, summary,"
+            " version, status, requested_by_person_id, approved_by_person_id,"
+            " git_sha, changed_at, external_ref)"
+            " VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+            (change_id, desired["category"], desired["summary"], desired["version"],
+             desired["status"], desired["requested_by_person_id"],
+             desired["approved_by_person_id"], desired["git_sha"],
+             desired["changed_at"], item_id))
+        audit_lib.write_trail(
+            conn, requested_by, "PLATFORM_CHANGE_CREATE", "platform_change",
+            change_id, None,
+            {"category": desired["category"], "status": desired["status"]}, None)
+    writeback(g, list_id, item_id, {"SyncStatus": "Synced", "SyncMessage": ""})
+    return f"OK new platform_change [{it.get('Category')}] (item {item_id})"
+
+
 def process_document(conn, g, it, dry, current):
     errs = al.validate_document(it)
     dtype = (document_type_by_code(conn, it["DocTypeCode"])
@@ -2492,6 +2591,9 @@ ARTIFACTS = [
     {"kind": "report_access", "list_key": "report_access_list_id",
      "fields": ACCESS_FIELDS, "normalize": normalize_access,
      "process": process_report_access, "select": ACCESS_SELECT},
+    {"kind": "platform_change", "list_key": "platform_change_list_id",
+     "fields": PLATCHANGE_FIELDS, "normalize": normalize_platform_change,
+     "process": process_platform_change, "select": PLATCHANGE_SELECT},
     {"kind": "baseline", "list_key": "baseline_list_id",
      "fields": BASELINE_FIELDS, "normalize": normalize_baseline,
      "process": process_baseline, "select": BASELINE_SELECT},
@@ -2541,6 +2643,9 @@ def main():
             area_map.setdefault(ref, {})[ka] = status
 
         for art in ARTIFACTS:
+            if art["list_key"] not in M365:
+                print(f"{art['kind']}: skipped (no {art['list_key']} configured)")
+                continue
             raw = fetch_items(g, M365[art["list_key"]], art["fields"])
             print(f"{art['kind']}: {len(raw)} list item(s) fetched")
             items = [art["normalize"](i, people) for i in raw]

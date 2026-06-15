@@ -86,7 +86,8 @@ def main():
               "20_risk_response_external_ref.sql",
               "21_cost_actual.sql",
               "22_report_access.sql",
-              "23_platform_change.sql"):
+              "23_platform_change.sql",
+              "24_person_directory.sql"):
         sql = open(os.path.join(ROOT, "db", f), encoding="utf-8").read()
         cur.execute(sql)
         print(f"executed {f}")

@@ -111,14 +111,32 @@ table Directory
 
 		annotation SummarizationSetBy = User
 
+	/// The person's office location (PMO-curated in the Staff Directory List; Entra rarely has it).
+	column 'Office Location'
+		dataType: string
+		lineageTag: e63a164d-d4f0-515e-969f-6864dff279f4
+		summarizeBy: none
+		sourceColumn: Office Location
+
+		annotation SummarizationSetBy = User
+
+	/// The person's manager, resolved to a directory person (PMO-curated; Entra rarely has it).
+	column 'Manager Name'
+		dataType: string
+		lineageTag: 1118cada-4d9f-52f7-94c3-932fcc958366
+		summarizeBy: none
+		sourceColumn: Manager Name
+
+		annotation SummarizationSetBy = User
+
 	partition Directory = m
 		mode: import
 		source =
 				let
 				    Source = PostgreSQL.Database(PgServer, PgDatabase),
 				    Data = Source{[Schema = "bi", Item = "org_directory"]}[Data],
-				    Selected = Table.SelectColumns(Data, {"person_id", "display_name", "email", "upn", "job_title", "active", "source", "employment_type", "department_code", "department", "department_unassigned", "has_report_access"}),
-				    Renamed = Table.RenameColumns(Selected, {{"person_id", "Person ID"}, {"display_name", "Display Name"}, {"email", "Email"}, {"upn", "UPN"}, {"job_title", "Job Title"}, {"active", "Active"}, {"source", "Source"}, {"employment_type", "Employment Type"}, {"department_code", "Department Code"}, {"department", "Department"}, {"department_unassigned", "Department Unassigned"}, {"has_report_access", "Has Report Access"}})
+				    Selected = Table.SelectColumns(Data, {"person_id", "display_name", "email", "upn", "job_title", "active", "source", "employment_type", "department_code", "department", "department_unassigned", "has_report_access", "office_location", "manager_name"}),
+				    Renamed = Table.RenameColumns(Selected, {{"person_id", "Person ID"}, {"display_name", "Display Name"}, {"email", "Email"}, {"upn", "UPN"}, {"job_title", "Job Title"}, {"active", "Active"}, {"source", "Source"}, {"employment_type", "Employment Type"}, {"department_code", "Department Code"}, {"department", "Department"}, {"department_unassigned", "Department Unassigned"}, {"has_report_access", "Has Report Access"}, {"office_location", "Office Location"}, {"manager_name", "Manager Name"}})
 				in
 				    Renamed
 

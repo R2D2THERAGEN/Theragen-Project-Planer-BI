@@ -158,7 +158,7 @@ def main(argv):
         # --- Staff Directory List: seed create-if-absent ---------------------
         g = Graph()
         site, lid = M365["site_id"], M365["staff_directory_list_id"]
-        items = _list_items(g, site, lid, "UPN,Department", gd.BASE)
+        items = _list_items(g, site, lid, "UPN,Department,ManagerUPN,Location", gd.BASE)
         have_upn = {al.normalize_upn((it.get("fields") or {}).get("UPN")) for it in items}
         to_seed = [u for u in staff
                    if al.normalize_upn(u.get("userPrincipalName")) not in have_upn]
@@ -172,23 +172,39 @@ def main(argv):
                     "JobTitle": (u.get("jobTitle") or ""),
                     "SyncStatus": "Synced"}})
 
-        # --- read curated Department back -> person.department_id -------------
-        assigned = 0
+        # --- read curated fields back -> person (department / manager / location) ---
+        curated = 0
         for it in items:
             f = it.get("fields") or {}
-            dept = (f.get("Department") or "").strip()
             upn = al.normalize_upn(f.get("UPN"))
-            if not dept or dept == al.UNASSIGNED_DEPARTMENT or not upn:
+            if not upn:
                 continue
-            did = conn.execute("SELECT department_id FROM doc_mgmt.department WHERE name=%s",
-                               (dept,)).fetchone()
-            if not did:
+            sets, params = [], []
+            dept = (f.get("Department") or "").strip()
+            if dept and dept != al.UNASSIGNED_DEPARTMENT:
+                did = conn.execute("SELECT department_id FROM doc_mgmt.department WHERE name=%s",
+                                   (dept,)).fetchone()
+                if did:
+                    sets.append("department_id=%s")
+                    params.append(did[0])
+            mupn = al.normalize_upn(f.get("ManagerUPN"))
+            if mupn:
+                mid = conn.execute("SELECT person_id FROM doc_mgmt.person"
+                                   " WHERE LOWER(upn)=%s OR LOWER(email)=%s", (mupn, mupn)).fetchone()
+                if mid:
+                    sets.append("manager_person_id=%s")
+                    params.append(mid[0])
+            loc = (f.get("Location") or "").strip()
+            if loc:
+                sets.append("office_location=%s")
+                params.append(loc)
+            if not sets:
                 continue
-            assigned += 1
+            curated += 1
             if not dry:
-                conn.execute("UPDATE doc_mgmt.person SET department_id=%s"
-                             " WHERE LOWER(upn)=%s OR LOWER(email)=%s", (did[0], upn, upn))
-        print(f"department read-back: {assigned} curated assignment(s)"
+                conn.execute(f"UPDATE doc_mgmt.person SET {', '.join(sets)}"
+                             " WHERE LOWER(upn)=%s OR LOWER(email)=%s", params + [upn, upn])
+        print(f"curated read-back: {curated} person(s) (department/manager/location)"
               f"{' (dry-run, not applied)' if dry else ''}")
 
     print("DRY-RUN - no writes." if dry else "done.")

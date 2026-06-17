@@ -149,6 +149,8 @@ LISTS = {
         choice("Department", al.STAFF_DIRECTORY_DEPARTMENTS),  # the PMO sets this -> person.department_id
         choice("Active", ["Yes", "No"], default="Yes"),  # from Entra (informational)
         text("JobTitle"),     # from Entra (informational)
+        text("ManagerUPN"),   # PMO sets -> person.manager_person_id (Entra has no manager)
+        text("Location"),     # PMO sets -> person.office_location (Entra has no location)
     ] + BOOKKEEPING),
     "platform_change_list_id": ("Platform Changes", [
         choice("Category", al.PLATFORM_CHANGE_CATEGORIES),

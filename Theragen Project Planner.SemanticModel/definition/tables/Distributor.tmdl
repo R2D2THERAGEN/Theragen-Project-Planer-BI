@@ -1,0 +1,107 @@
+/// Field-sales distributor network: Theragen's go-to-market org (Region -> RSM -> Marketing Rep -> Distributor). 329 distinct distributors imported from the sales-ops 'Master DIst' workbook by tools/import_distributors.py; consumes bi.distributor. Standalone (no relationships to the PMBOK project data) - slices via the local Region / RSM / Status / Sales Type columns.
+table Distributor
+	lineageTag: 9e9675c2-4d9a-573d-9e12-921b8f6df134
+
+	/// (hidden) Surrogate key of the distributor row in sales.distributor.
+	column 'Distributor ID'
+		dataType: string
+		isHidden
+		lineageTag: 431142a4-f4e2-50d5-bb47-4729b9383cdd
+		summarizeBy: none
+		sourceColumn: Distributor ID
+
+		annotation SummarizationSetBy = User
+
+	/// The distributor's business name (one row per distinct distributor).
+	column Name
+		dataType: string
+		lineageTag: 0cab7a71-7353-5118-b122-2eeda984493e
+		summarizeBy: none
+		sourceColumn: Name
+
+		annotation SummarizationSetBy = User
+
+	/// Sales channel: Distributor (third-party) or Direct (Theragen-direct).
+	column 'Sales Type'
+		dataType: string
+		lineageTag: 005ffa8a-34af-541c-a6f8-091ad776521d
+		summarizeBy: none
+		sourceColumn: Sales Type
+
+		annotation SummarizationSetBy = User
+
+	/// Sales region (Southeast / Midwest / Southwest / Northeast / Other / Unknown when the source was blank).
+	column Region
+		dataType: string
+		lineageTag: f82c5daa-b475-5196-b476-9c86528eeda5
+		summarizeBy: none
+		sourceColumn: Region
+
+		annotation SummarizationSetBy = User
+
+	/// Regional Sales Manager (canonicalized; the typo "Tom Milory" is folded into "Tom Milroy"; Unknown when blank).
+	column RSM
+		dataType: string
+		lineageTag: 1b6472ed-9e69-509f-91cb-cc5bc7af54ef
+		summarizeBy: none
+		sourceColumn: RSM
+
+		annotation SummarizationSetBy = User
+
+	/// The distributor's marketing representative.
+	column 'Marketing Rep'
+		dataType: string
+		lineageTag: 8c186b91-9bf8-590f-8eb2-e88c66c278ea
+		summarizeBy: none
+		sourceColumn: Marketing Rep
+
+		annotation SummarizationSetBy = User
+
+	/// Normalized account status: Active / Terminated / Inactive / Pending / Unknown (derived from the messy free-text source).
+	column Status
+		dataType: string
+		lineageTag: 9219f8b6-708c-5c11-8166-492364e12a7b
+		summarizeBy: none
+		sourceColumn: Status
+
+		annotation SummarizationSetBy = User
+
+	/// TRUE when the distributor's normalized Status is Active.
+	column Active
+		dataType: boolean
+		lineageTag: e516b531-721f-5b28-ae90-d67763abbd2b
+		summarizeBy: none
+		sourceColumn: Active
+
+		annotation SummarizationSetBy = User
+
+	/// Products the distributor carries (free text from the source).
+	column Products
+		dataType: string
+		lineageTag: 13e1b832-9eb1-5147-a97f-49f1a0ba82d4
+		summarizeBy: none
+		sourceColumn: Products
+
+		annotation SummarizationSetBy = User
+
+	/// The distributor's contact email (where present in the source).
+	column Email
+		dataType: string
+		lineageTag: d39fe798-bc0e-5fe6-909e-6b57b8b09cb0
+		summarizeBy: none
+		sourceColumn: Email
+
+		annotation SummarizationSetBy = User
+
+	partition Distributor = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "distributor"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"distributor_id", "name", "sales_type", "region", "rsm", "marketing_rep", "status", "active", "products", "email"}),
+				    Renamed = Table.RenameColumns(Selected, {{"distributor_id", "Distributor ID"}, {"name", "Name"}, {"sales_type", "Sales Type"}, {"region", "Region"}, {"rsm", "RSM"}, {"marketing_rep", "Marketing Rep"}, {"status", "Status"}, {"active", "Active"}, {"products", "Products"}, {"email", "Email"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table

@@ -961,6 +961,42 @@ table _Measures
 		displayFolder: Directory
 		lineageTag: 33d5d5b6-3674-5f4b-9ccb-bdb5a8388707
 
+	/// Distinct distributors in the field-sales network (one row per distributor; 329 imported from the sales-ops workbook).
+	measure Distributors = COUNTROWS('Distributor')
+		formatString: #,0
+		displayFolder: Distributor
+		lineageTag: 1dfc7c1f-acc3-5f68-ac9d-c09b8bd0b498
+
+	/// Distributors whose normalized Status is Active (the live book of business).
+	measure 'Active Distributors' = CALCULATE([Distributors], 'Distributor'[Active] = TRUE())
+		formatString: #,0
+		displayFolder: Distributor
+		lineageTag: 8c049911-4534-595b-9487-f3a98fb0911d
+
+	/// Distributors whose normalized Status is Terminated (historical / churned relationships).
+	measure 'Terminated Distributors' = CALCULATE([Distributors], 'Distributor'[Status] = "Terminated")
+		formatString: #,0
+		displayFolder: Distributor
+		lineageTag: fa53283d-e112-55f1-a409-65df37ff6c78
+
+	/// Distributors whose normalized Status is Inactive (e.g. "Do Not Pay" - dormant but not formally terminated).
+	measure 'Inactive Distributors' = CALCULATE([Distributors], 'Distributor'[Status] = "Inactive")
+		formatString: #,0
+		displayFolder: Distributor
+		lineageTag: 2239b998-fb1a-5006-af66-0eb26e8ea4d0
+
+	/// Accounts sold Direct by Theragen (Sales Type = Direct) rather than through a third-party distributor.
+	measure 'Direct Sellers' = CALCULATE([Distributors], 'Distributor'[Sales Type] = "Direct")
+		formatString: #,0
+		displayFolder: Distributor
+		lineageTag: 6422e74c-f72a-5303-b46b-865d77b24189
+
+	/// Share of distributors that are Active = Active Distributors / Distributors.
+	measure 'Active Distributor Rate' = DIVIDE([Active Distributors], [Distributors])
+		formatString: 0.0%
+		displayFolder: Distributor
+		lineageTag: 7062f991-949d-5151-8fd5-461456fa696c
+
 	partition _Measures = m
 		mode: import
 		source =

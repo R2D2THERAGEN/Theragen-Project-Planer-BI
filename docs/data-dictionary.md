@@ -2,14 +2,14 @@
 
 _Generated from the semantic-model TMDL by `tools/build_data_dictionary.py` — **do not edit by hand**; regenerate after model changes (see [change-control process](change-control-process.md)). Business definitions live in the [glossary](glossary.md)._
 
-> Generated from model `13d6317` (2026-06-17) · platform **v2.10**  
-> 35 tables · 362 columns · 162 measures · 47 relationships · 2 roles
+> Generated from model `df1e240` (2026-06-17) · platform **v2.10**  
+> 36 tables · 372 columns · 168 measures · 47 relationships · 2 roles
 
 ## Model index
 
 | Table | Source | Cols | Measures | Description |
 |---|---|---|---|---|
-| [_Measures](#_measures) | — | 1 | 162 | Measure home table. All portfolio analytics measures live here. |
+| [_Measures](#_measures) | — | 1 | 168 | Measure home table. All portfolio analytics measures live here. |
 | [Budget Line](#budget-line) | `bi.budget_line_item` | 13 | 0 | Fact - cost budget estimate lines (PMBOK P13), one per level-1 deliverable. |
 | [Change Impact Assessment](#change-impact-assessment) | `bi.change_impact_assessment` | 11 | 0 | Fact - per-department change-impact assessments (PMBOK P22). One row per department's impact statement on a change request. |
 | [Change Request](#change-request) | `bi.change_request` | 24 | 0 | Fact - project change requests (PMBOK P21) with impact and decision cycle. |
@@ -20,6 +20,7 @@ _Generated from the semantic-model TMDL by `tools/build_data_dictionary.py` — 
 | [Decision](#decision) | `bi.decision` | 7 | 0 | Fact - governance decisions (PMBOK P21). Formal decisions logged against a project. |
 | [Department](#department) | `bi.department` | 3 | 0 | Conformed department dimension (DM D01). Filters executing departments on facts. |
 | [Directory](#directory) | `bi.org_directory` | 14 | 0 | Org directory: Theragen staff from Entra (enabled members on theragen.com / actastim.com) plus the sample seed persons, with the PMO-curated department. Sourced by tools/sync_directory.py; consumes bi.org_directory. Standalone (no relationships) - department slices via the local Department column. |
+| [Distributor](#distributor) | `bi.distributor` | 10 | 0 | Field-sales distributor network: Theragen's go-to-market org (Region -> RSM -> Marketing Rep -> Distributor). 329 distinct distributors imported from the sales-ops 'Master DIst' workbook by tools/import_distributors.py; consumes bi.distributor. Standalone (no relationships to the PMBOK project data) - slices via the local Region / RSM / Status / Sales Type columns. |
 | [Document Approval](#document-approval) | `bi.document_approval` | 11 | 0 | Fact - per-version sign-off ATTESTATION (non-Part-11; see esig_kind). |
 | [Document RACI](#document-raci) | `bi.raci_assignment` | 10 | 0 | Fact - per-document, per-department R/A/C/I assignment (effective-dated). |
 | [Document Version](#document-version) | `bi.document_version` | 13 | 0 | Fact - controlled-document version history. |
@@ -112,6 +113,12 @@ Measure home table. All portfolio analytics measures live here.
 | Headcount | #,0 | Directory | Total people in the directory (Entra staff + sample seed persons). | `COUNTROWS('Directory')` |
 | Staff with Report Access | #,0 | Directory | People holding at least one active Report Access (RLS) grant. | `CALCULATE(COUNTROWS('Directory'), 'Directory'[Has Report Access] = TRUE())` |
 | Unassigned Staff | #,0 | Directory | People with no curated department yet (awaiting PMO assignment in the Staff Directory List). | `CALCULATE(COUNTROWS('Directory'), 'Directory'[Department Unassigned] = TRUE())` |
+| Active Distributor Rate | 0.0% | Distributor | Share of distributors that are Active = Active Distributors / Distributors. | `DIVIDE([Active Distributors], [Distributors])` |
+| Active Distributors | #,0 | Distributor | Distributors whose normalized Status is Active (the live book of business). | `CALCULATE([Distributors], 'Distributor'[Active] = TRUE())` |
+| Direct Sellers | #,0 | Distributor | Accounts sold Direct by Theragen (Sales Type = Direct) rather than through a third-party distributor. | `CALCULATE([Distributors], 'Distributor'[Sales Type] = "Direct")` |
+| Distributors | #,0 | Distributor | Distinct distributors in the field-sales network (one row per distributor; 329 imported from the sales-ops workbook). | `COUNTROWS('Distributor')` |
+| Inactive Distributors | #,0 | Distributor | Distributors whose normalized Status is Inactive (e.g. "Do Not Pay" - dormant but not formally terminated). | `CALCULATE([Distributors], 'Distributor'[Status] = "Inactive")` |
+| Terminated Distributors | #,0 | Distributor | Distributors whose normalized Status is Terminated (historical / churned relationships). | `CALCULATE([Distributors], 'Distributor'[Status] = "Terminated")` |
 | Accountable Assignments | #,0 | Documents | RACI rows with the Accountable role. | `CALCULATE([RACI Assignments], 'Document RACI'[Role] = "A")` |
 | Approval Attestations | #,0 | Documents | Attestations whose meaning is Approval. | `CALCULATE([Document Approvals], 'Document Approval'[Signature Meaning] = "Approval")` |
 | Attested Versions | #,0 | Documents | Distinct versions carrying at least one attestation. | `DISTINCTCOUNT('Document Approval'[Version ID])` |
@@ -455,6 +462,28 @@ Org directory: Theragen staff from Entra (enabled members on theragen.com / acta
 | Has Report Access | boolean |  |  | TRUE when the person holds at least one active Report Access (RLS) grant. |
 | Office Location | string |  |  | The person's office location (PMO-curated in the Staff Directory List; Entra rarely has it). |
 | Manager Name | string |  |  | The person's manager, resolved to a directory person (PMO-curated; Entra rarely has it). |
+
+<a id="distributor"></a>
+## Distributor
+
+Field-sales distributor network: Theragen's go-to-market org (Region -> RSM -> Marketing Rep -> Distributor). 329 distinct distributors imported from the sales-ops 'Master DIst' workbook by tools/import_distributors.py; consumes bi.distributor. Standalone (no relationships to the PMBOK project data) - slices via the local Region / RSM / Status / Sales Type columns.
+
+**Source:** `bi.distributor`
+
+**Columns**
+
+| Column | Type | Hidden | Format | Description |
+|---|---|---|---|---|
+| Distributor ID | string | yes |  | (hidden) Surrogate key of the distributor row in sales.distributor. |
+| Name | string |  |  | The distributor's business name (one row per distinct distributor). |
+| Sales Type | string |  |  | Sales channel: Distributor (third-party) or Direct (Theragen-direct). |
+| Region | string |  |  | Sales region (Southeast / Midwest / Southwest / Northeast / Other / Unknown when the source was blank). |
+| RSM | string |  |  | Regional Sales Manager (canonicalized; the typo "Tom Milory" is folded into "Tom Milroy"; Unknown when blank). |
+| Marketing Rep | string |  |  | The distributor's marketing representative. |
+| Status | string |  |  | Normalized account status: Active / Terminated / Inactive / Pending / Unknown (derived from the messy free-text source). |
+| Active | boolean |  |  | TRUE when the distributor's normalized Status is Active. |
+| Products | string |  |  | Products the distributor carries (free text from the source). |
+| Email | string |  |  | The distributor's contact email (where present in the source). |
 
 <a id="document-approval"></a>
 ## Document Approval

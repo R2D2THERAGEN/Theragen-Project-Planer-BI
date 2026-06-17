@@ -1,6 +1,8 @@
 # Field-Sales / Distributor Org — subject-area scope (sub-stage F)
 
-**Status (2026-06-17): SCOPED, not built.** Surfaced from the BuildMoc workbook — Theragen's real go-to-market structure is a device-sales **distributor network**, a dimension entirely separate from the internal staff directory + the 8 departments.
+**Status (2026-06-17): BUILT (v1, safe version).** Surfaced from the BuildMoc workbook — Theragen's real go-to-market structure is a device-sales **distributor network**, a dimension entirely separate from the internal staff directory + the 8 departments.
+
+**Decisions taken at build:** *same model, separate subject area, no relationships to Project* (decision 1); *ingestion path A — periodic Excel import* via `tools/import_distributors.py`, not a SharePoint List (decision 2); *grain = distributor dim* (329 rows; the 606-row rep/product detail is collapsed by keeping the most-complete row, decision 3); *scope = distributors only* — the rep / OCT-pod / order-conversion structure is out of v1 (decision 4). Loaded live: **329 distinct distributors, 86 active**.
 
 ## The structure (from `Master DIst` / `Sales Footprint` / `Mktg Rep to OC Team`)
 
@@ -30,13 +32,13 @@ The data lives in **Excel maintained by sales ops**, not SharePoint. Two paths:
 - **A — Periodic Excel import** (mirror `backfill_directory_from_ease.py`): a tool reads the `Master DIst` sheet, normalizes, upserts `sales.distributor`. Pragmatic for v1; re-run on each export.
 - **B — SharePoint "Distributors" List** (the platform's authoring pattern) → daily sync. Ongoing authoring + airlock + audit, but someone must migrate 329 rows into the List first.
 
-## Tasks (sub-stage F, when approved)
+## Tasks (sub-stage F) — DONE
 
-- **F-T1** `db/26` `sales` schema + `sales.distributor` + `bi.distributor`.
-- **F-T2** `artifact_lib`: `normalize_distributor_status`, `canonical_rsm`, `normalize_region` + tests.
-- **F-T3** the ingestion (import tool *or* List per the decision above) + dedup/grain.
-- **F-T4** `Distributor` model table + measures + a Sales/Distributor report page.
-- **F-T5** docs + e2e + push.
+- **F-T1 ✓** `db/26` `sales` schema + `sales.distributor` + `bi.distributor` (applied live; loader tuple).
+- **F-T2 ✓** normalizers `normalize_distributor_status` / `canonical_rsm` / `normalize_region` + `dedupe_distributors` + tests. *(Deviation: these live in `tools/import_distributors.py`, not `artifact_lib.py` — the import is a one-off Excel tool, not part of the daily SharePoint sync, so its pure logic is co-located with the tool. 4 unit tests in `tests/test_import_distributors.py`.)*
+- **F-T3 ✓** ingestion path **A — Excel import** (`tools/import_distributors.py`): reads `Master DIst`, normalizes, dedups 606→329, upserts `sales.distributor` (`ON CONFLICT (external_ref)`). Ran live.
+- **F-T4 ✓** `Distributor` model table + 6 measures (`Distributors`, `Active Distributors`, `Terminated`, `Inactive`, `Direct Sellers`, `Active Distributor Rate`). *(A dedicated Sales/Distributor report page is deferred — the table + measures land now; the visual page is a follow-up, consistent with prior sub-stages where measures ship ahead of bespoke pages.)*
+- **F-T5 ✓** spec status + data-dictionary/admin-map regen + `VERSION`/`CHANGELOG` 2.11 + memory. Push on Allen's authorization.
 
 ## Open decisions (for the build kickoff)
 

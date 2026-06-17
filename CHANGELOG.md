@@ -14,6 +14,14 @@ curated release notes; that one is the register's queryable change log.
 
 ---
 
+## 2.11 — 2026-06-17 · `model` `code` `migration` `docs`
+**Field-sales distributor org (sub-stage F) + EASE directory backfill.**
+- **Distributor network.** `db/26` adds the `sales` schema + `sales.distributor` (one row per distributor, with normalized `status` + `active` alongside the preserved `status_raw`) + `bi.distributor`. `tools/import_distributors.py` reads the sales-ops `Master DIst` workbook, normalizes the messy free-text Status / RSM / Region, dedups **606 rows → 329 distinct distributors** (most-complete-row wins), and upserts on `external_ref`. Loaded live: **329 distributors, 86 active** (active book under the 4 core RSMs — Ryan Davis 24, Jeff Williams 19, Scott Hannon 18, Tom Milroy 18). New **Distributor** model table (standalone, no relationship to the PMBOK data) + measures (Distributors, Active / Terminated / Inactive Distributors, Direct Sellers, Active Distributor Rate). See the [field-sales spec](docs/superpowers/specs/2026-06-17-field-sales-org-design.md).
+- **EASE directory backfill.** `tools/backfill_directory_from_ease.py` crosswalks the EASE HR export (14 source departments → the 8 canonical) and matches staff by work UPN then name, writing **Department + Location** to the Staff Directory List and filling blank `person.job_title`. Ran live: 43 staff assigned a department, 43 located to Manassas, 8 titles filled — Entra carries almost none of this (department 87% blank, location 9%).
+- Data dictionary regenerated (**36 tables, 168 measures**); admin map regenerated (21 List surfaces — the distributor is an Excel import, not an authoring List, so it adds no surface).
+- _Approver:_ BI owner / Sales ops · _commits:_ `65ddc74`,`cbfe0ea` (EASE) → F-T1…F-T5 (`bc8b340`…)
+- _Deferred (harden later):_ a dedicated Sales/Distributor report page (measures land now, visuals follow); the rep / OCT-pod / order-conversion structure; linking distributors to orders/revenue (CRM/ERP); reconciling the unmatched EASE names; promoting the Excel import to a daily/triggered refresh.
+
 ## 2.10 — 2026-06-17 · `model` `code` `migration` `lists` `docs`
 **Directory rework — Staff Directory agent enablement.**
 - **Re-ground (E-T1):** `tools/export_directory_csv.py` → a clean full-directory CSV (no SharePoint Title-column trap) to ground the Staff Directory Copilot agent until it's pointed at the published Directory model. Output gitignored.

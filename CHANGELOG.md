@@ -14,6 +14,14 @@ curated release notes; that one is the register's queryable change log.
 
 ---
 
+## 2.10 — 2026-06-17 · `model` `code` `migration` `lists` `docs`
+**Directory rework — Staff Directory agent enablement.**
+- **Re-ground (E-T1):** `tools/export_directory_csv.py` → a clean full-directory CSV (no SharePoint Title-column trap) to ground the Staff Directory Copilot agent until it's pointed at the published Directory model. Output gitignored.
+- **Curated org structure (E-T2):** Manager + Location are now PMO-maintained (Entra has them for only 1% / 9% of staff). `db/25` adds `person.office_location` and widens `bi.org_directory` with manager/location; the Staff Directory List gains `ManagerUPN` / `Location`; the sync reads both back; the **Directory** model gains Office Location + Manager Name.
+- **Routing (E-T3):** [directory-agent-actions spec](docs/superpowers/specs/2026-06-17-directory-agent-actions.md) — the agent takes governed actions (assign department / grant Report Access) by writing a SharePoint List item that the existing sync **airlocks + audits**; it never touches the DB.
+- _Approver:_ PMO / BI owner · _commits:_ E-T1…E-T3
+- _Deferred (harden later):_ on-demand sync trigger; authority enforcement on grants; agent reads current state before acting; double-space display-name normalization.
+
 ## 2.9 — 2026-06-17 · `model` `code` `migration` `lists`
 **Org Directory (sub-stage D).**
 - **Entra-sourced staff directory.** `tools/sync_directory.py` pulls enabled members (`theragen.com` / `actastim.com`) via `tools/graph_directory.py`, upserts `doc_mgmt.person` (`db/24` — `+upn/entra_object_id/job_title/source`, sentinel `UNAS` department for un-curated staff), seeds the **Staff Directory** List (the PMO assigns departments), and reads the assignment back to `person.department_id`. Live: **370 directory rows** (346 Entra staff + 24 sample), 345 awaiting assignment.

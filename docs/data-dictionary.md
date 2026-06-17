@@ -2,8 +2,8 @@
 
 _Generated from the semantic-model TMDL by `tools/build_data_dictionary.py` — **do not edit by hand**; regenerate after model changes (see [change-control process](change-control-process.md)). Business definitions live in the [glossary](glossary.md)._
 
-> Generated from model `59d8b95` (2026-06-17) · platform **v2.8**  
-> 35 tables · 360 columns · 162 measures · 47 relationships · 2 roles
+> Generated from model `13d6317` (2026-06-17) · platform **v2.10**  
+> 35 tables · 362 columns · 162 measures · 47 relationships · 2 roles
 
 ## Model index
 
@@ -19,7 +19,7 @@ _Generated from the semantic-model TMDL by `tools/build_data_dictionary.py` — 
 | [Date](#date) | — | 7 | 0 | Marked date dimension covering 2025-2027. |
 | [Decision](#decision) | `bi.decision` | 7 | 0 | Fact - governance decisions (PMBOK P21). Formal decisions logged against a project. |
 | [Department](#department) | `bi.department` | 3 | 0 | Conformed department dimension (DM D01). Filters executing departments on facts. |
-| [Directory](#directory) | `bi.org_directory` | 12 | 0 | Org directory: Theragen staff from Entra (enabled members on theragen.com / actastim.com) plus the sample seed persons, with the PMO-curated department. Sourced by tools/sync_directory.py; consumes bi.org_directory. Standalone (no relationships) - department slices via the local Department column. |
+| [Directory](#directory) | `bi.org_directory` | 14 | 0 | Org directory: Theragen staff from Entra (enabled members on theragen.com / actastim.com) plus the sample seed persons, with the PMO-curated department. Sourced by tools/sync_directory.py; consumes bi.org_directory. Standalone (no relationships) - department slices via the local Department column. |
 | [Document Approval](#document-approval) | `bi.document_approval` | 11 | 0 | Fact - per-version sign-off ATTESTATION (non-Part-11; see esig_kind). |
 | [Document RACI](#document-raci) | `bi.raci_assignment` | 10 | 0 | Fact - per-document, per-department R/A/C/I assignment (effective-dated). |
 | [Document Version](#document-version) | `bi.document_version` | 13 | 0 | Fact - controlled-document version history. |
@@ -453,6 +453,8 @@ Org directory: Theragen staff from Entra (enabled members on theragen.com / acta
 | Department | string |  |  | The person's department - the PMO-curated assignment, or "Unassigned". |
 | Department Unassigned | boolean |  |  | TRUE when the person has no curated department yet (sentinel UNAS) - awaiting PMO assignment. |
 | Has Report Access | boolean |  |  | TRUE when the person holds at least one active Report Access (RLS) grant. |
+| Office Location | string |  |  | The person's office location (PMO-curated in the Staff Directory List; Entra rarely has it). |
+| Manager Name | string |  |  | The person's manager, resolved to a directory person (PMO-curated; Entra rarely has it). |
 
 <a id="document-approval"></a>
 ## Document Approval

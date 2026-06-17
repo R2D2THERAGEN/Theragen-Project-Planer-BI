@@ -37,8 +37,9 @@ The data lives in **Excel maintained by sales ops**, not SharePoint. Two paths:
 - **F-T1 ✓** `db/26` `sales` schema + `sales.distributor` + `bi.distributor` (applied live; loader tuple).
 - **F-T2 ✓** normalizers `normalize_distributor_status` / `canonical_rsm` / `normalize_region` + `dedupe_distributors` + tests. *(Deviation: these live in `tools/import_distributors.py`, not `artifact_lib.py` — the import is a one-off Excel tool, not part of the daily SharePoint sync, so its pure logic is co-located with the tool. 4 unit tests in `tests/test_import_distributors.py`.)*
 - **F-T3 ✓** ingestion path **A — Excel import** (`tools/import_distributors.py`): reads `Master DIst`, normalizes, dedups 606→329, upserts `sales.distributor` (`ON CONFLICT (external_ref)`). Ran live.
-- **F-T4 ✓** `Distributor` model table + 6 measures (`Distributors`, `Active Distributors`, `Terminated`, `Inactive`, `Direct Sellers`, `Active Distributor Rate`). *(A dedicated Sales/Distributor report page is deferred — the table + measures land now; the visual page is a follow-up, consistent with prior sub-stages where measures ship ahead of bespoke pages.)*
-- **F-T5 ✓** spec status + data-dictionary/admin-map regen + `VERSION`/`CHANGELOG` 2.11 + memory. Push on Allen's authorization.
+- **F-T4 ✓** `Distributor` model table + 6 measures (`Distributors`, `Active Distributors`, `Terminated`, `Inactive`, `Direct Sellers`, `Active Distributor Rate`).
+- **F-T5 ✓** spec status + data-dictionary/admin-map regen + `VERSION`/`CHANGELOG` 2.11 + memory. Pushed.
+- **F-T6 ✓** **Sales & Distribution** PBIR report page (`pages/sales`): 5 KPI cards + Region/Status slicers + Distributors-by-region bar + Distributors-by-RSM-and-status bar + status donut + a Distributor register table. `validate_pbir` clean; surfaces after Allen's republish.
 
 ## Open decisions (for the build kickoff)
 

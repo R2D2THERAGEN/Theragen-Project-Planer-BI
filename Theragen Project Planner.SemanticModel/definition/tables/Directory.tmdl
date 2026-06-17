@@ -1,0 +1,125 @@
+/// Org directory: Theragen staff from Entra (enabled members on theragen.com / actastim.com) plus the sample seed persons, with the PMO-curated department. Sourced by tools/sync_directory.py; consumes bi.org_directory. Standalone (no relationships) - department slices via the local Department column.
+table Directory
+	lineageTag: ed2c8b61-0e37-538b-a795-db4f4eba4fc3
+
+	/// (hidden) Surrogate key of the person row in doc_mgmt.person.
+	column 'Person ID'
+		dataType: string
+		isHidden
+		lineageTag: 756209cd-7e64-5e4b-88f8-c3468d517b37
+		summarizeBy: none
+		sourceColumn: Person ID
+
+		annotation SummarizationSetBy = User
+
+	/// The person's full display name.
+	column 'Display Name'
+		dataType: string
+		lineageTag: 0a855a52-582a-5bb6-9cb7-240bbf667885
+		summarizeBy: none
+		sourceColumn: Display Name
+
+		annotation SummarizationSetBy = User
+
+	/// The person's sign-in email (matches the Report Access grant email + USERPRINCIPALNAME).
+	column Email
+		dataType: string
+		lineageTag: cd73cfed-84fe-5d28-8b51-8ee50bc946f3
+		summarizeBy: none
+		sourceColumn: Email
+
+		annotation SummarizationSetBy = User
+
+	/// The person's Entra user principal name (UPN).
+	column UPN
+		dataType: string
+		lineageTag: 5d1da0d2-486e-5634-a83a-ab2985deeac1
+		summarizeBy: none
+		sourceColumn: UPN
+
+		annotation SummarizationSetBy = User
+
+	/// The person's Entra job title (blank for many service / unconfigured accounts).
+	column 'Job Title'
+		dataType: string
+		lineageTag: 10507a75-240d-5350-b256-3f3f0259e098
+		summarizeBy: none
+		sourceColumn: Job Title
+
+		annotation SummarizationSetBy = User
+
+	/// TRUE when the account is enabled in Entra.
+	column Active
+		dataType: boolean
+		lineageTag: c2cd0e29-7587-5361-bac1-ebcfdbba6de5
+		summarizeBy: none
+		sourceColumn: Active
+
+		annotation SummarizationSetBy = User
+
+	/// Provenance of the row: 'entra' (roster pull) or 'sharepoint' (resolved from a person field).
+	column Source
+		dataType: string
+		lineageTag: 50dc11d0-9d9d-516f-bf82-bd97575e6347
+		summarizeBy: none
+		sourceColumn: Source
+
+		annotation SummarizationSetBy = User
+
+	/// Employment type (defaults to Employee for Entra-sourced rows).
+	column 'Employment Type'
+		dataType: string
+		lineageTag: 47635b8f-3816-563c-abca-533620fe05c6
+		summarizeBy: none
+		sourceColumn: Employment Type
+
+		annotation SummarizationSetBy = User
+
+	/// The department code (CLN/REG/.../UNAS); UNAS = Unassigned.
+	column 'Department Code'
+		dataType: string
+		lineageTag: 95158042-ceae-5c7c-ab6a-a58746cbbd15
+		summarizeBy: none
+		sourceColumn: Department Code
+
+		annotation SummarizationSetBy = User
+
+	/// The person's department - the PMO-curated assignment, or "Unassigned".
+	column Department
+		dataType: string
+		lineageTag: 043e6eff-c238-589d-927c-7db72bceed50
+		summarizeBy: none
+		sourceColumn: Department
+
+		annotation SummarizationSetBy = User
+
+	/// TRUE when the person has no curated department yet (sentinel UNAS) - awaiting PMO assignment.
+	column 'Department Unassigned'
+		dataType: boolean
+		lineageTag: ea81473d-8cdf-5312-90da-e695c985adca
+		summarizeBy: none
+		sourceColumn: Department Unassigned
+
+		annotation SummarizationSetBy = User
+
+	/// TRUE when the person holds at least one active Report Access (RLS) grant.
+	column 'Has Report Access'
+		dataType: boolean
+		lineageTag: e9c92512-320c-5493-a9ba-1547fce303d5
+		summarizeBy: none
+		sourceColumn: Has Report Access
+
+		annotation SummarizationSetBy = User
+
+	partition Directory = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(PgServer, PgDatabase),
+				    Data = Source{[Schema = "bi", Item = "org_directory"]}[Data],
+				    Selected = Table.SelectColumns(Data, {"person_id", "display_name", "email", "upn", "job_title", "active", "source", "employment_type", "department_code", "department", "department_unassigned", "has_report_access"}),
+				    Renamed = Table.RenameColumns(Selected, {{"person_id", "Person ID"}, {"display_name", "Display Name"}, {"email", "Email"}, {"upn", "UPN"}, {"job_title", "Job Title"}, {"active", "Active"}, {"source", "Source"}, {"employment_type", "Employment Type"}, {"department_code", "Department Code"}, {"department", "Department"}, {"department_unassigned", "Department Unassigned"}, {"has_report_access", "Has Report Access"}})
+				in
+				    Renamed
+
+	annotation PBI_ResultType = Table

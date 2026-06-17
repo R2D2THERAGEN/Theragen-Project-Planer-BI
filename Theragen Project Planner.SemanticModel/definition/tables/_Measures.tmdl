@@ -931,6 +931,36 @@ table _Measures
 
 		annotation SummarizationSetBy = User
 
+	/// Total people in the directory (Entra staff + sample seed persons).
+	measure Headcount = COUNTROWS('Directory')
+		formatString: #,0
+		displayFolder: Directory
+		lineageTag: 08aa1dec-25b4-5ddf-82ca-2549ad75ff33
+
+	/// People whose Entra account is enabled.
+	measure 'Active Staff' = CALCULATE(COUNTROWS('Directory'), 'Directory'[Active] = TRUE())
+		formatString: #,0
+		displayFolder: Directory
+		lineageTag: e1bc09d7-daaf-58f9-8d3e-bf1563bcbb03
+
+	/// People with no curated department yet (awaiting PMO assignment in the Staff Directory List).
+	measure 'Unassigned Staff' = CALCULATE(COUNTROWS('Directory'), 'Directory'[Department Unassigned] = TRUE())
+		formatString: #,0
+		displayFolder: Directory
+		lineageTag: 9b81c923-2e12-5d68-bf40-8a55018b930f
+
+	/// People holding at least one active Report Access (RLS) grant.
+	measure 'Staff with Report Access' = CALCULATE(COUNTROWS('Directory'), 'Directory'[Has Report Access] = TRUE())
+		formatString: #,0
+		displayFolder: Directory
+		lineageTag: 1c7b2b38-26b5-59ee-936c-c9dcdaa7203d
+
+	/// Distinct departments with at least one assigned person (excludes Unassigned).
+	measure 'Departments Assigned' = CALCULATE(DISTINCTCOUNT('Directory'[Department]), 'Directory'[Department Unassigned] = FALSE())
+		formatString: #,0
+		displayFolder: Directory
+		lineageTag: 33d5d5b6-3674-5f4b-9ccb-bdb5a8388707
+
 	partition _Measures = m
 		mode: import
 		source =

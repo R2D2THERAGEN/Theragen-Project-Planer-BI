@@ -52,18 +52,23 @@ def crosswalk_department(ease_dept, crosswalk=EASE_DEPARTMENT_CROSSWALK):
 def read_ease(path):
     import openpyxl
     wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
-    ws = wb[wb.sheetnames[0]]
-    rows = list(ws.iter_rows(values_only=True))
+    # prefer a directory-looking sheet (a workbook may carry many sheets)
+    name = next((s for s in wb.sheetnames if s.lower() in ("ease directory", "directory")),
+                wb.sheetnames[0])
+    rows = list(wb[name].iter_rows(values_only=True))
     idx = {h: i for i, h in enumerate(rows[0])}
 
-    def cell(r, k):
-        v = r[idx[k]] if k in idx else None
-        return str(v).strip() if v is not None else ""
+    def cell(r, *keys):
+        for k in keys:
+            if k in idx and r[idx[k]] is not None:
+                return str(r[idx[k]]).strip()
+        return ""
     out = []
     for r in rows[1:]:
         first, last = cell(r, "First Name"), cell(r, "Last Name")
         if first or last:
             out.append({"name": norm_name(first, last), "display": f"{first} {last}".strip(),
+                        "upn": cell(r, "User principal name", "User Principal Name", "UPN").lower(),
                         "title": cell(r, "Job Title"), "loc": cell(r, "Location"),
                         "dept": cell(r, "Department")})
     return out
@@ -88,10 +93,15 @@ def main(argv):
     with psycopg.connect(host=PG["server"], dbname=PG["database"], user=PG["user"],
                          password=PG["password"], sslmode="require", autocommit=True,
                          connect_timeout=20) as conn:
-        people = {}
+        people_by_name, people_by_upn = {}, {}
         for r in conn.execute("SELECT display_name, upn, email, job_title, person_id"
                               " FROM bi.org_directory").fetchall():
-            people[norm_name(r[0], "")] = {"upn": r[1], "email": r[2], "title": r[3], "pid": r[4]}
+            rec = {"upn": r[1], "email": r[2], "title": r[3], "pid": r[4]}
+            people_by_name[norm_name(r[0], "")] = rec
+            if r[1]:
+                people_by_upn[r[1].lower()] = rec
+            if r[2]:
+                people_by_upn[r[2].lower()] = rec
 
         g = Graph()
         site, lid = M365["site_id"], M365["staff_directory_list_id"]
@@ -101,7 +111,7 @@ def main(argv):
         matched = unmatched = no_item = unmapped = titles = 0
         dept_counts = {}
         for e in ease:
-            dp = people.get(e["name"])
+            dp = (people_by_upn.get(e["upn"]) if e.get("upn") else None) or people_by_name.get(e["name"])
             if not dp:
                 unmatched += 1
                 continue

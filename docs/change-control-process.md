@@ -81,6 +81,7 @@ Confirmed from Windows Task Scheduler (2026-06-14):
 
 | Job | Schedule | Runs | Purpose |
 |---|---|---|---|
+| `\Theragen\SyncDirectory` | **05:20** daily | `tools\run_directory_sync.cmd` → `sync_directory.py` | Org-directory sync (sub-stage D): Entra roster → `doc_mgmt.person` + Staff Directory List seed + department read-back. Runs first so person resolution is fresh for the later syncs. |
 | `\Theragen\SyncIntake` | **05:30** daily | `tools\run_intake_sync.cmd` | Intake-submission sync (Phase 1) |
 | `\Theragen\SyncArtifacts` | **05:40** daily | `tools\run_artifact_sync.cmd` → `sync_artifacts.py` | Artifact sync (projects, risks, schedule, governance — all Phase-2 Lists) |
 | Power BI **dataset refresh** | ~hourly / morning (Service-side) | Power BI Service scheduled refresh (and/or `tools/service_refresh.py`) | **Data-only** refresh of the published model |

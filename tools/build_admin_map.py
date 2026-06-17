@@ -136,6 +136,12 @@ SURFACES = [
      "process": "process_platform_change", "db_table": "pmbok.platform_change", "bi_view": "bi.platform_change",
      "model_table": "Platform Change (disconnected)",
      "measures": "Platform Changes, Approved/Deployed Platform Changes", "audit": "PLATFORM_CHANGE_CREATE, _APPROVE, _DEPLOY"},
+    {"list_key": "staff_directory_list_id", "label": "Staff Directory", "phase": "Sub-stage D",
+     "columns": "UPN, DisplayName, Department (PMO-assigned), Active, JobTitle",
+     "process": "sync_directory.py (Entra roster via graph_directory)", "db_table": "doc_mgmt.person",
+     "bi_view": "bi.org_directory", "model_table": "Directory",
+     "measures": "Headcount, Active Staff, Unassigned Staff, Staff with Report Access, Departments Assigned",
+     "audit": "—"},
 ]
 
 SCHEDULED_JOBS = [

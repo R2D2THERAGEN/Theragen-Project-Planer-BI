@@ -2,14 +2,14 @@
 
 _Generated from the semantic-model TMDL by `tools/build_data_dictionary.py` — **do not edit by hand**; regenerate after model changes (see [change-control process](change-control-process.md)). Business definitions live in the [glossary](glossary.md)._
 
-> Generated from model `a96eeeb` (2026-06-14) · platform **v2.7**  
-> 34 tables · 348 columns · 157 measures · 47 relationships · 2 roles
+> Generated from model `59d8b95` (2026-06-17) · platform **v2.8**  
+> 35 tables · 360 columns · 162 measures · 47 relationships · 2 roles
 
 ## Model index
 
 | Table | Source | Cols | Measures | Description |
 |---|---|---|---|---|
-| [_Measures](#_measures) | — | 1 | 157 | Measure home table. All portfolio analytics measures live here. |
+| [_Measures](#_measures) | — | 1 | 162 | Measure home table. All portfolio analytics measures live here. |
 | [Budget Line](#budget-line) | `bi.budget_line_item` | 13 | 0 | Fact - cost budget estimate lines (PMBOK P13), one per level-1 deliverable. |
 | [Change Impact Assessment](#change-impact-assessment) | `bi.change_impact_assessment` | 11 | 0 | Fact - per-department change-impact assessments (PMBOK P22). One row per department's impact statement on a change request. |
 | [Change Request](#change-request) | `bi.change_request` | 24 | 0 | Fact - project change requests (PMBOK P21) with impact and decision cycle. |
@@ -19,6 +19,7 @@ _Generated from the semantic-model TMDL by `tools/build_data_dictionary.py` — 
 | [Date](#date) | — | 7 | 0 | Marked date dimension covering 2025-2027. |
 | [Decision](#decision) | `bi.decision` | 7 | 0 | Fact - governance decisions (PMBOK P21). Formal decisions logged against a project. |
 | [Department](#department) | `bi.department` | 3 | 0 | Conformed department dimension (DM D01). Filters executing departments on facts. |
+| [Directory](#directory) | `bi.org_directory` | 12 | 0 | Org directory: Theragen staff from Entra (enabled members on theragen.com / actastim.com) plus the sample seed persons, with the PMO-curated department. Sourced by tools/sync_directory.py; consumes bi.org_directory. Standalone (no relationships) - department slices via the local Department column. |
 | [Document Approval](#document-approval) | `bi.document_approval` | 11 | 0 | Fact - per-version sign-off ATTESTATION (non-Part-11; see esig_kind). |
 | [Document RACI](#document-raci) | `bi.raci_assignment` | 10 | 0 | Fact - per-document, per-department R/A/C/I assignment (effective-dated). |
 | [Document Version](#document-version) | `bi.document_version` | 13 | 0 | Fact - controlled-document version history. |
@@ -106,6 +107,11 @@ Measure home table. All portfolio analytics measures live here.
 | Other Amount | \$#,##0;(\$#,##0);\$0 | Cost | Other cost component. | `SUM('Budget Line'[Other Amount])` |
 | Vendor Amount | \$#,##0;(\$#,##0);\$0 | Cost | Vendor / contractor component. | `SUM('Budget Line'[Vendor Amount])` |
 | Working Budget | \$#,##0;(\$#,##0);\$0 | Cost | Funded budget adjusted for approved change requests. | `[Budget Total] + [Approved CR Cost Impact]` |
+| Active Staff | #,0 | Directory | People whose Entra account is enabled. | `CALCULATE(COUNTROWS('Directory'), 'Directory'[Active] = TRUE())` |
+| Departments Assigned | #,0 | Directory | Distinct departments with at least one assigned person (excludes Unassigned). | `CALCULATE(DISTINCTCOUNT('Directory'[Department]), 'Directory'[Department Unassigned] = FALSE())` |
+| Headcount | #,0 | Directory | Total people in the directory (Entra staff + sample seed persons). | `COUNTROWS('Directory')` |
+| Staff with Report Access | #,0 | Directory | People holding at least one active Report Access (RLS) grant. | `CALCULATE(COUNTROWS('Directory'), 'Directory'[Has Report Access] = TRUE())` |
+| Unassigned Staff | #,0 | Directory | People with no curated department yet (awaiting PMO assignment in the Staff Directory List). | `CALCULATE(COUNTROWS('Directory'), 'Directory'[Department Unassigned] = TRUE())` |
 | Accountable Assignments | #,0 | Documents | RACI rows with the Accountable role. | `CALCULATE([RACI Assignments], 'Document RACI'[Role] = "A")` |
 | Approval Attestations | #,0 | Documents | Attestations whose meaning is Approval. | `CALCULATE([Document Approvals], 'Document Approval'[Signature Meaning] = "Approval")` |
 | Attested Versions | #,0 | Documents | Distinct versions carrying at least one attestation. | `DISTINCTCOUNT('Document Approval'[Version ID])` |
@@ -423,6 +429,30 @@ Conformed department dimension (DM D01). Filters executing departments on facts.
 | Department ID | string | yes |  | (hidden) Surrogate key uniquely identifying the department; the relationship anchor for department joins on facts. |
 | Department Code | string |  |  | Short department code used in minted Doc IDs (e.g. OPS, REG, IT); the human-readable department key. |
 | Department | string |  |  | Full department name; one of the 8 Theragen departments (e.g. Operations / PMO, Regulatory / Quality). |
+
+<a id="directory"></a>
+## Directory
+
+Org directory: Theragen staff from Entra (enabled members on theragen.com / actastim.com) plus the sample seed persons, with the PMO-curated department. Sourced by tools/sync_directory.py; consumes bi.org_directory. Standalone (no relationships) - department slices via the local Department column.
+
+**Source:** `bi.org_directory`
+
+**Columns**
+
+| Column | Type | Hidden | Format | Description |
+|---|---|---|---|---|
+| Person ID | string | yes |  | (hidden) Surrogate key of the person row in doc_mgmt.person. |
+| Display Name | string |  |  | The person's full display name. |
+| Email | string |  |  | The person's sign-in email (matches the Report Access grant email + USERPRINCIPALNAME). |
+| UPN | string |  |  | The person's Entra user principal name (UPN). |
+| Job Title | string |  |  | The person's Entra job title (blank for many service / unconfigured accounts). |
+| Active | boolean |  |  | TRUE when the account is enabled in Entra. |
+| Source | string |  |  | Provenance of the row: 'entra' (roster pull) or 'sharepoint' (resolved from a person field). |
+| Employment Type | string |  |  | Employment type (defaults to Employee for Entra-sourced rows). |
+| Department Code | string |  |  | The department code (CLN/REG/.../UNAS); UNAS = Unassigned. |
+| Department | string |  |  | The person's department - the PMO-curated assignment, or "Unassigned". |
+| Department Unassigned | boolean |  |  | TRUE when the person has no curated department yet (sentinel UNAS) - awaiting PMO assignment. |
+| Has Report Access | boolean |  |  | TRUE when the person holds at least one active Report Access (RLS) grant. |
 
 <a id="document-approval"></a>
 ## Document Approval

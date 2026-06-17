@@ -1489,6 +1489,26 @@ stdout into your mail step — it is plain text and self-contained.
 
 ---
 
+## AA. Staff Directory (org directory)
+
+Unlike every other List, the **Staff Directory** List is **populated by automation, not by you.** The
+**05:20 `\Theragen\SyncDirectory`** job pulls all enabled Entra members on **theragen.com /
+actastim.com**, upserts them into `doc_mgmt.person`, and **seeds one List item per person** (UPN,
+display name, active, job title — all read-only context from Entra).
+
+**Your only job here is the `Department` column.** Pick one of the 8 departments for each person; the
+next morning's sync reads it back into `person.department_id` (surfaced in `bi.org_directory` and the
+**Directory** model table). Anyone left blank stays **"Unassigned"** — no department, and no
+Department-scope report access — until you assign one.
+
+- **Don't** edit UPN / DisplayName / Active / JobTitle — they are overwritten from Entra each run.
+- **Don't** add rows by hand — new hires appear automatically the next morning; departures are marked
+  inactive (never deleted).
+- Assigning a department here is what makes a **Report Access** *Department*-scope grant (§Z) resolve
+  for that person.
+
+---
+
 ## Appendix — sync behaviour reference
 
 | Scenario | sync_artifacts.py behaviour |

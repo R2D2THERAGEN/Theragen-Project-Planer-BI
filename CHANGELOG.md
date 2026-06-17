@@ -14,6 +14,15 @@ curated release notes; that one is the register's queryable change log.
 
 ---
 
+## 2.9 — 2026-06-17 · `model` `code` `migration` `lists`
+**Org Directory (sub-stage D).**
+- **Entra-sourced staff directory.** `tools/sync_directory.py` pulls enabled members (`theragen.com` / `actastim.com`) via `tools/graph_directory.py`, upserts `doc_mgmt.person` (`db/24` — `+upn/entra_object_id/job_title/source`, sentinel `UNAS` department for un-curated staff), seeds the **Staff Directory** List (the PMO assigns departments), and reads the assignment back to `person.department_id`. Live: **370 directory rows** (346 Entra staff + 24 sample), 345 awaiting assignment.
+- **`bi.org_directory`** view + the **Directory** model table + measures (Headcount, Active Staff, Unassigned Staff, Staff with Report Access, Departments Assigned).
+- **`\Theragen\SyncDirectory`** scheduled job at **05:20** (before the 05:30 / 05:40 syncs, so person resolution is fresh).
+- Admin map + data dictionary regenerated (21 authoring surfaces; 35 model tables).
+- _Approver:_ PMO / BI owner · _commits:_ `eb941e4` → (D-T1…D-T8)
+- _Deferred (harden later):_ RLS validation hooks (`report_access` vs directory + a `governance_health` grant-to-non-directory check); directory-sync error alerting; canonical-account selection for duplicate mailboxes.
+
 ## 2.8 — 2026-06-15 · `model` `code` `docs`
 **Closeout: report-page tooltips live + change-control automation + §11 posture.**
 - **Tooltip pages activated.** Added the page-level `type: "Tooltip"` marker (the real *"allow use as tooltip"* flag, missing from the v2.6 pages) to the Project KPI / Risk / Document-governance tooltip pages; `visualTooltip` bindings pin the portfolio **project table → Project KPI** card and the **risk register → Risk** card. Model now sets `maxParallelismPerRefresh: 1` so refresh stays under the Azure PG (50-conn Burstable) limit — fixes the cold-open `53300` connection-exhaustion cascade.

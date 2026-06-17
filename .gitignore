@@ -15,3 +15,6 @@ db/.graph_token_cache.json
 
 # Scheduled-task log output
 logs/
+
+# Directory CSV export (data for the Staff Directory agent; regenerate, never commit)
+staff-directory-export.csv

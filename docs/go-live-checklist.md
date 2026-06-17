@@ -21,26 +21,22 @@ checkable go-live list.
 |---|---|---|
 | `tooltipProjectKpi` | **Portfolio** page → project table | ✅ wired |
 | `tooltipRisk` | **Risk** page → risk register table | ✅ wired |
-| `tooltipDocGovernance` | *(nothing yet)* | ⚠️ **built but unbound** |
+| `tooltipDocGovernance` | **Governance & Documents** page → controlled-document register | ✅ wired (2026-06-17) |
 
-**⚠️ Open gap — `tooltipDocGovernance`:** the page exists and is marked, but **no visual can host it
-yet**. The report surfaces *no* interactive document/governance visual — not a table, not a card
-(verified 2026-06-17: no report visual references the `Controlled Document` / version / governance
-entities; governance data lives only in measures + the paginated RDL reports). The plan deliberately
-deferred a **"Document Control" report page (visuals later)**. So this tooltip is built ahead of its
-host: activating it requires **first adding a Controlled-Document register visual** (a `tableEx` over
-the `Controlled Document` model table) to a page, *then* binding it with a `visualTooltip` block
-(`section: 'tooltipDocGovernance'`). **Decision:** build that compact register + bind (a small,
-self-contained add), or leave the tooltip as a harmless defined-but-unused page until the Document
-Control page is built. Binding it to a non-document visual (the CR table, a risk card) is **wrong** —
-the card shows document status/version/attestation, not change requests.
+**Resolved (2026-06-17):** `tooltipDocGovernance` had no host visual — the report surfaced *no*
+interactive document view. A new **Governance & Documents** page (`pages/governance`) was built — 5
+document cards (Controlled / Draft / Baseline / Retired / Due-for-Review) + a status donut + a
+by-type bar + a **controlled-document register** `tableEx` over the `Controlled Document` model table.
+The register carries the `visualTooltip` (`section: 'tooltipDocGovernance'`), so hovering a document
+row now pops the governance card. All three tooltip pages are activated.
 
 **Verify in Desktop after republish:**
 
 - [ ] **Portfolio** → hover a project-table row → the *Project KPI* card pops (CPI, SPI, % complete,
       open CRs, signed-off?, days in current phase).
 - [ ] **Risk** → hover a risk-register row → the *Risk* card pops (exposure, response status, overdue?).
-- [ ] Resolve `tooltipDocGovernance` (wire it to a Controlled-Document visual, or leave it unbound).
+- [ ] **Governance & Documents** → hover a row in the controlled-document register → the *Document
+      governance* card pops (status, current version, attested?, open governance CRs, next review due).
 
 > Note: `validate_pbir` checks `1.0.0` visuals but **skips** the `2.10.0` ones, so the tooltip
 > rendering itself is only confirmable by eye in Desktop/Service — hence the hover checks above.

@@ -23,10 +23,17 @@ checkable go-live list.
 | `tooltipRisk` | **Risk** page → risk register table | ✅ wired |
 | `tooltipDocGovernance` | *(nothing yet)* | ⚠️ **built but unbound** |
 
-**⚠️ Open gap — `tooltipDocGovernance`:** the page exists and is marked, but no visual references it, so
-it will never pop. To activate it, add a `visualTooltip` block (`section: 'tooltipDocGovernance'`) to a
-Controlled-Document visual. **Decision required:** wire it, or accept it as a defined-but-unused page
-(harmless — it simply never triggers).
+**⚠️ Open gap — `tooltipDocGovernance`:** the page exists and is marked, but **no visual can host it
+yet**. The report surfaces *no* interactive document/governance visual — not a table, not a card
+(verified 2026-06-17: no report visual references the `Controlled Document` / version / governance
+entities; governance data lives only in measures + the paginated RDL reports). The plan deliberately
+deferred a **"Document Control" report page (visuals later)**. So this tooltip is built ahead of its
+host: activating it requires **first adding a Controlled-Document register visual** (a `tableEx` over
+the `Controlled Document` model table) to a page, *then* binding it with a `visualTooltip` block
+(`section: 'tooltipDocGovernance'`). **Decision:** build that compact register + bind (a small,
+self-contained add), or leave the tooltip as a harmless defined-but-unused page until the Document
+Control page is built. Binding it to a non-document visual (the CR table, a risk card) is **wrong** —
+the card shows document status/version/attestation, not change requests.
 
 **Verify in Desktop after republish:**
 

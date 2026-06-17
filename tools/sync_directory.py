@@ -50,6 +50,20 @@ def filter_staff(roster, domains):
             if domain_of(u.get("mail") or u.get("userPrincipalName")) in ds]
 
 
+def dedupe_by_email(users):
+    """Keep one user per normalized email (first wins); drop blank-email users.
+    Entra can return >1 account for the same mailbox, but doc_mgmt.person.email
+    is UNIQUE -- collapsing to one row per email avoids a duplicate-key insert.
+    (Harden later: pick the canonical account rather than first-seen.)"""
+    seen, out = set(), []
+    for u in users:
+        email = al.normalize_email(u.get("mail") or u.get("userPrincipalName"))
+        if email and email not in seen:
+            seen.add(email)
+            out.append(u)
+    return out
+
+
 def classify_persons(staff, existing_by_email):
     """staff: Entra user dicts; existing_by_email: {email_lower: {person_id, source}}.
     Returns (to_insert, to_enrich, to_deactivate):
@@ -102,7 +116,7 @@ def main(argv):
     from graph_client import Graph
 
     roster = gd.pull_roster()
-    staff = filter_staff(roster, STAFF_DOMAINS)
+    staff = dedupe_by_email(filter_staff(roster, STAFF_DOMAINS))
     print(f"roster: {len(roster)} enabled members -> {len(staff)} staff "
           f"(domains: {', '.join(STAFF_DOMAINS)})")
 
@@ -126,7 +140,7 @@ def main(argv):
                     "INSERT INTO doc_mgmt.person (person_id, email, display_name, upn,"
                     " entra_object_id, job_title, active, source, department_id,"
                     " employment_type, start_date) VALUES"
-                    " (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                    " (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) ON CONFLICT (email) DO NOTHING",
                     (person_id_for(u), row["email"], row["display_name"], row["upn"],
                      row["entra_object_id"], row["job_title"], row["active"],
                      row["source"], row["department_id"], row["employment_type"],

@@ -51,3 +51,14 @@ def test_person_id_for_is_deterministic_and_prefers_object_id():
         == sd.person_id_for({"id": "obj-1"})                       # keyed on Entra id
     assert sd.person_id_for({"userPrincipalName": "X@Theragen.com"}) \
         == sd.person_id_for({"mail": "x@theragen.com"})            # no id -> normalized-email key
+
+
+def test_dedupe_by_email_keeps_first_and_drops_blank():
+    users = [
+        {"id": "a", "mail": "Ryan.Bell@theragen.com"},
+        {"id": "b", "userPrincipalName": "ryan.bell@theragen.com"},  # same mailbox, 2nd account -> dropped
+        {"id": "c", "mail": "other@theragen.com"},
+        {"id": "d"},                                                 # no email -> dropped
+    ]
+    out = sd.dedupe_by_email(users)
+    assert [u["id"] for u in out] == ["a", "c"]

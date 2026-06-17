@@ -149,7 +149,8 @@ def main(argv):
                 row = al.build_person_directory_row(u, unas_id, today)
                 conn.execute(
                     "UPDATE doc_mgmt.person SET upn=%s, entra_object_id=%s,"
-                    " job_title=%s, active=%s, source='entra' WHERE person_id=%s",
+                    " job_title=COALESCE(NULLIF(%s,''), job_title), active=%s,"
+                    " source='entra' WHERE person_id=%s",
                     (row["upn"], row["entra_object_id"], row["job_title"],
                      row["active"], pid))
             for pid in to_deactivate:

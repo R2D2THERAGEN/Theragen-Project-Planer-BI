@@ -14,6 +14,14 @@ curated release notes; that one is the register's queryable change log.
 
 ---
 
+## 2.12 — 2026-06-17 · `model`
+**Governance & Documents page + report-tooltip activation (CL-6).**
+- **New "Governance & Documents" report page** (`pages/governance`) — the report's first interactive document view: 5 document cards (Controlled / Draft / Baseline / Retired / Due-for-Review), a Documents-by-status donut, a Documents-by-type bar, and a **controlled-document register** table (Doc ID / Type / Dept / Title / Status / Version / Owner / Next Review) over the `Controlled Document` model table.
+- **All three report-page tooltips now activated.** The register carries the `visualTooltip → tooltipDocGovernance` binding — the third rich tooltip page (authored in v2.8 / G-T5) finally has a host visual, joining the **Project KPI** (portfolio table) and **Risk** (risk register) tooltips. The report previously surfaced no interactive document view, so the doc-governance tooltip had nothing to attach to.
+- Go-live runbook [`docs/go-live-checklist.md`](docs/go-live-checklist.md) updated — the CL-6 tooltip gap is closed; the remaining CL-6 / CL-7 steps are Desktop/Service work (republish + hover-check + RLS turn-on).
+- _Approver:_ BI owner · _commit:_ `2f77a38`
+- _Surfaces after:_ an Allen republish (a data-only refresh won't add the page or activate the tooltip).
+
 ## 2.11 — 2026-06-17 · `model` `code` `migration` `docs`
 **Field-sales distributor org (sub-stage F) + EASE directory backfill.**
 - **Distributor network.** `db/26` adds the `sales` schema + `sales.distributor` (one row per distributor, with normalized `status` + `active` alongside the preserved `status_raw`) + `bi.distributor`. `tools/import_distributors.py` reads the sales-ops `Master DIst` workbook, normalizes the messy free-text Status / RSM / Region, dedups **606 rows → 329 distinct distributors** (most-complete-row wins), and upserts on `external_ref`. Loaded live: **329 distributors, 86 active** (active book under the 4 core RSMs — Ryan Davis 24, Jeff Williams 19, Scott Hannon 18, Tom Milroy 18). New **Distributor** model table (standalone, no relationship to the PMBOK data) + measures (Distributors, Active / Terminated / Inactive Distributors, Direct Sellers, Active Distributor Rate), surfaced on a new **Sales & Distribution** report page (KPI cards + Region/Status slicers + by-region / by-RSM bars + status donut + distributor register). See the [field-sales spec](docs/superpowers/specs/2026-06-17-field-sales-org-design.md).
